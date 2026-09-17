@@ -16,6 +16,8 @@ dialect detected `v1`.
 `FD_DEV_CONTAINER=fd-dev1 scripts/dev/test-backend.sh V1Translations`.
 - 14 test methods, 125 assertions (including a coverage guard over all 28 operationIds).
 - **14/14 passed in three consecutive runs.**
+- **Not every variant is verified.** Operations 27 and 28 were verified for `%Java Server` only;
+  for `%Python Server` they are **NOT VERIFIED** (note D).
 - On IRIS 2026.2 (dialect `v2`) the class logs a skip for every method; the full backend suite is
   41/41 there.
 
@@ -62,8 +64,8 @@ source is the stored platform state that the answer must match.
 | 24 | `POST /v2/async-result/cancel` | `PATCH /v1/async-result?id=` `{"Action":"Cancel"}` | Stored `Api.Admin.v1.Util.AsyncTask.State` Queued → Canceled, `TimeStarted` empty | Stored state of the API's own task record | Pass |
 | 25 | `POST /v2/async-result/pause` | `PATCH /v1/async-result?id=` `{"Action":"Pause"}` | 409 with error id `CannotPauseAsyncTask`; stored state unchanged | See note A | Pass (reachability only) |
 | 26 | `POST /v2/async-result/resume` | `PATCH /v1/async-result?id=` `{"Action":"Resume"}` | 409 with error id `CannotResumeAsyncTask`; stored state unchanged | See note A | Pass (reachability only) |
-| 27 | `POST /v2/ext-lang-server/start` | `PATCH /v1/els?name=` `{"Action":"Start"}` | `$system.external.isServerRunning("%Java Server")` 0 → 1 | Yes | Pass |
-| 28 | `POST /v2/ext-lang-server/stop` | `PATCH /v1/els?name=` `{"Action":"Stop"}` | `isServerRunning` 1 → 0 | Yes | Pass |
+| 27 | `POST /v2/ext-lang-server/start` | `PATCH /v1/els?name=` `{"Action":"Start"}` | `$system.external.isServerRunning("%Java Server")` 0 → 1 | Yes | Pass for `%Java Server`; **NOT VERIFIED for `%Python Server`** (note D) |
+| 28 | `POST /v2/ext-lang-server/stop` | `PATCH /v1/els?name=` `{"Action":"Stop"}` | `isServerRunning` 1 → 0 | Yes | Pass for `%Java Server`; **NOT VERIFIED for `%Python Server`** (note D) |
 
 ## Notes
 
@@ -92,9 +94,14 @@ tries the next queued task.
 terminates the TASKMGR process (found in `%SYS.ProcessQuery` by routine `%SYS.TaskSuper`) and
 confirms status 0 before the call.
 
-**D. External language servers**: only `%Java Server` was exercised. `%Python Server` start timed
-out (504) in this image on both manual attempts; that is an environment limit of the container,
-not the translation, which is identical apart from `name`.
+**D. External language servers: `%Python Server` is NOT VERIFIED.** Only `%Java Server` was
+exercised by effect. Starting `%Python Server` timed out (HTTP 504) in this image on both manual
+attempts, so no effect could be observed, and none is claimed.
+
+The request differs from the Java one only in `name`, but that similarity is **not** taken as
+evidence: deducing a route or behavior by resemblance already failed once in this project (the spike
+mapped `task/run` to `PATCH /task` by name; the real route is `POST /v1/task/run`). The Python
+variant stays unverified until a start and stop are observed on an image where the server comes up.
 
 **E. OAuth2 revoke** answers 200 whether or not anything was revoked. That is exactly why the
 fixture token row is checked before and after. No authorization server is configured in the

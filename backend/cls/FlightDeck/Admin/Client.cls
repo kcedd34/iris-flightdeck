@@ -34,12 +34,15 @@ ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "
 	if (dialect = "v1") && ##class(FlightDeck.Admin.V1Dialect).Translate(method _ " " _ path, body, .v1Method, .v1Path, .v1Body) {
 		quit ..Dispatch("Api.Admin", v1Path, v1Method, query, v1Body, .status, .result, .raw, .headers)
 	}
+	if (dialect = "v1") && ##class(FlightDeck.Admin.V1Dialect).NativeProvider(method _ " " _ path, .provider) {
+		quit $classmethod(provider, "Handle", method _ " " _ path, query, .status, .result, .raw)
+	}
 	if dialect = "unknown" {
 		// The caller cannot read %SYS, so no official handler would run for them: answer like the
 		// <PROTECT> a dispatch raises (403, no administrative privilege).
 		quit ..Dispatch("Api.Admin", path, method, query, body, .status, .result, .raw, .headers)
 	}
-	do ..Unavailable(dialect, .status, .result, .raw)
+	do ..Unavailable(dialect, .status, .result, .raw, method _ " " _ path)
 	quit $$$OK
 }
 
@@ -72,10 +75,18 @@ ClassMethod Has(operationId As %String) As %Boolean
 	quit 0
 }
 
-/// The version answer for an operation the instance's dialect does not have (docs/prd.md §9, message 8).
-ClassMethod Unavailable(dialect As %String, Output status As %Integer, Output result As %DynamicAbstractObject, Output raw As %String)
+/// Why an operation is unavailable on this instance: the version message, plus the recorded reason
+/// for operations FlightDeck deliberately does not provide natively.
+ClassMethod UnavailableReason(operationId As %String) As %String
 {
-	set message = $select(dialect="none":##class(FlightDeck.API.Response).#MSGNOAPI, 1:##class(FlightDeck.API.Response).#MSGVERSION)
+	if ##class(FlightDeck.Admin.Dialect).Current() = "v1" quit ##class(FlightDeck.Admin.V1Dialect).UnavailableReason(operationId)
+	quit ##class(FlightDeck.API.Response).#MSGVERSION
+}
+
+/// The version answer for an operation the instance's dialect does not have (docs/prd.md §9, message 8).
+ClassMethod Unavailable(dialect As %String, Output status As %Integer, Output result As %DynamicAbstractObject, Output raw As %String, operationId As %String = "")
+{
+	set message = $select(dialect="none":##class(FlightDeck.API.Response).#MSGNOAPI, 1:..UnavailableReason(operationId))
 	set status = 501
 	set result = {"status":{"errors":[{"error":(message), "code":"FLIGHTDECK_UNAVAILABLE", "id":"NotAvailableInDialect"}], "summary":(message)}, "console":[], "result":{}}
 	set raw = result.%ToJSON()

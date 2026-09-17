@@ -122,15 +122,16 @@ cd frontend && FLIGHTDECK_PORT=52791 npx playwright test --project limited
 ```
 
 Backend, in a 2026.1 container with the repository at `/opt/flightdeck`:
-`FD_DEV_CONTAINER=<container> scripts/dev/test-backend.sh V1Translations` (then `Dialect` and
-`NativeDatabases`).
+`FD_DEV_CONTAINER=<container> scripts/dev/test-backend.sh V1Translations` (then `Dialect`,
+`NativeDatabases` and `NativeNamespaces`).
 
 Expected:
 - The install log shows `SysAdmin API v1 present (limited mode …)`, and the demo is provisioned.
-- e2e: dialect `v1` with 72 of 273 operations unavailable, the glareshield indicator, disabled
-  palette actions with the version message, one "Not searched" note per domain, a native Disk
-  value, and a no-privilege user refused for privileges.
-- Backend: 14 + 6 + 5 tests pass.
+- e2e: dialect `v1` with 64 of 273 operations unavailable, the glareshield indicator, disabled
+  palette actions with the version message (namespace writes and journal with their recorded
+  reasons), one "Not searched" note per reason within a domain, namespaces found natively, a native
+  Disk value, and a no-privilege user refused for privileges.
+- Backend: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5 and `NativeNamespaces` 4 pass.
 
 Clean up with `docker compose -p fd-v1 -f docker-compose.yml -f /tmp/fd-v1.yml down -v`.
 Scenario 7 (no SysAdmin API at all) has no Community image to run against; the e2e suite covers it

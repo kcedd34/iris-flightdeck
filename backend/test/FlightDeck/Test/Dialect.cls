@@ -48,12 +48,20 @@ Method TestCapabilityMapAvailability()
 	set iter = entries.%GetIterator()
 	while iter.%GetNext(, .e) { do byId.%Set(e.operationId, e) }
 	if ##class(FlightDeck.Admin.Client).Limited() {
-		// 273 v2 operations, 201 with a v1 route (173 same shape + 28 translated): 72 unavailable.
-		do $$$AssertEquals(summary.unavailable, 72)
-		set ns = byId.%Get("GET /v2/namespaces")
-		do $$$AssertNotTrue(ns.available, "namespaces have no v1 route")
-		do $$$AssertEquals(ns.reason, ##class(FlightDeck.API.Response).#MSGVERSION)
-		do $$$AssertEquals(ns.requires.%Get(0), "%Admin_Manage:U", "privilege still comes from the v2 spec")
+		// 273 v2 operations: 173 same shape + 28 translated + 8 native namespace reads = 209; 64 unavailable.
+		do $$$AssertEquals(summary.unavailable, 64)
+		set dbs = byId.%Get("GET /v2/databases")
+		do $$$AssertNotTrue(dbs.available, "databases have no v1 route")
+		do $$$AssertEquals(dbs.reason, ##class(FlightDeck.API.Response).#MSGVERSION)
+		do $$$AssertEquals(dbs.requires.%ToJSON(), "[""%Admin_Manage:U"",""%Admin_Operate:U""]", "privilege still comes from the v2 spec")
+		do $$$AssertTrue(byId.%Get("GET /v2/namespaces").available, "native namespace read is available")
+		set write = byId.%Get("PUT /v2/namespace")
+		do $$$AssertNotTrue(write.available, "namespace writes are never native")
+		do $$$AssertTrue($extract(write.reason, 1, $length(##class(FlightDeck.API.Response).#MSGVERSION)) = ##class(FlightDeck.API.Response).#MSGVERSION, "reason starts with message 8")
+		do $$$AssertTrue(write.reason [ "side effects FlightDeck does not control", write.reason)
+		set journal = byId.%Get("GET /v2/journal/files")
+		do $$$AssertNotTrue(journal.available)
+		do $$$AssertTrue(journal.reason [ "authorization decision that belongs to IRIS", journal.reason)
 		do $$$AssertTrue(byId.%Get("POST /v2/task/suspend").available, "translated operation is available")
 		do $$$AssertTrue(byId.%Get("GET /v2/security/roles").available, "same-shape operation is available")
 	} else {
@@ -64,7 +72,7 @@ Method TestCapabilityMapAvailability()
 
 Method TestUnavailableOperationNeverReachesIris()
 {
-	set sc = ##class(FlightDeck.Admin.Client).Call("GET", "/v2/namespaces", , , .status, .json, .raw)
+	set sc = ##class(FlightDeck.Admin.Client).Call("GET", "/v2/databases", , , .status, .json, .raw)
 	do $$$AssertStatusOK(sc)
 	if ##class(FlightDeck.Admin.Client).Limited() {
 		do $$$AssertEquals(status, 501)
@@ -94,11 +102,11 @@ Method TestPaletteReportsUnavailableGroups()
 	while iter.%GetNext(, .g) {
 		continue:g.state'="unavailable"
 		set unavailable = unavailable + 1
-		set:(g.reason'=##class(FlightDeck.API.Response).#MSGVERSION) reasons = 0
+		set:($extract(g.reason, 1, $length(##class(FlightDeck.API.Response).#MSGVERSION))'=##class(FlightDeck.API.Response).#MSGVERSION) reasons = 0
 	}
 	if ##class(FlightDeck.Admin.Client).Limited() {
 		do $$$AssertTrue(unavailable > 0, unavailable_" unavailable groups on v1")
-		do $$$AssertTrue(reasons, "every unavailable group carries the version message")
+		do $$$AssertTrue(reasons, "every unavailable group starts with the version message")
 		do $$$AssertNotTrue(out.degraded && (out.reason = ""), "unavailable groups alone do not degrade the search")
 	} else {
 		do $$$AssertEquals(unavailable, 0)

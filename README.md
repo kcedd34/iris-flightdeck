@@ -33,8 +33,8 @@ Related idea on the InterSystems Ideas Portal: _link pending publication by the 
   ships in IRIS 2026.2, so the install pins the `2026.2` images for you.
 - **IRIS 2026.1 runs in limited mode.** That release (still the `latest` tag of the Community
   images) only has API v1. FlightDeck translates what v1 offers, shows a **Limited · API v1**
-  indicator at the top, and disables the 72 operations v1 lacks (namespaces, databases, ECP,
-  journal and a few more) with the reason.
+  indicator at the top, and disables the 64 operations it cannot offer (databases, ECP, namespace
+  changes, the journal and a few more), each with its reason. Namespaces can still be browsed.
 
 ## Quick start
 

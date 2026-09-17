@@ -108,19 +108,30 @@ They were fixed and the run repeated (the table above).
 - `v1-api-2026.1.md` / `.json`: coverage of v1 against the v2 specification (173 same shape,
   28 different shape, 72 absent).
 - `v1-adapter-spike.md`: cost spike over 5 of the 28 translations.
-- `v1-translations-2026.1.md`: **all 28 translations verified live by effect** through the adapter,
-  14/14 test methods in three consecutive runs (`FlightDeck.Test.V1Translations`). Pause and resume
-  of async results can only be verified as reachable: no v1 async task supports them.
-- `v1-native-gaps-2026.1.md`: native disk per database on v1, verified equal to `database-dir/info`
-  on 2026.2 for all 10 databases; evaluation of namespaces (recommend native reads) and journal
-  (recommend none).
+- `v1-translations-2026.1.md`: the 28 translations verified live by effect through the adapter,
+  14/14 test methods in three consecutive runs (`FlightDeck.Test.V1Translations`), with two
+  limits:
+  - pause and resume of async results are verified as reachable only, because no v1 async task
+    supports them;
+  - external language server start/stop is verified for `%Java Server` only. **`%Python Server`
+    is NOT VERIFIED** (it timed out in the image).
+- `v1-native-gaps-2026.1.md`: native providers on v1 and the T101 decision.
+  - Disk per database: verified equal to `database-dir/info` on 2026.2 for all 10 databases.
+  - Namespace reads: native, verified equal to the official API on 2026.2 over 21 requests;
+    writes withheld.
+  - Journal: deliberately not native (authorization stays in IRIS).
 
-### Test matrix, 2026-09-17 (fresh compose installs of the final code)
+### Test matrix, 2026-09-17 (fresh compose installs of the final code, after T101)
 
 | Install | Backend | Playwright | Other gates |
 |---|---|---|---|
-| IRIS CE 2026.2 (`2026.2-zpm`, port 52780) | 52/52 (all classes; `V1Translations` skips on v2) | 24 passed, 6 skipped (`limited` project skips on v2) | safe-mode enforcement ok |
-| IRIS CE 2026.1 (`2026.1-zpm`, port 52791, limited mode) | reduced set 25/25: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5 | `limited` project 6/6 | install and demo complete on v1 |
+| IRIS CE 2026.2 (`2026.2-zpm`, port 52780) | 56/56 (all classes; v1-only tests log a skip) | 24 passed, 8 skipped (`limited` project skips on v2) | safe-mode enforcement ok |
+| IRIS CE 2026.1 (`2026.1-zpm`, port 52791, limited mode) | reduced set 29/29: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5, `NativeNamespaces` 4 | `limited` project 8/8 | install and demo complete on v1 |
+
+One test guard was corrected during this run. `NativeDatabases.TestCodeDatabaseResourceMatchesApi`
+compared against the official lookup whenever `GET /v2/namespace` was available, which on v1 is now
+true through the native provider, but `/v2/database-dir` is not. The guard now requires the database
+operations; the installer code already did. It was rerun on both installs: 5/5.
 
 Static gates on the same tree: `check-generated`, `check-dist`, verification script unit tests,
 `lint`, `check:tokens`, `contrast`, `vitest` (6), `build`.

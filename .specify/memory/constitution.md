@@ -1,10 +1,10 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.0.0 → 2.1.0
+Version change: 2.0.0 → 2.1.0 (amendment not yet committed; the T101 decision is folded into it)
 Bump rationale: MINOR. Scope notes added to Principles I and III for the SysAdmin API v1 dialect
-(IRIS 2026.1), and one new named native-provider gap, valid only on the v1 dialect. No principle
-is redefined.
+(IRIS 2026.1), two new named native-provider gaps valid only on the v1 dialect, and one recorded
+non-gap. No principle is redefined.
 
 Modified principles:
   I. Official SysAdmin API First (RN-FD-30)
@@ -12,6 +12,10 @@ Modified principles:
        the v1 dialect IS the official API; translating between dialects is not reimplementation.
        Replacing an existing endpoint with Security.*/Config.*/SYS.* remains forbidden.
      - New gap (v1 dialect only): disk usage per database. On v2 the official endpoints stay in use.
+     - New gap (v1 dialect only): namespace and mapping reads (8 operations). Namespace writes are
+       never native (platform side effects FlightDeck does not control).
+     - Recorded non-gap: the journal. Its record filter by readable database is authorization and
+       stays in IRIS (Principle II); unavailable on v1 with that reason.
   III. Capabilities Derived From the Spec (RN-FD-02)
      - Scope note: the capability map stays derived from the v2 specification in both dialects;
        translations are keyed by v2 operationId; nothing is derived from v1.
@@ -26,10 +30,8 @@ Templates reviewed (read-only, not modified by this command):
   ✅ .specify/templates/checklist-template.md — no constitution-specific slots
 
 Follow-up TODOs:
-  - Namespaces and journal evaluated in verification/v1-native-gaps-2026.1.md (recommendation:
-    namespace reads native on v1, writes unavailable; journal unavailable, because records carry a
-    per-database authorization filter). Awaiting the author's decision; the gap list changes only
-    if namespace reads are approved.
+  - None for the dialect work: the namespace and journal evaluation
+    (verification/v1-native-gaps-2026.1.md) was decided by the author on 2026-09-17 (T101).
   - docs/prd.md RN-FD-30 wording: mention the v1 dialect note.
   - Carried over: project skills absent from .claude/skills/; legacy file names in docs.
 -->
@@ -64,7 +66,7 @@ register FlightDeck's own web applications before the portal exists.
   already exposes over ObjectScript classes (`Config.*`, `Security.*`, `SYS.*`, etc.) is forbidden.
 - The FlightDeck backend forwards and composes; it MUST NOT rewrite. Composition (effective
   privilege, entity graph, impact analysis, diffs, self-protection) is allowed and expected.
-- Native providers exist only for what the API does not cover. Today there are two gaps:
+- Native providers exist only for what the API does not cover. Today these gaps are named:
   - **Logs**: `messages.log`, alerts and the interoperability event log.
   - **Host CPU and memory**: read from `/proc/stat` and `/proc/meminfo`. The SysAdmin API v2
     reports only IRIS-internal counters and IRIS shared memory, while the contest statement names
@@ -73,6 +75,21 @@ register FlightDeck's own web applications before the portal exists.
   - **Disk usage per database, v1 dialect only**: RN-FD-19 requires it, and SysAdmin API v1 has no
     database-directory or database-metrics operations. On the v2 dialect the official
     `database-dir/info` and `async-result` operations MUST stay in use.
+  - **Namespace and mapping reads, v1 dialect only**: the eight read operations of
+    `/v2/namespace` (namespaces, one namespace, and global, package and routine mappings, list and
+    item). Namespaces are the context key for web applications, SQL privileges, tasks and log
+    correlation, and SysAdmin API v1 has no namespace operations. The native response MUST have
+    the v2 shape and require the privilege the v2 operation declares. **Namespace writes are never
+    native** (create, edit, delete, mappings, copy-mappings, enable-interop): a native write would
+    copy platform side effects FlightDeck does not control, such as deleting a namespace's web
+    applications or creating interoperability databases. On v1 they are unavailable, with that
+    reason in the capability map.
+
+  **Deliberately not a gap: the journal.** On the v1 dialect the nine journal operations stay
+  unavailable, and no native provider may read journal files or records. The official record
+  operations exclude records of databases the user cannot read. That filter is an authorization
+  decision, and deciding it outside IRIS violates Principle II. On v1 the journal log source is
+  shown unavailable with this reason. This is a decision of rigor, not a missing piece.
 
   Adding any other native provider requires a constitution amendment naming the gap. A gap that
   exists only in one dialect MUST be filled natively only on that dialect.

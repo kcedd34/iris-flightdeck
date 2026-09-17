@@ -329,13 +329,21 @@ function EntityRows({ group, onSelect, onRefine }: { group: EntitySearchGroup; o
   );
 }
 
-/** Entity types the instance does not offer (limited mode), named once per domain with the version message. */
+/** Entity types the instance does not offer (limited mode), named once per reason within a domain. */
 function UnavailableNote({ groups }: { groups: EntitySearchGroup[] }) {
-  const unavailable = groups.filter((eg) => eg.state === "unavailable");
-  if (unavailable.length === 0) return null;
+  const byReason = new Map<string, string[]>();
+  for (const eg of groups) {
+    if (eg.state !== "unavailable") continue;
+    const reason = eg.reason ?? "";
+    byReason.set(reason, [...(byReason.get(reason) ?? []), eg.entityType]);
+  }
   return (
-    <div className="palette-note" role="note" data-testid="palette-unavailable-types">
-      Not searched: {unavailable.map((eg) => eg.entityType).join(", ")}. {unavailable[0]!.reason}
-    </div>
+    <>
+      {[...byReason].map(([reason, types]) => (
+        <div key={reason} className="palette-note" role="note" data-testid="palette-unavailable-types">
+          Not searched: {types.join(", ")}. {reason}
+        </div>
+      ))}
+    </>
   );
 }

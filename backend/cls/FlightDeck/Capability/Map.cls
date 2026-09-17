@@ -38,7 +38,7 @@ ClassMethod Build(privileges As %DynamicObject) As %DynamicArray
 		do entry.%Set("allowed", allowed, "boolean")
 		do entry.%Set("available", available, "boolean")
 		if 'available {
-			do entry.%Set("reason", ##class(FlightDeck.API.Response).#MSGVERSION)
+			do entry.%Set("reason", ##class(FlightDeck.Admin.Client).UnavailableReason(op.operationId))
 		} elseif allowed {
 			do entry.%Set("reason", "", "null")
 		} else {

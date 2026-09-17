@@ -67,8 +67,8 @@ Method TestCodeDatabaseResourceMatchesApi()
 	set sc = ##class(FlightDeck.Native.Databases).CodeDatabaseResource($namespace, .nativeResource, .nativeDb)
 	do $$$AssertStatusOK(sc)
 	do $$$AssertTrue(nativeResource '= "", "resource "_nativeResource_" of "_nativeDb)
-	if '##class(FlightDeck.Admin.Client).Has("GET /v2/namespace") {
-		do $$$LogMessage("no namespace operations on this instance: native lookup only")
+	if '##class(FlightDeck.Admin.Client).Has("GET /v2/database") || '##class(FlightDeck.Admin.Client).Has("GET /v2/database-dir") {
+		do $$$LogMessage("no database operations on this instance: native lookup only")
 		quit
 	}
 	set ns = ##class(FlightDeck.Admin.Client).Get("/v2/namespace", {"name":($namespace)})

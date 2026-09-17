@@ -18,7 +18,8 @@ This feature delivers the frame every later FlightDeck feature sits in, in depen
    domain route rendering an empty state.
 
 **Constitution**: v2.1.0 (was v2.0.0). Principle I is scoped to the running portal and names host
-CPU/memory, and disk usage per database on the v1 dialect only, as native-provider gaps. Dialect
+CPU/memory, and on the v1 dialect only disk usage per database and namespace/mapping reads, as
+native-provider gaps; the journal is a recorded non-gap. Dialect
 scope notes are in Principles I and III.
 
 **Research changed three assumptions** ([research.md](./research.md), all observed on live

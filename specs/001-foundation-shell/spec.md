@@ -343,6 +343,11 @@ width, and check tab strips, empty states, the inspector and the URL.
     for the version, on either dialect.
   - On v1, the Disk vital comes from a native provider with the same figures and the same declared
     privilege as `database-dir/info` (Constitution I 2.1.0 gap).
+  - On v1, namespace and mapping **reads** come from a native provider with the v2 response and the
+    v2 declared privilege. Namespace **writes** are unavailable, and their reason adds that a native
+    write would copy platform side effects FlightDeck does not control. **Journal** operations are
+    unavailable, and their reason adds that filtering records by readable database is an
+    authorization decision that belongs to IRIS (Constitution I 2.1.0; decision T101).
 - **FR-013**: The session capability map MUST be computed by crossing the privilege each SysAdmin
   API operation declares in the official specification with the user's privileges. A hand-written
   privilege table is not permitted.

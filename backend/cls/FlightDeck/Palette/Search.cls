@@ -93,7 +93,7 @@ ClassMethod Run(q As %String, domain As %String = "", limit As %Integer = 5) As 
 			// degrade the search: it is reported with the version reason.
 			if '##class(FlightDeck.Admin.Client).Has(op.operationId) {
 				set group.state = "unavailable"
-				set group.reason = ##class(FlightDeck.API.Response).#MSGVERSION
+				set group.reason = ##class(FlightDeck.Admin.Client).UnavailableReason(op.operationId)
 				do groups.%Push(group)
 				continue
 			}

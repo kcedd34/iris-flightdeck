@@ -1,34 +1,253 @@
 {
-  "description": "SysAdmin API v1 translations for the 28 v2 operations whose v1 route has a different method, path or body. Keyed by v2 operationId. Every entry was discovered against a live IRIS 2026.1 instance (request validator messages, never route names) and is verified by effect in FlightDeck.Test.V1Translations. Paths are relative to the v1 dispatcher's /v1 prefix, except /info, which the dispatcher serves directly. Body rules: none = no body (sent as {} for POST/PATCH); passthrough = the v2 body unchanged; action = {\"Action\": value}; actionFromBoolean = {\"Action\": ifTrue|ifFalse} chosen from a v2 boolean body field.",
+  "description": "SysAdmin API v1 translations for the 28 v2 operations whose v1 route has a different method, path or body. Keyed by v2 operationId. Every entry was discovered against a live IRIS 2026.1 instance (request validator messages, never route names) and is verified by effect in FlightDeck.Test.V1Translations. Paths are relative to the v1 dispatcher's /v1 prefix, except /info, which the dispatcher serves directly. Body rules: none = no body (sent as {} for POST/PATCH); passthrough = the v2 body unchanged; action = {\"Action\": value}; actionFromBoolean = {\"Action\": ifTrue|ifFalse} chosen from a v2 boolean body field. Native: v2 operations with no v1 route that a v1-only native provider answers in the v2 shape (constitution 2.1.0, Principle I gaps). Withheld: operations with no v1 route that are deliberately left unavailable, with the reason appended to the version message.",
   "verifiedOn": "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.1 (Build 234U)",
   "translations": {
-    "GET /info": { "method": "GET", "path": "/info", "unversioned": true, "body": { "rule": "none" } },
-    "GET /v2/wallet/collections": { "method": "GET", "path": "/wallet/", "body": { "rule": "none" } },
-    "GET /v2/wallet/collection": { "method": "GET", "path": "/wallet", "body": { "rule": "none" } },
-    "PUT /v2/wallet/collection": { "method": "PUT", "path": "/wallet", "body": { "rule": "passthrough" } },
-    "DELETE /v2/wallet/collection": { "method": "DELETE", "path": "/wallet", "body": { "rule": "none" } },
-    "GET /v2/security/encryption/data-element-keys": { "method": "GET", "path": "/security/encryption/key/data-element/", "body": { "rule": "none" } },
-    "GET /v2/security/sql-admin-privileges": { "method": "GET", "path": "/security/sql-privilege/admin/", "body": { "rule": "none" } },
-    "GET /v2/security/sql-column-privileges": { "method": "GET", "path": "/security/sql-privilege/column/", "body": { "rule": "none" } },
-    "POST /v2/security/sql-privilege/grant": { "method": "PUT", "path": "/security/sql-privilege", "body": { "rule": "none" } },
-    "POST /v2/security/sql-privilege/revoke": { "method": "DELETE", "path": "/security/sql-privilege", "body": { "rule": "none" } },
-    "POST /v2/security/sql-admin-privilege/grant": { "method": "PUT", "path": "/security/sql-privilege/admin", "body": { "rule": "none" } },
-    "POST /v2/security/sql-admin-privilege/revoke": { "method": "DELETE", "path": "/security/sql-privilege/admin", "body": { "rule": "none" } },
-    "POST /v2/security/sql-column-privilege/grant": { "method": "PUT", "path": "/security/sql-privilege/column", "body": { "rule": "none" } },
-    "POST /v2/security/sql-column-privilege/revoke": { "method": "DELETE", "path": "/security/sql-privilege/column", "body": { "rule": "none" } },
-    "POST /v2/security/oauth2/revoke": { "method": "POST", "path": "/security/oauth2/server/revoke", "body": { "rule": "none" } },
-    "POST /v2/task/suspend": { "method": "PATCH", "path": "/task", "body": { "rule": "actionFromBoolean", "field": "LeaveInQueue", "default": true, "ifTrue": "Suspend", "ifFalse": "SuspendAndReschedule" } },
-    "POST /v2/task/resume": { "method": "PATCH", "path": "/task", "body": { "rule": "action", "value": "Resume" } },
-    "POST /v2/task/manager/suspend": { "method": "PATCH", "path": "/task/manager", "body": { "rule": "action", "value": "Suspend" } },
-    "POST /v2/task/manager/resume": { "method": "PATCH", "path": "/task/manager", "body": { "rule": "action", "value": "Resume" } },
-    "POST /v2/task/manager/run": { "method": "PATCH", "path": "/task/manager", "body": { "rule": "action", "value": "Run" } },
-    "POST /v2/process/suspend": { "method": "PATCH", "path": "/process", "body": { "rule": "action", "value": "Suspend" } },
-    "POST /v2/process/resume": { "method": "PATCH", "path": "/process", "body": { "rule": "action", "value": "Resume" } },
-    "POST /v2/process/terminate": { "method": "DELETE", "path": "/process", "body": { "rule": "none" } },
-    "POST /v2/async-result/cancel": { "method": "PATCH", "path": "/async-result", "body": { "rule": "action", "value": "Cancel" } },
-    "POST /v2/async-result/pause": { "method": "PATCH", "path": "/async-result", "body": { "rule": "action", "value": "Pause" } },
-    "POST /v2/async-result/resume": { "method": "PATCH", "path": "/async-result", "body": { "rule": "action", "value": "Resume" } },
-    "POST /v2/ext-lang-server/start": { "method": "PATCH", "path": "/els", "body": { "rule": "action", "value": "Start" } },
-    "POST /v2/ext-lang-server/stop": { "method": "PATCH", "path": "/els", "body": { "rule": "action", "value": "Stop" } }
+    "GET /info": {
+      "method": "GET",
+      "path": "/info",
+      "unversioned": true,
+      "body": {
+        "rule": "none"
+      }
+    },
+    "GET /v2/wallet/collections": {
+      "method": "GET",
+      "path": "/wallet/",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "GET /v2/wallet/collection": {
+      "method": "GET",
+      "path": "/wallet",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "PUT /v2/wallet/collection": {
+      "method": "PUT",
+      "path": "/wallet",
+      "body": {
+        "rule": "passthrough"
+      }
+    },
+    "DELETE /v2/wallet/collection": {
+      "method": "DELETE",
+      "path": "/wallet",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "GET /v2/security/encryption/data-element-keys": {
+      "method": "GET",
+      "path": "/security/encryption/key/data-element/",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "GET /v2/security/sql-admin-privileges": {
+      "method": "GET",
+      "path": "/security/sql-privilege/admin/",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "GET /v2/security/sql-column-privileges": {
+      "method": "GET",
+      "path": "/security/sql-privilege/column/",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-privilege/grant": {
+      "method": "PUT",
+      "path": "/security/sql-privilege",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-privilege/revoke": {
+      "method": "DELETE",
+      "path": "/security/sql-privilege",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-admin-privilege/grant": {
+      "method": "PUT",
+      "path": "/security/sql-privilege/admin",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-admin-privilege/revoke": {
+      "method": "DELETE",
+      "path": "/security/sql-privilege/admin",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-column-privilege/grant": {
+      "method": "PUT",
+      "path": "/security/sql-privilege/column",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/sql-column-privilege/revoke": {
+      "method": "DELETE",
+      "path": "/security/sql-privilege/column",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/security/oauth2/revoke": {
+      "method": "POST",
+      "path": "/security/oauth2/server/revoke",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/task/suspend": {
+      "method": "PATCH",
+      "path": "/task",
+      "body": {
+        "rule": "actionFromBoolean",
+        "field": "LeaveInQueue",
+        "default": true,
+        "ifTrue": "Suspend",
+        "ifFalse": "SuspendAndReschedule"
+      }
+    },
+    "POST /v2/task/resume": {
+      "method": "PATCH",
+      "path": "/task",
+      "body": {
+        "rule": "action",
+        "value": "Resume"
+      }
+    },
+    "POST /v2/task/manager/suspend": {
+      "method": "PATCH",
+      "path": "/task/manager",
+      "body": {
+        "rule": "action",
+        "value": "Suspend"
+      }
+    },
+    "POST /v2/task/manager/resume": {
+      "method": "PATCH",
+      "path": "/task/manager",
+      "body": {
+        "rule": "action",
+        "value": "Resume"
+      }
+    },
+    "POST /v2/task/manager/run": {
+      "method": "PATCH",
+      "path": "/task/manager",
+      "body": {
+        "rule": "action",
+        "value": "Run"
+      }
+    },
+    "POST /v2/process/suspend": {
+      "method": "PATCH",
+      "path": "/process",
+      "body": {
+        "rule": "action",
+        "value": "Suspend"
+      }
+    },
+    "POST /v2/process/resume": {
+      "method": "PATCH",
+      "path": "/process",
+      "body": {
+        "rule": "action",
+        "value": "Resume"
+      }
+    },
+    "POST /v2/process/terminate": {
+      "method": "DELETE",
+      "path": "/process",
+      "body": {
+        "rule": "none"
+      }
+    },
+    "POST /v2/async-result/cancel": {
+      "method": "PATCH",
+      "path": "/async-result",
+      "body": {
+        "rule": "action",
+        "value": "Cancel"
+      }
+    },
+    "POST /v2/async-result/pause": {
+      "method": "PATCH",
+      "path": "/async-result",
+      "body": {
+        "rule": "action",
+        "value": "Pause"
+      }
+    },
+    "POST /v2/async-result/resume": {
+      "method": "PATCH",
+      "path": "/async-result",
+      "body": {
+        "rule": "action",
+        "value": "Resume"
+      }
+    },
+    "POST /v2/ext-lang-server/start": {
+      "method": "PATCH",
+      "path": "/els",
+      "body": {
+        "rule": "action",
+        "value": "Start"
+      }
+    },
+    "POST /v2/ext-lang-server/stop": {
+      "method": "PATCH",
+      "path": "/els",
+      "body": {
+        "rule": "action",
+        "value": "Stop"
+      }
+    }
+  },
+  "native": {
+    "GET /v2/namespaces": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/global-mappings": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/global-mapping": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/package-mappings": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/package-mapping": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/routine-mappings": "FlightDeck.Native.Namespaces",
+    "GET /v2/namespace/routine-mapping": "FlightDeck.Native.Namespaces"
+  },
+  "withheld": {
+    "PUT /v2/namespace": "namespaceWrite",
+    "DELETE /v2/namespace": "namespaceWrite",
+    "POST /v2/namespace/copy-mappings": "namespaceWrite",
+    "POST /v2/namespace/enable-interop": "namespaceWrite",
+    "PUT /v2/namespace/global-mapping": "namespaceWrite",
+    "DELETE /v2/namespace/global-mapping": "namespaceWrite",
+    "PUT /v2/namespace/package-mapping": "namespaceWrite",
+    "DELETE /v2/namespace/package-mapping": "namespaceWrite",
+    "PUT /v2/namespace/routine-mapping": "namespaceWrite",
+    "DELETE /v2/namespace/routine-mapping": "namespaceWrite",
+    "GET /v2/journal/files": "journal",
+    "GET /v2/journal/file": "journal",
+    "POST /v2/journal/file/records": "journal",
+    "GET /v2/journal/file/record": "journal",
+    "POST /v2/journal/file/integrity-check": "journal",
+    "GET /v2/journal/settings": "journal",
+    "PUT /v2/journal/settings": "journal",
+    "POST /v2/journal/switch-dir": "journal",
+    "POST /v2/journal/switch-file": "journal"
+  },
+  "reasons": {
+    "namespaceWrite": "FlightDeck reads namespaces on this version but does not change them: a native write would copy platform side effects FlightDeck does not control.",
+    "journal": "FlightDeck does not read the journal natively: filtering records by the databases you can read is an authorization decision that belongs to IRIS."
   }
 }
