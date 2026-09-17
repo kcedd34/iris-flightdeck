@@ -164,7 +164,7 @@ Covers UC02 scenarios 1–4 verbatim, plus:
 ## 5. Shell layout and design gates (User Story 5: FR-029 to FR-039, SC-006 to SC-008)
 
 ```bash
-cd frontend && npm run lint && npm run check:tokens && npm run e2e -- --project=shell
+cd frontend && npm run lint && npm run check:tokens && npm run check:dialect && npm run e2e -- --project=shell
 ```
 
 - `check:tokens` fails on any hex, rgb or hsl literal outside `src/theme/tokens.css`, any

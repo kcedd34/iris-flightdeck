@@ -31,7 +31,7 @@
   white-space: nowrap;
 }
 
-.limited {
+.limited-mode {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -43,7 +43,7 @@
   white-space: nowrap;
 }
 
-.limited-mark {
+.limited-mode-mark {
   display: inline-grid;
   place-items: center;
   width: 12px;

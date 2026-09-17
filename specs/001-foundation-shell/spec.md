@@ -335,6 +335,12 @@ width, and check tab strips, empty states, the inspector and the URL.
     available on this IRIS version or edition. Requires IRIS 2026.2."), controls stay visible and
     disabled, and the palette names entity types it could not search. The glareshield MUST show a
     persistent limited-mode indicator (icon and text, with an accessible explanation).
+    *(Aligned 2026-09-17, T109)* The indicator and the home's "not offered" count derive only from
+    the capability map (operations with `available: false`), never from the instance's version:
+    no domain, screen or test code outside the dialect layer, the installer and the declared
+    exceptions may read `dialect`, `apiVersion` or a limited flag. `instance.dialect` and
+    `instance.apiVersion` stay in the session response as diagnostics. A build gate
+    (`npm run check:dialect`) enforces this.
     Privileges always come from the v2 specification.
   - **No SysAdmin API**: sign-in MUST be refused with message 8 naming IRIS 2026.1, plus the
     detected version string. The IRIS session opened by the attempt MUST be ended, and no

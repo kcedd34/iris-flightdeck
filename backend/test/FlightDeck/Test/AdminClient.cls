@@ -1,12 +1,16 @@
 Class FlightDeck.Test.AdminClient Extends %UnitTest.TestCase
 {
 
-Method TestInfoReportsApiV2()
+/// /info answers through the client under the caller's identity (the version it reports is the
+/// dialect layer's concern, tested in FlightDeck.Test.Dialect).
+Method TestInfoReportsCallerIdentity()
 {
 	set sc = ##class(FlightDeck.Admin.Client).Call("GET", "/info", , , .status, .json, .raw)
 	do $$$AssertStatusOK(sc)
 	do $$$AssertEquals(status, 200)
-	do $$$AssertTrue($isobject(json) && (json.result.apiVersion >= 2), "apiVersion >= 2")
+	do $$$AssertTrue($isobject(json) && $isobject(json.result), raw)
+	do $$$AssertEquals(json.result.username, $username)
+	do $$$AssertTrue($isobject(json.result.privileges), "privileges reported")
 }
 
 Method TestCallerStateIsRestored()

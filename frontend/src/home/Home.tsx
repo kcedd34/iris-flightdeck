@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useSession } from "../session/SessionProvider";
+import { useSession, useUnavailableOperations } from "../session/SessionProvider";
 import { DOMAINS } from "../shell/domains";
 import { EmptyState } from "../shell/EmptyState";
 import { Icon } from "../shell/Icon";
@@ -12,6 +12,7 @@ function productLabel(product: string): string {
 /** The initial dashboard of UC01 (FR-036). */
 export function Home() {
   const { session, capabilities } = useSession();
+  const { unavailable } = useUnavailableOperations();
   if (!session) return null;
   const counts = DOMAINS.map((d) => {
     const ops = capabilities.filter((c) => c.domain === d.id);
@@ -39,7 +40,7 @@ export function Home() {
           <span className="field-k">Access</span>
           <span className="field-v num" data-testid="capability-summary">
             {session.capabilitySummary.allowed} of {session.capabilitySummary.total} operations available to you
-            {session.instance.limited ? ` · ${session.capabilitySummary.unavailable} not offered by this IRIS version` : ""}
+            {unavailable > 0 ? ` · ${unavailable} not offered by this IRIS version` : ""}
           </span>
         </div>
       </section>

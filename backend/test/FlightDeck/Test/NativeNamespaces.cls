@@ -1,8 +1,16 @@
-/// Native namespace reads (Constitution I v2.1.0 gap, v1 dialect only). On IRIS 2026.2 every native
-/// answer is compared with the official /v2/namespace operation for the same request; on the v1
-/// dialect the same requests must reach the native provider through FlightDeck.Admin.Client.
+/// Native namespace reads (Constitution I v2.1.0 gap, v1 dialect only). Where the instance offers
+/// the official namespace operations, every native answer is compared with the official one for the
+/// same request; where it does not, the same requests must reach the native provider through
+/// FlightDeck.Admin.Client. Which case applies is read from the capability map, never from a version.
 Class FlightDeck.Test.NativeNamespaces Extends %UnitTest.TestCase
 {
+
+/// Namespace writes are never native, so their availability tells whether the official namespace
+/// operations exist on this instance.
+Method OfficialNamespaceApi() As %Boolean
+{
+	quit ##class(FlightDeck.Admin.Client).Has("PUT /v2/namespace")
+}
 
 /// operationId|query JSON. Covers list, filter, maxRows, item, not found, missing parameters,
 /// the three mapping kinds (list, names, item, unknown namespace).
@@ -45,8 +53,8 @@ Method Comparable(status As %Integer, json As %DynamicObject) As %String
 
 Method TestMatchesOfficialApi()
 {
-	if ##class(FlightDeck.Admin.Client).Limited() {
-		do $$$LogMessage("skipped: no official namespace operations to compare with on the v1 dialect")
+	if '..OfficialNamespaceApi() {
+		do $$$LogMessage("skipped: the instance offers no official namespace operations to compare with")
 		quit
 	}
 	set ptr = 0, compared = 0
@@ -96,11 +104,11 @@ Method TestUnknownOperationIsNotAnswered()
 	do $$$AssertEquals(status, 501, "writes are never native")
 }
 
-/// On v1 the client reaches the provider: available in the map, a list with USER and %SYS.
+/// Without official namespace operations, the client reaches the provider: available in the map, a list with USER and %SYS.
 Method TestReachedThroughClientOnV1()
 {
-	if '##class(FlightDeck.Admin.Client).Limited() {
-		do $$$LogMessage("skipped: the official operations answer on v2")
+	if ..OfficialNamespaceApi() {
+		do $$$LogMessage("skipped: the official namespace operations answer on this instance")
 		quit
 	}
 	do $$$AssertTrue(##class(FlightDeck.Admin.Client).Has("GET /v2/namespaces"))

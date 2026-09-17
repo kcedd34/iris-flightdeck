@@ -121,20 +121,20 @@ They were fixed and the run repeated (the table above).
     writes withheld.
   - Journal: deliberately not native (authorization stays in IRIS).
 
-### Test matrix, 2026-09-17 (fresh compose installs of the final code, after T101)
+### Test matrix, 2026-09-17 (fresh compose installs, after T109 dialect boundary)
 
 | Install | Backend | Playwright | Other gates |
 |---|---|---|---|
-| IRIS CE 2026.2 (`2026.2-zpm`, port 52780) | 56/56 (all classes; v1-only tests log a skip) | 24 passed, 8 skipped (`limited` project skips on v2) | safe-mode enforcement ok |
-| IRIS CE 2026.1 (`2026.1-zpm`, port 52791, limited mode) | reduced set 29/29: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5, `NativeNamespaces` 4 | `limited` project 8/8 | install and demo complete on v1 |
+| IRIS CE 2026.2 (`2026.2-zpm`, port 52780) | 56/56 (all classes; tests without their subject log a skip) | 24 passed, 8 skipped (`limited` skips when the map has no unavailable operation) | safe-mode enforcement ok |
+| IRIS CE 2026.1 (`2026.1-zpm`, port 52791, limited mode) | 34/34: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5, `NativeNamespaces` 4, `AdminClient` 5 (now version-agnostic) | `limited` project 8/8 | install and demo complete on v1 |
 
-One test guard was corrected during this run. `NativeDatabases.TestCodeDatabaseResourceMatchesApi`
-compared against the official lookup whenever `GET /v2/namespace` was available, which on v1 is now
-true through the native provider, but `/v2/database-dir` is not. The guard now requires the database
-operations; the installer code already did. It was rerun on both installs: 5/5.
+**Boundary gate.** `npm run check:dialect` passes with 5 declared exceptions. It was checked against
+probe files: it flagged exactly the 4 real checks, `instance.dialect === "v1"`, `o["apiVersion"]`,
+`%Get("apiVersion")` and `Client.Limited()`. It ignored `dialect`/`limited` in comments and in UI
+text ("Limited mode").
 
 Static gates on the same tree: `check-generated`, `check-dist`, verification script unit tests,
-`lint`, `check:tokens`, `contrast`, `vitest` (6), `build`.
+`lint`, `check:tokens`, `check:dialect`, `contrast`, `vitest` (6), `build`.
 
 Findings while installing on 2026.1:
 - **The IPM `SystemRequirements` pin (`>=2026.2`) refused the install**; it is now `>=2026.1`.

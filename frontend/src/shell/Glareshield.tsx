@@ -1,4 +1,4 @@
-import { useSession } from "../session/SessionProvider";
+import { useSession, useUnavailableOperations } from "../session/SessionProvider";
 import { LimitedModeIndicator } from "./LimitedModeIndicator";
 import { SafeModeIndicator } from "./SafeModeIndicator";
 import { ThemeToggle } from "./ThemeToggle";
@@ -13,6 +13,7 @@ function productLabel(product: string): string {
 /** 44px glareshield: identity, vitals, theme, safe mode, user (design §4, FR-029). */
 export function Glareshield() {
   const { session, signOut } = useSession();
+  const { unavailable, total } = useUnavailableOperations();
   if (!session) return null;
   const { instance } = session;
   return (
@@ -22,7 +23,7 @@ export function Glareshield() {
         {productLabel(instance.product)} {instance.version}
         {instance.edition === "Community" ? " CE" : ""} · {instance.namespace}
       </span>
-      {instance.limited && <LimitedModeIndicator unavailable={session.capabilitySummary.unavailable} total={session.capabilitySummary.total} />}
+      {unavailable > 0 && <LimitedModeIndicator unavailable={unavailable} total={total} />}
       <Vitals />
       <ThemeToggle />
       <SafeModeIndicator />

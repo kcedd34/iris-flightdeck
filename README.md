@@ -32,7 +32,7 @@ Related idea on the InterSystems Ideas Portal: _link pending publication by the 
 - **IRIS 2026.2 or later for the full portal.** FlightDeck uses SysAdmin API **v2**, which first
   ships in IRIS 2026.2, so the install pins the `2026.2` images for you.
 - **IRIS 2026.1 runs in limited mode.** That release (still the `latest` tag of the Community
-  images) only has API v1. FlightDeck translates what v1 offers, shows a **Limited · API v1**
+  images) only has API v1. FlightDeck translates what v1 offers, shows a **Limited**
   indicator at the top, and disables the 64 operations it cannot offer (databases, ECP, namespace
   changes, the journal and a few more), each with its reason. Namespaces can still be browsed.
 
@@ -180,7 +180,7 @@ inconclusive, `1` otherwise, `2` for a usage error. The committed reports and fi
   inspect it.
 - **Sign-in says "Not available on this IRIS version or edition. Requires IRIS 2026.1."** The
   instance has no SysAdmin API. Use the pinned images or upgrade.
-- **The top bar shows "Limited · API v1".** The instance is IRIS 2026.1 (for example a `latest`
+- **The top bar shows "Limited".** The instance is IRIS 2026.1 (for example a `latest`
   Community image). Disabled actions say "Requires IRIS 2026.2"; use the pinned images for the
   full portal.
 - **Sign-in says "Invalid credentials".** The default account is `_SYSTEM` / `SYS` on the Docker
@@ -193,7 +193,7 @@ inconclusive, `1` otherwise, `2` for a usage error. The committed reports and fi
 | Area | Command |
 |---|---|
 | Frontend dev server (proxies the API to the Docker install) | `cd frontend && npm ci && npm run dev`, then open http://localhost:5173/flightdeck/ |
-| Frontend checks | `npm run lint && npm run check:tokens && npm run contrast && npm run test` |
+| Frontend checks | `npm run lint && npm run check:tokens && npm run check:dialect && npm run contrast && npm run test` |
 | End-to-end tests (Docker install running) | `npx playwright install chromium && npm run e2e` |
 | Backend unit tests (inside the container) | `zpm "iris-flightdeck test"` |
 | Rebuild the committed frontend bundle | `cd frontend && npm run build` (verify with `scripts/build/check-dist.sh`) |

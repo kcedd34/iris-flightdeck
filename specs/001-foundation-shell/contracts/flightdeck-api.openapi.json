@@ -148,8 +148,7 @@
               "serverVersion",
               "apiVersion",
               "namespace",
-              "dialect",
-              "limited"
+              "dialect"
             ],
             "properties": {
               "product": {
@@ -166,7 +165,8 @@
               },
               "apiVersion": {
                 "type": "number",
-                "example": 2
+                "example": 2,
+                "description": "Diagnostic only, as reported by the instance's /info. Clients MUST NOT decide anything from it."
               },
               "namespace": {
                 "type": "string",
@@ -184,11 +184,7 @@
                   "v2",
                   "v1"
                 ],
-                "description": "SysAdmin API dialect selected once per session. 'v1' is IRIS 2026.1 (FR-012a limited mode). An instance without any SysAdmin API is refused at sign-in."
-              },
-              "limited": {
-                "type": "boolean",
-                "description": "True when some operations have no route on the instance; the glareshield shows the limited-mode indicator and those operations are unavailable in the capability map."
+                "description": "Diagnostic only: the SysAdmin API dialect selected once per session ('v1' is IRIS 2026.1). Clients MUST NOT decide anything from it; operation availability comes from CapabilityEntry.available (FR-012a). An instance without any SysAdmin API is refused at sign-in."
               }
             }
           },
@@ -223,7 +219,7 @@
               },
               "unavailable": {
                 "type": "integer",
-                "description": "Operations the instance's dialect does not offer (0 on v2)."
+                "description": "Operations the instance does not offer (CapabilityEntry.available false). Limited mode is shown while this is above 0."
               },
               "total": {
                 "type": "integer",

@@ -13,24 +13,39 @@ const VERSION_MESSAGE = "Not available on this IRIS version or edition. Requires
 test.beforeEach(async ({ page }) => {
   const response = page.waitForResponse((r) => r.url().includes("/api/flightdeck/v1/session") && r.request().method() === "POST");
   await signIn(page);
-  const session = (await (await response).json()) as { instance: { dialect: string } };
-  test.skip(session.instance.dialect !== "v1", "limited mode needs an IRIS 2026.1 install");
+  // Decided by the capability map, never by the instance's version: limited mode means the map
+  // holds operations the instance does not offer.
+  const session = (await (await response).json()) as { capabilitySummary: { unavailable: number } };
+  test.skip(session.capabilitySummary.unavailable === 0, "the instance offers every operation: nothing is limited");
 });
 
-test("sign-in on IRIS 2026.1 selects the v1 dialect and enters limited mode instead of refusing", async ({ page }) => {
-  const again = await page.evaluate(async () => {
-    const r = await fetch("/api/flightdeck/v1/session", { headers: { "X-FlightDeck-Tab": "e2e-limited" } });
-    return { status: r.status, body: (await r.json()) as { instance: { dialect: string; limited: boolean; apiVersion: number }; capabilitySummary: { unavailable: number; total: number } } };
+type Entry = { operationId: string; available: boolean; reason: string | null };
+
+test("sign-in succeeds in limited mode: the capability map marks what the instance does not offer, with reasons", async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const headers = { "X-FlightDeck-Tab": "e2e-limited" };
+    const session = await fetch("/api/flightdeck/v1/session", { headers });
+    const map = await fetch("/api/flightdeck/v1/session/capabilities", { headers });
+    return {
+      status: session.status,
+      summary: ((await session.json()) as { capabilitySummary: { unavailable: number; total: number } }).capabilitySummary,
+      entries: ((await map.json()) as { entries: Entry[] }).entries,
+    };
   });
-  expect(again.status).toBe(200);
-  expect(again.body.instance).toMatchObject({ dialect: "v1", limited: true, apiVersion: 1 });
-  expect(again.body.capabilitySummary).toMatchObject({ unavailable: 64, total: 273 });
+  expect(result.status).toBe(200);
+  expect(result.summary).toMatchObject({ unavailable: 64, total: 273 });
+  expect(result.entries.filter((e) => !e.available)).toHaveLength(64);
+  const byId = new Map(result.entries.map((e) => [e.operationId, e]));
+  expect(byId.get("GET /v2/databases")).toMatchObject({ available: false, reason: VERSION_MESSAGE });
+  expect(byId.get("GET /v2/namespaces")).toMatchObject({ available: true });
+  expect(byId.get("POST /v2/task/suspend")).toMatchObject({ available: true });
 });
 
 test("the glareshield shows a persistent limited-mode indicator, with icon and text and an accessible explanation", async ({ page }) => {
   const indicator = page.getByTestId("glareshield").getByTestId("limited-mode-indicator");
   await expect(indicator).toBeVisible();
-  await expect(indicator).toContainText("Limited · API v1");
+  await expect(indicator).toContainText("Limited");
+  await expect(indicator).not.toContainText("v1");
   await expect(indicator).toHaveAccessibleDescription(/64 of 273 operations are not offered by this IRIS version/);
   for (const route of ["security/tls", "system", "logs"]) {
     await page.goto(route);

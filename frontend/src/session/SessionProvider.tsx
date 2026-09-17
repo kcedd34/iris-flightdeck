@@ -115,6 +115,15 @@ export function useSession(): SessionContextValue {
   return value;
 }
 
+/**
+ * Operations the instance does not offer, from the capability map (`available: false`). The only
+ * source for limited mode in the UI: screens never ask which API version the instance speaks.
+ */
+export function useUnavailableOperations(): { unavailable: number; total: number } {
+  const { capabilities } = useSession();
+  return { unavailable: capabilities.filter((c) => !c.available).length, total: capabilities.length };
+}
+
 export function useCapability(operationId: string): CapabilityEntry | undefined {
   return useSession().capabilities.find((c) => c.operationId === operationId);
 }

@@ -10,12 +10,8 @@ export interface Session {
     product: string;
     version: string;
     serverVersion: string;
-    apiVersion: number;
     edition: string;
     namespace: string;
-    /** SysAdmin API dialect selected once per session; "v1" is IRIS 2026.1 limited mode (FR-012a). */
-    dialect: "v2" | "v1";
-    limited: boolean;
   };
   authPath: "in_process";
   privileges: Record<string, { use: boolean }>;

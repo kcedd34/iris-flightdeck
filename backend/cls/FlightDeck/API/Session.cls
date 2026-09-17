@@ -73,14 +73,12 @@ ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 			"apiVersion": (+info.apiVersion),
 			"edition": (edition),
 			"namespace": ($namespace),
-			"dialect": (##class(FlightDeck.Admin.Client).Dialect()),
-			"limited": (##class(FlightDeck.Admin.Client).Limited())
+			"dialect": (##class(FlightDeck.Admin.Client).Dialect())
 		},
 		"authPath": "in_process",
 		"privileges": (privileges),
 		"capabilitySummary": (##class(FlightDeck.Capability.Map).Summary(entries))
 	}
-	do session.instance.%Set("limited", ##class(FlightDeck.Admin.Client).Limited(), "boolean")
 	quit session
 }
 

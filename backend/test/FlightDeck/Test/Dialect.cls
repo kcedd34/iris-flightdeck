@@ -88,10 +88,11 @@ Method TestSessionReportsDialect()
 	set session = ##class(FlightDeck.API.Session).Build(.error)
 	do $$$AssertNotTrue($isobject(error), "signed in, not refused: "_$select($isobject(error):error.%ToJSON(), 1:""))
 	quit:'$isobject(session)
+	// dialect and apiVersion are diagnostics; limited mode is carried only by the capability map.
 	do $$$AssertEquals(session.instance.dialect, ##class(FlightDeck.Admin.Client).Dialect())
-	do $$$AssertEquals(session.instance.limited, ##class(FlightDeck.Admin.Client).Limited())
 	do $$$AssertEquals(session.instance.apiVersion, ..InstanceApiVersion())
-	do $$$AssertEquals(session.instance.%GetTypeOf("limited"), "boolean")
+	do $$$AssertNotTrue(session.instance.%IsDefined("limited"), "no limited flag in the session")
+	do $$$AssertEquals(session.capabilitySummary.unavailable > 0, ##class(FlightDeck.Admin.Client).Limited(), "unavailable operations exist exactly in limited mode")
 }
 
 Method TestPaletteReportsUnavailableGroups()
