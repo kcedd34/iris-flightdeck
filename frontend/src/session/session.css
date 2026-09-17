@@ -1,0 +1,99 @@
+.signin {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-canvas);
+}
+
+.signin-panel {
+  width: 360px;
+  max-width: 92vw;
+  padding: 24px;
+  background: var(--surface-panel);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--r-structure);
+}
+
+.signin-brand {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.signin-sub {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.credentials {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.credentials-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Message in text-primary with the warning glyph: state-warning text on surface-float is below
+   4.5:1 in the dark theme (scripts/contrast.mjs), and color is never the only carrier. */
+.credentials-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.credentials-error .glyph {
+  margin-top: 4px;
+  color: var(--state-warning);
+}
+
+.credentials-detail {
+  color: var(--text-secondary);
+  font-size: 12px;
+  word-break: break-word;
+  margin-top: 4px;
+}
+
+.credentials-submit {
+  align-self: flex-start;
+  padding: 6px 16px;
+  font-size: 13px;
+}
+
+.reauth {
+  position: fixed;
+  top: 18vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 380px;
+  max-width: 92vw;
+  padding: 20px;
+  z-index: 60;
+}
+
+.reauth-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.reauth-desc {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.reauth-signout {
+  margin-top: 12px;
+}

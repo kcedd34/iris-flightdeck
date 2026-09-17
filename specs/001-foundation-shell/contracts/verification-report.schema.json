@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flightdeck/verification-report/1",
+  "title": "FlightDeck day-1 verification report",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "target", "probes", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "target": {
+      "type": "object",
+      "required": ["baseUrl", "product", "serverVersion", "apiVersion", "label"],
+      "properties": {
+        "baseUrl": { "type": "string", "not": { "pattern": "@" } },
+        "label": { "type": "string" },
+        "product": { "type": "string" },
+        "serverVersion": { "type": ["string", "null"] },
+        "apiVersion": { "type": ["number", "null"] }
+      }
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/probe" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["counts", "exitCode"],
+      "properties": {
+        "counts": {
+          "type": "object",
+          "required": ["confirmed_present", "confirmed_absent", "inconclusive"],
+          "properties": {
+            "confirmed_present": { "type": "integer", "minimum": 0 },
+            "confirmed_absent": { "type": "integer", "minimum": 0 },
+            "inconclusive": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "exitCode": { "enum": [0, 1] }
+      }
+    }
+  },
+  "$defs": {
+    "classification": { "enum": ["confirmed_present", "confirmed_absent", "inconclusive"] },
+    "probe": {
+      "type": "object",
+      "required": ["id", "key", "title", "classification", "finding", "raw", "durationMs"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "key": { "enum": ["admin_api", "auth_path", "resource_shapes", "async_db_metrics", "wallet", "mgmnt_api", "log_sources", "audit_enabled"] },
+        "title": { "type": "string" },
+        "classification": { "$ref": "#/$defs/classification" },
+        "finding": { "type": "object" },
+        "raw": { "type": ["string", "null"], "maxLength": 8192 },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "candidates": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["key", "classification", "raw", "notes"],
+            "properties": {
+              "key": { "enum": ["in_process", "jwt", "loopback_proxy"] },
+              "classification": { "$ref": "#/$defs/classification" },
+              "raw": { "type": ["string", "null"] },
+              "notes": { "type": "string" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "classification": { "not": { "const": "confirmed_present" } } } },
+          "then": { "properties": { "raw": { "type": "string", "minLength": 1 } } }
+        },
+        {
+          "if": { "properties": { "id": { "const": 2 } } },
+          "then": { "required": ["candidates"] }
+        }
+      ]
+    }
+  }
+}

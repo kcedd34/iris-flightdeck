@@ -1,0 +1,54 @@
+.home {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 960px;
+}
+
+.home-identity {
+  background: var(--surface-panel);
+  border: 1px solid var(--line-hairline);
+  padding: 12px 16px;
+}
+
+.home-domains {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line-hairline);
+  border-left: 1px solid var(--line-hairline);
+}
+
+.home-domain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-right: 1px solid var(--line-hairline);
+  border-bottom: 1px solid var(--line-hairline);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--t-control) var(--ease);
+}
+
+.home-domain:hover {
+  color: var(--text-primary);
+}
+
+.home-domain-name {
+  color: var(--text-primary);
+}
+
+.home-domain-count {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.home-attention .empty {
+  margin: 0;
+  text-align: left;
+  padding: 16px 0;
+}

@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-17T00:10:13Z",
+  "target": {
+    "baseUrl": "http://localhost:52791",
+    "label": "iris-community-2026.2",
+    "product": "iris",
+    "serverVersion": "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.2 (Build 221U) Fri Jun 26 2026 09:58:52 EDT",
+    "apiVersion": 2
+  },
+  "probes": [
+    {
+      "id": 1,
+      "key": "admin_api",
+      "title": "SysAdmin API exists and responds, and the IRIS version",
+      "classification": "confirmed_present",
+      "finding": {
+        "apiVersion": 2,
+        "serverVersion": "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.2 (Build 221U) Fri Jun 26 2026 09:58:52 EDT",
+        "product": "iris"
+      },
+      "raw": null,
+      "durationMs": 102
+    },
+    {
+      "id": 2,
+      "key": "auth_path",
+      "title": "Authentication path that works without storing credentials",
+      "classification": "confirmed_present",
+      "finding": {
+        "selected": "in_process"
+      },
+      "raw": null,
+      "durationMs": 3896,
+      "candidates": [
+        {
+          "key": "in_process",
+          "classification": "confirmed_present",
+          "raw": null,
+          "notes": "Cookie-only request reached the official API under the signed-in user; no credential kept"
+        },
+        {
+          "key": "jwt",
+          "classification": "confirmed_present",
+          "raw": null,
+          "notes": "Present, but refresh requires holding a refresh token (a credential); not selected by design"
+        },
+        {
+          "key": "loopback_proxy",
+          "classification": "confirmed_absent",
+          "raw": "Cookie-only official call: HTTP 401\n",
+          "notes": "Official API did not accept the forwarded session"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "resource_shapes",
+      "title": "Real shape of system-resources statistics and shared-memory usage",
+      "classification": "confirmed_present",
+      "finding": {
+        "systemResources": {
+          "sampleKeys": [
+            "Aseize",
+            "Bseize",
+            "BusySet",
+            "Name",
+            "Nseize",
+            "Seize"
+          ],
+          "rows": 56,
+          "matchesSpec": true
+        },
+        "sharedMemory": {
+          "sampleKeys": [
+            "AllUsed",
+            "Description",
+            "GSTUsed",
+            "SMHAllocated",
+            "SMHAvailable",
+            "SMHUsed",
+            "SMTUsed"
+          ],
+          "rows": 28,
+          "matchesSpec": true
+        }
+      },
+      "raw": null,
+      "durationMs": 38
+    },
+    {
+      "id": 4,
+      "key": "async_db_metrics",
+      "title": "Asynchronous database-metrics cycle",
+      "classification": "confirmed_present",
+      "finding": {
+        "directory": "/usr/irissys/mgr/user/",
+        "taskStarted": true,
+        "startStatus": 202,
+        "pollCount": 1,
+        "latencyMs": 25,
+        "resultKeys": [
+          "AvailableSpace",
+          "BlockSize",
+          "Blocks",
+          "DiskFree",
+          "Encrypted",
+          "EncryptionKeyID",
+          "EndFree",
+          "ExpansionSize",
+          "Full",
+          "LastExpansionTime",
+          "MaxSize",
+          "MirrorDBName",
+          "MirrorFailoverDB",
+          "MirrorSetName",
+          "Mirrored",
+          "Mounted",
+          "ReadOnlyReason",
+          "SFN",
+          "Size"
+        ],
+        "status": "",
+        "sample": {
+          "Size": 11,
+          "ExpansionSize": 0,
+          "MaxSize": 0,
+          "ReadOnlyReason": "",
+          "EncryptionKeyID": "",
+          "BlockSize": 8192,
+          "Blocks": 1408,
+          "AvailableSpace": 10,
+          "DiskFree": "799.42GB",
+          "EndFree": 9,
+          "LastExpansionTime": "2026-09-17 00:10:06",
+          "MirrorSetName": "",
+          "MirrorDBName": "",
+          "SFN": 9,
+          "Mirrored": false,
+          "Encrypted": false,
+          "Full": false,
+          "Mounted": true,
+          "MirrorFailoverDB": false
+        }
+      },
+      "raw": null,
+      "durationMs": 46
+    },
+    {
+      "id": 5,
+      "key": "wallet",
+      "title": "Wallet endpoints respond",
+      "classification": "confirmed_present",
+      "finding": {
+        "collectionsStatus": 200
+      },
+      "raw": null,
+      "durationMs": 35
+    },
+    {
+      "id": 6,
+      "key": "mgmnt_api",
+      "title": "REST management/discovery API is available",
+      "classification": "confirmed_present",
+      "finding": {
+        "serviceCount": 9
+      },
+      "raw": null,
+      "durationMs": 29
+    },
+    {
+      "id": 7,
+      "key": "log_sources",
+      "title": "messages.log, alerts and interoperability event log locations",
+      "classification": "confirmed_present",
+      "finding": {
+        "messagesLog": {
+          "path": "/usr/irissys/mgr/messages.log",
+          "exists": 1,
+          "sampleLine": "09/17/26-00:10:06:833 (654) 0 [Utility.Event] Starting TASKMGR"
+        },
+        "alerts": {
+          "path": "/usr/irissys/mgr/alerts.log",
+          "exists": 0
+        },
+        "interop": {
+          "queryAvailable": 1,
+          "namespacesWithProductions": [
+            "USER"
+          ]
+        }
+      },
+      "raw": null,
+      "durationMs": 1948
+    },
+    {
+      "id": 8,
+      "key": "audit_enabled",
+      "title": "Whether auditing is enabled",
+      "classification": "confirmed_present",
+      "finding": {
+        "enabled": true,
+        "result": {
+          "Enabled": true
+        }
+      },
+      "raw": null,
+      "durationMs": 10
+    }
+  ],
+  "summary": {
+    "counts": {
+      "confirmed_present": 8,
+      "confirmed_absent": 0,
+      "inconclusive": 0
+    },
+    "exitCode": 0
+  }
+}

@@ -1,0 +1,137 @@
+/* Global element styles. Values come from tokens.css only. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--state-selected);
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 0 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: color var(--t-control) var(--ease), border-color var(--t-control) var(--ease);
+}
+
+.btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+/* Achromatic primary action: text-primary fill, canvas text (design §2.3). */
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--surface-canvas);
+  border-color: var(--text-primary);
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  color: var(--surface-canvas);
+  border-color: var(--text-primary);
+}
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  background: none;
+  color: var(--text-muted);
+  border-color: var(--line-strong);
+  cursor: not-allowed;
+  font-weight: 400;
+}
+
+.field-input {
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  width: 100%;
+}
+
+.glyph {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Floating layers: the only surfaces with elevation. One shadow definition. */
+.float {
+  background: var(--surface-float);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-float);
+  box-shadow: var(--shadow);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  z-index: 50;
+}

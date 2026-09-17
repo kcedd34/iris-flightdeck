@@ -1,0 +1,29 @@
+# Node / frontend
+node_modules/
+frontend/test-results/
+frontend/playwright-report/
+frontend/.vite/
+coverage/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Logs, env, editors, OS
+*.log
+.env*
+!.env.example
+.vscode/
+.idea/
+*.swp
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Local scratch
+scratch/
+.claude/state/
+
+# TypeScript incremental build info
+*.tsbuildinfo

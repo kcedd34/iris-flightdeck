@@ -1,0 +1,20 @@
+# FlightDeck for InterSystems IRIS. Usage: docker compose up -d
+#   Port conflict:      FLIGHTDECK_PORT=52790 docker compose up -d
+#   IRIS for Health:    IRIS_IMAGE=intersystemsdc/irishealth-community:2026.2-zpm docker compose up -d --build
+services:
+  iris:
+    build:
+      context: .
+      args:
+        IRIS_IMAGE: ${IRIS_IMAGE:-intersystemsdc/iris-community:2026.2-zpm}
+    image: iris-flightdeck:local
+    environment:
+      FLIGHTDECK_PORT: ${FLIGHTDECK_PORT:-52780}
+    ports:
+      - "${FLIGHTDECK_PORT:-52780}:52773"
+    volumes:
+      - flightdeck-data:/durable
+    restart: unless-stopped
+
+volumes:
+  flightdeck-data:

@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlightDeck — design prototype</title>
+<!-- Protótipo: fontes via CDN apenas aqui. No produto, IBM Plex é auto-hospedada (SPEC Seção 3.2). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* superfícies */
+  --surface-canvas:#101619;
+  --surface-panel:#171F24;
+  --surface-float:#1E282E;
+  --line-hairline:#2A363D;
+  --line-strong:#3A4A53;
+  --text-primary:#E6EDF0;
+  --text-secondary:#93A3AC;
+  --text-muted:#5E6E77;
+  /* semânticas — significado fixo */
+  --state-actual:#5FBF8B;
+  --state-commanded:#DD7AC8;
+  --state-caution:#E8B04B;
+  --state-warning:#E5574E;
+  --state-selected:#6CC7D9;
+  /* geometria */
+  --rail:56px;
+  --glare:44px;
+  --inspector:420px;
+  --r-control:2px;
+  --r-float:6px;
+  --ease:cubic-bezier(.2,0,0,1);
+  --scrim:rgba(6,10,12,.6);
+  --shadow:0 16px 48px rgba(0,0,0,.55);
+  --flash:.10;
+}
+html[data-theme="light"]{
+  --surface-canvas:#E9EDEF;
+  --surface-panel:#F6F8F9;
+  --surface-float:#FFFFFF;
+  --line-hairline:#D2DADE;
+  --line-strong:#B4C0C6;
+  --text-primary:#111A1F;
+  --text-secondary:#4A5B64;
+  --text-muted:#7B8A92;
+  /* variantes próprias: as do tema escuro falham contraste sobre fundo claro */
+  --state-actual:#1E7A4F;
+  --state-commanded:#A8329B;
+  --state-caution:#8A5A00;
+  --state-warning:#C0342B;
+  --state-selected:#0E6E80;
+  --scrim:rgba(30,45,52,.34);
+  --shadow:0 16px 48px rgba(17,26,31,.18);
+  --flash:.14;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--surface-canvas);
+  color:var(--text-primary);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13px;line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--state-selected);outline-offset:2px}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+/* ─── GLARESHIELD ─────────────────────────────────────────── */
+.glare{
+  height:var(--glare);display:flex;align-items:center;gap:24px;
+  padding:0 16px;background:var(--surface-panel);
+  border-bottom:1px solid var(--line-hairline);
+  position:relative;z-index:30;
+}
+.glare .brand{font-weight:600;letter-spacing:.2px}
+.glare .inst{color:var(--text-secondary);font-size:12px}
+.glare .vitals{display:flex;gap:18px;margin-left:auto;margin-right:8px}
+.vital{display:flex;align-items:baseline;gap:6px}
+.vital .k{color:var(--text-muted);font-size:12px}
+.vital .v{font-size:13px;font-weight:500}
+.mode{
+  display:flex;align-items:center;gap:7px;
+  padding:4px 10px;border-radius:var(--r-control);
+  border:1px solid var(--line-strong);color:var(--text-secondary);
+  font-size:12px;transition:color 90ms var(--ease),border-color 90ms var(--ease);
+}
+.mode .dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted)}
+body.live .mode{color:var(--state-warning);border-color:var(--state-warning)}
+body.live .mode .dot{background:var(--state-warning)}
+.livebar{
+  position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:var(--state-warning);transform:scaleX(0);transform-origin:left;
+  transition:transform 160ms var(--ease);
+}
+body.live .livebar{transform:scaleX(1)}
+.user{color:var(--text-secondary);font-size:12px;margin-left:12px}
+
+/* ─── SHELL ───────────────────────────────────────────────── */
+.shell{display:flex;height:calc(100vh - var(--glare))}
+
+/* ─── RAIL ────────────────────────────────────────────────── */
+.rail{
+  width:var(--rail);flex:0 0 var(--rail);background:var(--surface-panel);
+  border-right:1px solid var(--line-hairline);
+  display:flex;flex-direction:column;align-items:center;padding-top:8px;gap:2px;
+}
+.rail button{
+  width:40px;height:40px;display:grid;place-items:center;position:relative;
+  color:var(--text-muted);border-radius:var(--r-control);
+  transition:color 90ms var(--ease);
+}
+.rail button:hover{color:var(--text-secondary)}
+.rail button[aria-current="page"]{color:var(--text-primary)}
+.rail button[aria-current="page"]::before{
+  content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:2px;
+  background:var(--state-selected);
+}
+.rail .tip{
+  position:absolute;left:46px;white-space:nowrap;background:var(--surface-float);
+  border:1px solid var(--line-strong);border-radius:var(--r-float);
+  padding:4px 8px;font-size:12px;color:var(--text-primary);
+  opacity:0;pointer-events:none;transition:opacity 90ms var(--ease);z-index:40;
+}
+.rail button:hover .tip{opacity:1}
+
+/* ─── WORK AREA ───────────────────────────────────────────── */
+.work{flex:1;display:flex;flex-direction:column;min-width:0}
+.workhead{
+  height:48px;display:flex;align-items:center;gap:12px;padding:0 16px;
+  border-bottom:1px solid var(--line-hairline);
+}
+.workhead h1{font-size:18px;font-weight:500}
+.workhead .count{color:var(--text-muted);font-size:12px}
+.workhead .right{margin-left:auto;display:flex;gap:8px}
+.btn{
+  padding:5px 11px;border:1px solid var(--line-strong);border-radius:var(--r-control);
+  color:var(--text-secondary);font-size:12px;transition:color 90ms var(--ease),border-color 90ms var(--ease);
+}
+.btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.btn-primary{background:var(--text-primary);color:var(--surface-canvas);border-color:var(--text-primary);font-weight:500}
+.btn-primary[disabled]{background:none;color:var(--text-muted);border-color:var(--line-strong);cursor:not-allowed;font-weight:400}
+.view{flex:1;display:none;min-height:0}
+.view.on{display:flex}
+
+/* ─── INSTRUMENTOS ────────────────────────────────────────── */
+.sys{flex-direction:column;width:100%;min-height:0}
+.cluster{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line-hairline)}
+.inst{padding:24px 24px 20px;border-right:1px solid var(--line-hairline)}
+.inst:last-child{border-right:none}
+.inst .k{color:var(--text-secondary);font-size:12px;margin-bottom:12px}
+.inst .row{display:flex;align-items:flex-end;gap:16px}
+.inst .readout{display:flex;align-items:baseline;gap:4px}
+.inst .val{font-size:40px;font-weight:500;line-height:1;transition:color 120ms var(--ease)}
+.inst .unit{font-size:12px;color:var(--text-secondary)}
+.inst canvas{flex:1;height:44px;display:block}
+.inst .foot{margin-top:10px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;height:16px}
+.inst.caution .val{color:var(--state-caution)}
+.inst.warning .val{color:var(--state-warning)}
+.inst.caution .foot{color:var(--state-caution)}
+.glyph{width:10px;height:10px;flex:0 0 10px}
+
+.proc{flex:1;display:flex;flex-direction:column;min-height:0}
+.proc .bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line-hairline)}
+.proc .bar .t{color:var(--text-secondary);font-size:12px}
+.tablewrap{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  text-align:left;font-weight:400;font-size:12px;color:var(--text-muted);
+  padding:8px 16px;background:var(--surface-panel);position:sticky;top:0;
+  border-bottom:1px solid var(--line-hairline);
+}
+th.r,td.r{text-align:right}
+td{padding:7px 16px;border-bottom:1px solid var(--line-hairline);color:var(--text-secondary)}
+tr:hover td{background:var(--surface-panel)}
+td.pid{color:var(--text-primary)}
+
+/* ─── LISTA + INSPETOR ────────────────────────────────────── */
+.list{flex:1;min-width:0;overflow:auto;border-right:1px solid var(--line-hairline)}
+.item{
+  display:flex;align-items:center;gap:12px;padding:11px 16px;
+  border-bottom:1px solid var(--line-hairline);cursor:pointer;width:100%;text-align:left;
+}
+.item:hover{background:var(--surface-panel)}
+.item[aria-selected="true"]{background:var(--surface-panel);box-shadow:inset 2px 0 0 var(--state-selected)}
+.item .nm{color:var(--text-primary)}
+.item .meta{color:var(--text-muted);font-size:12px;margin-left:auto}
+.inspector{
+  width:var(--inspector);flex:0 0 var(--inspector);
+  background:var(--surface-panel);overflow:auto;padding:20px 20px 24px;
+}
+.inspector h2{font-size:18px;font-weight:500;margin-bottom:4px}
+.inspector .sub{color:var(--text-secondary);font-size:12px;margin-bottom:20px}
+.field{display:flex;gap:12px;padding:6px 0;font-size:13px}
+.field .k{width:96px;flex:0 0 96px;color:var(--text-muted)}
+.field .v{color:var(--text-primary);min-width:0;word-break:break-word}
+.sect{margin-top:22px;padding-top:14px;border-top:1px solid var(--line-hairline)}
+.sect .h{color:var(--text-secondary);font-size:12px;margin-bottom:10px}
+.link{
+  display:flex;align-items:center;gap:8px;padding:6px 0;width:100%;text-align:left;
+  color:var(--text-secondary);font-size:13px;
+}
+.link:hover{color:var(--state-selected)}
+.link .c{color:var(--text-primary);font-variant-numeric:tabular-nums}
+.actions{margin-top:24px;display:flex;gap:8px}
+
+/* ─── ESTADO VAZIO ────────────────────────────────────────── */
+.empty{margin:auto;text-align:center;max-width:380px;padding:40px}
+.empty .t{color:var(--text-primary);font-size:15px;margin-bottom:8px}
+.empty .d{color:var(--text-muted);font-size:13px;line-height:1.6;margin-bottom:16px}
+
+/* ─── CAMADAS FLUTUANTES ──────────────────────────────────── */
+.scrim{position:fixed;inset:0;background:var(--scrim);display:none;z-index:50}
+.scrim.on{display:block}
+.float{
+  background:var(--surface-float);border:1px solid var(--line-strong);
+  border-radius:var(--r-float);box-shadow:var(--shadow);
+}
+
+/* paleta */
+.palette{position:absolute;top:14vh;left:50%;transform:translateX(-50%);width:600px;max-width:92vw;overflow:hidden}
+.palette input{
+  width:100%;background:none;border:none;padding:15px 16px;color:var(--text-primary);
+  font:15px/1.4 "IBM Plex Sans",sans-serif;border-bottom:1px solid var(--line-hairline);
+}
+.palette input::placeholder{color:var(--text-muted)}
+.palette input:focus{outline:none}
+.pres{max-height:44vh;overflow:auto;padding:6px 0}
+.pgroup{color:var(--text-muted);font-size:12px;padding:8px 16px 4px}
+.prow{display:flex;align-items:center;gap:10px;padding:8px 16px;width:100%;text-align:left;color:var(--text-secondary)}
+.prow[data-active="true"]{background:var(--surface-panel);color:var(--text-primary)}
+.prow .ctx{margin-left:auto;font-size:12px;color:var(--text-muted)}
+.prow .lock{color:var(--state-caution);font-size:12px}
+.phint{display:flex;gap:16px;padding:9px 16px;border-top:1px solid var(--line-hairline);color:var(--text-muted);font-size:12px}
+kbd{font-family:"IBM Plex Mono",monospace;font-size:11px;border:1px solid var(--line-strong);border-radius:2px;padding:0 4px}
+
+/* dry-run */
+.dialog{position:absolute;top:12vh;left:50%;transform:translateX(-50%);width:720px;max-width:94vw;overflow:hidden}
+.dhead{padding:16px 20px;border-bottom:1px solid var(--line-hairline)}
+.dhead .t{font-size:15px}
+.dhead .s{color:var(--text-muted);font-size:12px;margin-top:3px}
+.diff{padding:6px 0}
+.dcols{display:grid;grid-template-columns:200px 1fr 1fr;padding:6px 20px 8px;color:var(--text-muted);font-size:12px}
+.drow{display:grid;grid-template-columns:200px 1fr 1fr;padding:7px 20px;font-size:13px;position:relative}
+.drow .k{color:var(--text-secondary)}
+.drow .cur,.drow .cmd{color:var(--text-muted)}
+.drow.changed .cur{color:var(--state-actual)}
+.drow.changed .cmd{color:var(--state-commanded)}
+.drow .cmd{opacity:0;transform:translateX(8px)}
+.reveal .drow .cmd{opacity:1;transform:none;transition:opacity 160ms var(--ease),transform 160ms var(--ease)}
+.drow.changed::after{
+  content:"";position:absolute;inset:0;background:var(--state-commanded);opacity:0;pointer-events:none;
+}
+.reveal .drow.changed::after{animation:flash 240ms var(--ease) 140ms both}
+@keyframes flash{from{opacity:var(--flash)}to{opacity:0}}
+.impact{margin:8px 20px 0;padding:12px 14px;border:1px solid var(--line-hairline);background:var(--surface-panel)}
+.impact .h{color:var(--state-caution);font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.impact .b{font-size:13px;color:var(--text-primary)}
+.impact .u{font-size:12px;color:var(--text-secondary);margin-top:5px}
+.dfoot{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line-hairline);margin-top:16px}
+.dfoot .ask{color:var(--text-secondary);font-size:12px}
+.dfoot input{
+  background:var(--surface-canvas);border:1px solid var(--line-strong);border-radius:var(--r-control);
+  padding:5px 8px;color:var(--text-primary);font:13px "IBM Plex Mono",monospace;width:190px;
+}
+.dfoot .sp{margin-left:auto;display:flex;gap:8px}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .drow .cmd{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="glare">
+  <span class="brand">FlightDeck</span>
+  <span class="inst mono">IRIS 2026.1 CE · IRISAPP</span>
+  <div class="vitals">
+    <span class="vital"><span class="k">CPU</span><span class="v num" id="vcpu">34%</span></span>
+    <span class="vital"><span class="k">Memory</span><span class="v num" id="vmem">61%</span></span>
+    <span class="vital"><span class="k">Disk</span><span class="v num" id="vdsk">72%</span></span>
+  </div>
+  <button class="mode" id="modeBtn" title="Toggle safe mode">
+    <span class="dot"></span><span id="modeTxt">Safe mode</span>
+  </button>
+  <button class="mode" id="themeBtn" title="Toggle theme" style="margin-left:8px" aria-label="Toggle theme">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" id="themeIcon"><circle cx="8" cy="8" r="3.2"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1"/></svg>
+    <span id="themeTxt">Light</span>
+  </button>
+  <span class="user mono">kadu</span>
+  <div class="livebar"></div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <button data-view="apps" aria-current="page"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="14" height="12"/><path d="M2 7h14"/></svg><span class="tip">Web apps &amp; APIs</span></button>
+    <button data-view="perm"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="9" cy="6" r="3"/><path d="M3 15c0-3.3 2.7-5 6-5s6 1.7 6 5"/></svg><span class="tip">Permissions</span></button>
+    <button data-view="sec"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9 2l6 2.5v5C15 13 12.5 15.3 9 16.5 5.5 15.3 3 13 3 9.5v-5z"/></svg><span class="tip">Security &amp; secrets</span></button>
+    <button data-view="task"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="9" cy="9" r="6.5"/><path d="M9 5v4l2.5 1.6"/></svg><span class="tip">Tasks</span></button>
+    <button data-view="sys"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="12" height="12"/><rect x="6.5" y="6.5" width="5" height="5"/></svg><span class="tip">System</span></button>
+    <button data-view="logs"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4h12M3 8h12M3 12h7"/></svg><span class="tip">Logs</span></button>
+  </nav>
+
+  <main class="work">
+    <div class="workhead">
+      <h1 id="wtitle">Web applications</h1>
+      <span class="count num" id="wcount">4</span>
+      <div class="right">
+        <button class="btn" onclick="openPalette()">Search <kbd>Ctrl K</kbd></button>
+        <button class="btn">New</button>
+      </div>
+    </div>
+
+    <!-- SISTEMA -->
+    <section class="view sys" id="v-sys">
+      <div class="cluster">
+        <div class="inst" id="i-cpu">
+          <div class="k">Processor</div>
+          <div class="row">
+            <span class="readout"><span class="val num" id="cpuV">34</span><span class="unit">%</span></span>
+            <canvas id="cpuC"></canvas>
+          </div>
+          <div class="foot"><span>Last 60 seconds</span></div>
+        </div>
+        <div class="inst" id="i-mem">
+          <div class="k">Memory</div>
+          <div class="row">
+            <span class="readout"><span class="val num" id="memV">61</span><span class="unit">%</span></span>
+            <canvas id="memC"></canvas>
+          </div>
+          <div class="foot"><span>7.8 GB of 12.8 GB</span></div>
+        </div>
+        <div class="inst caution" id="i-dsk">
+          <div class="k">Disk</div>
+          <div class="row">
+            <span class="readout"><span class="val num" id="dskV">72</span><span class="unit">%</span></span>
+            <canvas id="dskC"></canvas>
+          </div>
+          <div class="foot">
+            <svg class="glyph" viewBox="0 0 10 10" fill="currentColor"><path d="M5 0l5 9H0z"/></svg>
+            <span>IRISAPP above 70% threshold</span>
+          </div>
+        </div>
+      </div>
+      <div class="proc">
+        <div class="bar"><span class="t">Processes</span><span class="t num" id="procN">142 active</span>
+          <div class="right" style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn">Filter</button><button class="btn">Sort by CPU</button>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th style="width:90px">PID</th><th style="width:130px">Namespace</th><th style="width:120px">User</th><th>Routine</th><th style="width:90px">State</th><th class="r" style="width:90px">CPU</th><th class="r" style="width:90px">Memory</th></tr></thead>
+            <tbody id="procBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEB APPS -->
+    <section class="view on" id="v-apps">
+      <div class="list" id="appList"></div>
+      <aside class="inspector" id="appInsp"></aside>
+    </section>
+
+    <!-- PERMISSÕES -->
+    <section class="view" id="v-perm">
+      <div class="list" id="roleList"></div>
+      <aside class="inspector" id="roleInsp"></aside>
+    </section>
+
+    <!-- PLACEHOLDERS -->
+    <section class="view" id="v-sec"><div class="empty"><div class="t">Secure wallet is not available on this instance</div><div class="d">The %Wallet classes were not found on IRIS 2026.1 CE. TLS configurations, X.509 credentials and OAuth clients are still available.</div><button class="btn">Open TLS configurations</button></div></section>
+    <section class="view" id="v-task"><div class="empty"><div class="t">No scheduled tasks match these filters</div><div class="d">Try clearing the namespace filter, or widen the time range to include tasks that have not run yet.</div><button class="btn">Clear filters</button></div></section>
+    <section class="view" id="v-logs"><div class="empty"><div class="t">No events match these filters</div><div class="d">Try widening the time range or lowering the minimum severity. Four sources are currently connected.</div><button class="btn">Widen to last 24 hours</button></div></section>
+  </main>
+</div>
+
+<!-- PALETA -->
+<div class="scrim" id="palScrim" onclick="if(event.target===this)closePalette()">
+  <div class="palette float" role="dialog" aria-label="Command palette">
+    <input id="palInput" placeholder="Search entities or run a command" autocomplete="off">
+    <div class="pres" id="palRes"></div>
+    <div class="phint"><span><kbd>↑</kbd><kbd>↓</kbd> navigate</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div>
+  </div>
+</div>
+
+<!-- DRY-RUN -->
+<div class="scrim" id="dlgScrim" onclick="if(event.target===this)closeDialog()">
+  <div class="dialog float" role="dialog" aria-label="Apply changes" id="dlg">
+    <div class="dhead">
+      <div class="t">Apply changes to role <span class="mono">%FlightDeck_Operator</span></div>
+      <div class="s">Nothing has been sent to the server yet.</div>
+    </div>
+    <div class="diff">
+      <div class="dcols"><span></span><span>Current</span><span>Commanded</span></div>
+      <div class="drow"><span class="k">Description</span><span class="cur">Portal operator</span><span class="cmd">Portal operator</span></div>
+      <div class="drow changed"><span class="k mono">%Admin_Secure:U</span><span class="cur">granted</span><span class="cmd">revoked</span></div>
+      <div class="drow"><span class="k mono">%Admin_Manage:U</span><span class="cur">granted</span><span class="cmd">granted</span></div>
+      <div class="drow changed"><span class="k mono">%DB_IRISAPP:RW</span><span class="cur">granted</span><span class="cmd">read only</span></div>
+      <div class="drow"><span class="k mono">%Development:U</span><span class="cur">not granted</span><span class="cmd">not granted</span></div>
+    </div>
+    <div class="impact">
+      <div class="h"><svg class="glyph" viewBox="0 0 10 10" fill="currentColor"><path d="M5 0l5 9H0z"/></svg><span>Impact</span></div>
+      <div class="b">4 users lose access to 2 protected objects</div>
+      <div class="u mono">kadu · svc_batch · analyst_ro · integration</div>
+    </div>
+    <div class="dfoot">
+      <span class="ask">Type <span class="mono">%FlightDeck_Operator</span> to confirm</span>
+      <input id="confirmIn" autocomplete="off" spellcheck="false">
+      <span class="sp">
+        <button class="btn" onclick="closeDialog()">Cancel</button>
+        <button class="btn btn-primary" id="applyBtn" disabled>Apply</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── dados de demonstração ──────────────────────────────── */
+const APPS=[
+ {n:"/csp/flightdeck",ns:"IRISAPP",st:"on",res:"%FlightDeck_Use",disp:"FD.API.Router",auth:"Password",roles:3,users:7,spec:1},
+ {n:"/api/flightdeck",ns:"IRISAPP",st:"on",res:"%FlightDeck_Use",disp:"FD.API.Spec",auth:"Password",roles:3,users:7,spec:1},
+ {n:"/api/mgmnt",ns:"%SYS",st:"on",res:"%Admin_Manage",disp:"%REST.API",auth:"Password",roles:2,users:3,spec:1},
+ {n:"/api/monitor",ns:"%SYS",st:"warn",res:"",disp:"SYS.Monitor.REST",auth:"Unauthenticated",roles:0,users:0,spec:1}
+];
+const ROLES=[
+ {n:"%FlightDeck_Operator",d:"Portal operator",priv:4,users:7},
+ {n:"%FlightDeck_Viewer",d:"Read only access",priv:2,users:12},
+ {n:"%Manager",d:"System management",priv:11,users:2},
+ {n:"%Developer",d:"Development access",priv:6,users:4}
+];
+const PROCS=[
+ ["4128","IRISAPP","kadu","FD.API.Router","RUN","12.4%","84 MB"],
+ ["3902","%SYS","_SYSTEM","%SYS.Task","RUN","4.1%","32 MB"],
+ ["3771","IRISAPP","svc_batch","Batch.Import","RUN","9.8%","218 MB"],
+ ["3510","%SYS","_SYSTEM","%SYS.Monitor","HANG","0.2%","11 MB"],
+ ["3344","IRISAPP","integration","Ens.Director","RUN","6.7%","140 MB"],
+ ["3102","%SYS","_SYSTEM","JRNDMN","RUN","1.1%","18 MB"],
+ ["2988","IRISAPP","analyst_ro","%SQL.Statement","READ","2.3%","46 MB"]
+];
+
+/* ── instrumentos ───────────────────────────────────────── */
+function Instrument(canvasId,valId,seed,drift,hostId,thresholds){
+  const c=document.getElementById(canvasId),ctx=c.getContext("2d"),
+        vEl=document.getElementById(valId),host=document.getElementById(hostId);
+  let data=Array.from({length:60},()=>seed+(Math.random()-.5)*drift*2),dpr=1;
+  function size(){
+    dpr=window.devicePixelRatio||1;
+    c.width=c.clientWidth*dpr;c.height=c.clientHeight*dpr;
+  }
+  function draw(){
+    const w=c.width,h=c.height,pad=3*dpr;
+    ctx.clearRect(0,0,w,h);
+    ctx.lineWidth=1.5*dpr;ctx.lineJoin="round";
+    ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--state-actual").trim();
+    ctx.beginPath();
+    const min=Math.min(...data)-4,max=Math.max(...data)+4,span=Math.max(max-min,1);
+    data.forEach((v,i)=>{
+      const x=(i/(data.length-1))*w,y=h-pad-((v-min)/span)*(h-pad*2);
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    });
+    ctx.stroke();
+  }
+  function tick(){
+    const last=data[data.length-1];
+    let nv=last+(Math.random()-.5)*drift*2.2+(seed-last)*.08;
+    nv=Math.max(2,Math.min(99,nv));
+    data.push(nv);data.shift();
+    vEl.textContent=Math.round(nv);
+    if(thresholds){
+      host.classList.toggle("warning",nv>=thresholds[1]);
+      host.classList.toggle("caution",nv>=thresholds[0]&&nv<thresholds[1]);
+    }
+    draw();
+    return Math.round(nv);
+  }
+  size();draw();
+  window.addEventListener("resize",()=>{size();draw()});
+  return {tick,draw};
+}
+let insts=null,timer=null;
+function startSys(){
+  if(!insts){
+    insts=[
+      Instrument("cpuC","cpuV",34,5,"i-cpu",[80,92]),
+      Instrument("memC","memV",61,3,"i-mem",[85,95]),
+      Instrument("dskC","dskV",72,1.2,"i-dsk",[70,90])
+    ];
+  }
+  stopSys();
+  timer=setInterval(()=>{
+    const [a,b,c]=insts.map(i=>i.tick());
+    vcpu.textContent=a+"%";vmem.textContent=b+"%";vdsk.textContent=c+"%";
+    procN.textContent=(138+Math.floor(Math.random()*9))+" active";
+  },1000);
+}
+function stopSys(){if(timer){clearInterval(timer);timer=null}}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)stopSys();
+  else if(document.getElementById("v-sys").classList.contains("on"))startSys();
+});
+
+/* ── render ─────────────────────────────────────────────── */
+function renderApps(sel=0){
+  appList.innerHTML=APPS.map((a,i)=>`
+    <button class="item" aria-selected="${i===sel}" onclick="renderApps(${i})">
+      <span class="nm mono">${a.n}</span>
+      ${a.st==="warn"?'<svg class="glyph" viewBox="0 0 10 10" fill="var(--state-caution)"><path d="M5 0l5 9H0z"/></svg>':'<span style="width:6px;height:6px;border-radius:50%;background:var(--state-actual)"></span>'}
+      <span class="meta mono">${a.ns}</span>
+    </button>`).join("");
+  const a=APPS[sel];
+  appInsp.innerHTML=`
+    <h2 class="mono" style="font-size:16px">${a.n}</h2>
+    <div class="sub">${a.st==="warn"?'<span style="color:var(--state-caution)">Enabled · no authentication</span>':"Enabled · "+a.auth+" authentication"}</div>
+    <div class="field"><span class="k">Namespace</span><span class="v mono">${a.ns}</span></div>
+    <div class="field"><span class="k">Resource</span><span class="v mono">${a.res||"none"}</span></div>
+    <div class="field"><span class="k">Dispatch</span><span class="v mono">${a.disp}</span></div>
+    <div class="field"><span class="k">Auth</span><span class="v">${a.auth}</span></div>
+    <div class="sect"><div class="h">Connected to</div>
+      <button class="link"><span class="c">${a.roles}</span><span>roles grant this resource</span></button>
+      <button class="link"><span class="c">${a.users}</span><span>users have access</span></button>
+      <button class="link"><span class="c">${a.spec}</span><span>OpenAPI specification</span></button>
+    </div>
+    <div class="actions"><button class="btn">Edit</button><button class="btn">Disable</button></div>`;
+  wcount.textContent=APPS.length;
+}
+function renderRoles(sel=0){
+  roleList.innerHTML=ROLES.map((r,i)=>`
+    <button class="item" aria-selected="${i===sel}" onclick="renderRoles(${i})">
+      <span class="nm mono">${r.n}</span><span class="meta num">${r.users} users</span>
+    </button>`).join("");
+  const r=ROLES[sel];
+  roleInsp.innerHTML=`
+    <h2 class="mono" style="font-size:16px">${r.n}</h2>
+    <div class="sub">${r.d}</div>
+    <div class="field"><span class="k">Privileges</span><span class="v num">${r.priv}</span></div>
+    <div class="field"><span class="k">Members</span><span class="v num">${r.users}</span></div>
+    <div class="sect"><div class="h">Effective privileges</div>
+      <div class="field"><span class="k mono" style="width:150px;flex:0 0 150px">%Admin_Secure:U</span><span class="v" style="color:var(--state-actual)">granted</span></div>
+      <div class="field"><span class="k mono" style="width:150px;flex:0 0 150px">%Admin_Manage:U</span><span class="v" style="color:var(--state-actual)">granted</span></div>
+      <div class="field"><span class="k mono" style="width:150px;flex:0 0 150px">%DB_IRISAPP:RW</span><span class="v" style="color:var(--state-actual)">granted</span></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" onclick="openDialog()">Edit privileges</button></div>`;
+  wcount.textContent=ROLES.length;
+}
+procBody.innerHTML=PROCS.map(p=>`<tr>
+  <td class="pid mono num">${p[0]}</td><td class="mono">${p[1]}</td><td class="mono">${p[2]}</td>
+  <td class="mono">${p[3]}</td><td>${p[4]}</td><td class="r num">${p[5]}</td><td class="r num">${p[6]}</td></tr>`).join("");
+
+/* ── navegação ──────────────────────────────────────────── */
+const TITLES={apps:["Web applications",()=>APPS.length],perm:["Roles",()=>ROLES.length],sec:["Security & secrets",()=>0],task:["Scheduled tasks",()=>0],sys:["System",()=>""],logs:["Log stream",()=>0]};
+function go(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
+  document.querySelectorAll("#rail button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));
+  wtitle.textContent=TITLES[v][0];wcount.textContent=TITLES[v][1]()||"";
+  v==="sys"?startSys():stopSys();
+  if(v==="apps")renderApps(0);
+  if(v==="perm")renderRoles(0);
+}
+rail.addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.view)});
+
+/* ── tema ───────────────────────────────────────────────── */
+const MOON='<circle cx="8" cy="8" r="3.2"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1"/>';
+const SUN='<path d="M13.2 9.8A5.8 5.8 0 0 1 6.2 2.8a5.8 5.8 0 1 0 7 7z"/>';
+function setTheme(t){
+  document.documentElement.setAttribute("data-theme",t);
+  themeTxt.textContent = t==="light" ? "Dark" : "Light";
+  themeIcon.innerHTML  = t==="light" ? SUN : MOON;
+  // o traço do canvas lê a variável em tempo de desenho: basta repintar
+  if(insts) insts.forEach(i=>i.draw());
+}
+let theme = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+themeBtn.onclick=()=>{theme = theme==="light" ? "dark" : "light"; setTheme(theme)};
+
+/* ── modo seguro ────────────────────────────────────────── */
+let live=false;
+modeBtn.onclick=()=>{live=!live;document.body.classList.toggle("live",live);modeTxt.textContent=live?"Live — changes enabled":"Safe mode"};
+
+/* ── paleta ─────────────────────────────────────────────── */
+const CMDS=[
+ {g:"Go to",t:"Web applications",a:()=>go("apps")},
+ {g:"Go to",t:"Permissions",a:()=>go("perm")},
+ {g:"Go to",t:"System",a:()=>go("sys")},
+ {g:"Go to",t:"Log stream",a:()=>go("logs")},
+ {g:"Actions",t:"Turn off safe mode",a:()=>modeBtn.click()},
+ {g:"Actions",t:"Run task now",lock:true},
+ {g:"Actions",t:"Terminate process",lock:true},
+ {g:"Entities",t:"/csp/flightdeck",ctx:"IRISAPP · web app",a:()=>go("apps")},
+ {g:"Entities",t:"%FlightDeck_Operator",ctx:"role · 7 users",a:()=>go("perm")},
+ {g:"Entities",t:"%Admin_Secure",ctx:"resource",a:()=>go("perm")},
+ {g:"Entities",t:"4128",ctx:"process · FD.API.Router",a:()=>go("sys")}
+];
+let pIdx=0,pList=[];
+function drawPal(q=""){
+  pList=CMDS.filter(c=>c.t.toLowerCase().includes(q.toLowerCase()));
+  if(!pList.length){palRes.innerHTML='<div class="pgroup">No match. Try a resource name, a PID, or "go to".</div>';return}
+  pIdx=Math.min(pIdx,pList.length-1);
+  let html="",last="";
+  pList.forEach((c,i)=>{
+    if(c.g!==last){html+=`<div class="pgroup">${c.g}</div>`;last=c.g}
+    html+=`<button class="prow" data-active="${i===pIdx}" data-i="${i}">
+      <span>${c.t}</span>${c.ctx?`<span class="ctx mono">${c.ctx}</span>`:""}
+      ${c.lock&&!live?'<span class="lock ctx">safe mode</span>':""}</button>`;
+  });
+  palRes.innerHTML=html;
+  palRes.querySelectorAll(".prow").forEach(b=>b.onclick=()=>run(+b.dataset.i));
+}
+function run(i){const c=pList[i];if(!c)return;if(c.lock&&!live){modeBtn.click();return}c.a&&c.a();closePalette()}
+function openPalette(){palScrim.classList.add("on");palInput.value="";pIdx=0;drawPal();palInput.focus()}
+function closePalette(){palScrim.classList.remove("on")}
+palInput.addEventListener("input",e=>{pIdx=0;drawPal(e.target.value)});
+palInput.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();pIdx=Math.min(pIdx+1,pList.length-1);drawPal(palInput.value)}
+  if(e.key==="ArrowUp"){e.preventDefault();pIdx=Math.max(pIdx-1,0);drawPal(palInput.value)}
+  if(e.key==="Enter"){e.preventDefault();run(pIdx)}
+});
+
+/* ── dry-run ────────────────────────────────────────────── */
+function openDialog(){
+  dlgScrim.classList.add("on");dlg.classList.remove("reveal");
+  confirmIn.value="";applyBtn.disabled=true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>dlg.classList.add("reveal")));
+  setTimeout(()=>confirmIn.focus(),180);
+}
+function closeDialog(){dlgScrim.classList.remove("on")}
+confirmIn.addEventListener("input",e=>{applyBtn.disabled=e.target.value.trim()!=="%FlightDeck_Operator"});
+applyBtn.onclick=()=>{closeDialog()};
+
+/* ── teclado global ─────────────────────────────────────── */
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();openPalette()}
+  if(e.key==="Escape"){closePalette();closeDialog()}
+});
+
+setTheme(theme);
+renderApps(0);renderRoles(0);
+</script>
+</body>
+</html>

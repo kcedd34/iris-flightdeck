@@ -1,0 +1,14 @@
+.git/
+**/node_modules/
+frontend/test-results/
+frontend/playwright-report/
+specs/
+verification/
+docs/prototype.html
+.claude/
+.specify/
+*.log*
+.env*
+coverage/
+Dockerfile*
+.dockerignore

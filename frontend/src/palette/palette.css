@@ -1,0 +1,160 @@
+/* Command palette: docs/prototype.html (.palette, .prow, .pgroup, .phint). */
+.palette {
+  position: fixed;
+  top: 14vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  max-width: 92vw;
+  overflow: hidden;
+  z-index: 60;
+}
+
+.palette-inputrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line-hairline);
+  padding-right: 16px;
+}
+
+.palette [cmdk-input] {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 15px 16px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.palette [cmdk-input]::placeholder {
+  color: var(--text-muted);
+}
+
+.palette [cmdk-input]:focus {
+  outline: none;
+}
+
+.palette-chip {
+  margin-left: 12px;
+  padding: 2px 8px;
+  border: 1px solid var(--state-selected);
+  border-radius: var(--r-control);
+  color: var(--text-primary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.palette-count {
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.palette-degraded {
+  padding: 8px 16px;
+  color: var(--state-caution);
+  font-size: 12px;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.palette-results {
+  max-height: 44vh;
+  overflow: auto;
+  padding: 6px 0;
+}
+
+.palette-group [cmdk-group-heading] {
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 8px 16px 4px;
+}
+
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.palette-row[data-selected="true"] {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.palette-row[data-disabled="true"] {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.palette-ctx {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.palette-reason {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.palette-lock {
+  color: var(--state-caution);
+  font-size: 12px;
+}
+
+.palette-more {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.palette-note {
+  padding: 6px 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.palette-empty,
+.palette-hint-block {
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.palette-hint {
+  display: flex;
+  gap: 16px;
+  padding: 9px 16px;
+  border-top: 1px solid var(--line-hairline);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.palette-step {
+  padding: 16px;
+}
+
+.palette-step-title {
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.palette-step-op {
+  display: flex;
+  gap: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.palette-step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

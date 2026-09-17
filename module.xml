@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+  <Document name="iris-flightdeck.ZPM">
+    <Module>
+      <Name>iris-flightdeck</Name>
+      <Version>0.1.0</Version>
+      <Description>FlightDeck: a keyboard-first, safe-by-default management portal for InterSystems IRIS, built on the official SysAdmin API.</Description>
+      <Keywords>management portal,sysadmin api,administration,security,monitoring</Keywords>
+      <Author>
+        <Person>Carlos Eduardo Dias Duarte</Person>
+        <License>MIT</License>
+      </Author>
+      <Packaging>module</Packaging>
+      <SystemRequirements Version=">=2026.2" />
+      <SourcesRoot>backend/cls</SourcesRoot>
+      <Resource Name="FlightDeck.PKG" />
+      <UnitTest Name="/backend/test" Package="FlightDeck.Test" Phase="test" />
+
+      <!-- Version floor and runtime role, right after compile and before the web applications are activated. -->
+      <Invoke Class="FlightDeck.Install.Installer" Method="Prepare" Phase="Compile" When="After" CheckStatus="true" />
+
+      <!-- Installer bootstrap exception (Constitution I v2.0.0, plan Complexity Tracking):
+           FlightDeck's own two web applications are declared here, not created over /v2/web-app. -->
+      <WebApplication
+        Url="/api/flightdeck"
+        DispatchClass="FlightDeck.API.Router"
+        Description="FlightDeck API"
+        AutheEnabled="32"
+        MatchRoles=":FlightDeck_Runtime"
+        UseCookies="2"
+        CookiePath="/api/flightdeck/"
+        Recurse="1" />
+      <WebApplication
+        Url="/flightdeck"
+        DispatchClass="FlightDeck.UI.Static"
+        Description="FlightDeck web interface"
+        AutheEnabled="64"
+        MatchRoles=":FlightDeck_Runtime"
+        Recurse="1" />
+
+      <FileCopy Name="frontend/dist/" Target="${mgrdir}flightdeck/web/" />
+
+      <Default Name="Demo" Value="0" />
+      <Invoke Class="FlightDeck.Install.Installer" Method="Run" Phase="Activate" When="After" CheckStatus="true">
+        <Arg>${Demo}</Arg>
+      </Invoke>
+    </Module>
+  </Document>
+</Export>

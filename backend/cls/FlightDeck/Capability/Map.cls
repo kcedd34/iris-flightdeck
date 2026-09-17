@@ -1,0 +1,89 @@
+/// Session capability map (Constitution III, FR-013/FR-014): the privilege each official operation
+/// declares (FlightDeck.Capability.Spec, generated from docs/sysadmin-api-v2.json) crossed with the
+/// privileges /info reports for the signed-in user. There is no hand-written privilege table.
+Class FlightDeck.Capability.Map [ Abstract ]
+{
+
+/// /info.result.privileges uses keys without the %Admin_ prefix ("Secure": {"use": true}).
+/// Returns {"%Admin_Secure": {"use": true}, ...}.
+ClassMethod NormalizePrivileges(infoPrivileges As %DynamicObject) As %DynamicObject
+{
+	set out = {}
+	if '$isobject(infoPrivileges) quit out
+	set iter = infoPrivileges.%GetIterator()
+	while iter.%GetNext(.key, .value) {
+		set name = $select($extract(key, 1, 7) = "%Admin_":key, 1:"%Admin_"_key)
+		set entry = {}
+		do entry.%Set("use", $select($isobject(value):''value.use, 1:0), "boolean")
+		do out.%Set(name, entry)
+	}
+	quit out
+}
+
+/// Builds all capability entries for normalized privileges.
+ClassMethod Build(privileges As %DynamicObject) As %DynamicArray
+{
+	set entries = []
+	set iter = ##class(FlightDeck.Capability.Spec).Operations().%GetIterator()
+	while iter.%GetNext(, .op) {
+		set allowed = ..Allowed(op.requires, privileges)
+		set entry = {
+			"operationId": (op.operationId), "method": (op.method), "path": (op.path),
+			"domain": (op.domain), "summary": (op.summary), "requires": (op.requires)
+		}
+		do entry.%Set("mutating", op.mutating, "boolean")
+		do entry.%Set("allowed", allowed, "boolean")
+		if allowed {
+			do entry.%Set("reason", "", "null")
+		} else {
+			do entry.%Set("reason", ##class(FlightDeck.API.Response).RequiresMessage(op.requires))
+		}
+		do entries.%Push(entry)
+	}
+	quit entries
+}
+
+/// OR semantics: allowed when nothing is required, or when any listed privilege is held with Use.
+/// A privilege key absent from /info counts as not held.
+ClassMethod Allowed(requires As %DynamicArray, privileges As %DynamicObject) As %Boolean
+{
+	if '$isobject(requires) || (requires.%Size() = 0) quit 1
+	set allowed = 0
+	set iter = requires.%GetIterator()
+	while iter.%GetNext(, .requirement) {
+		set resource = $piece(requirement, ":", 1)
+		set held = privileges.%Get(resource)
+		if $isobject(held), held.use {
+			set allowed = 1
+			quit
+		}
+	}
+	quit allowed
+}
+
+ClassMethod Summary(entries As %DynamicArray) As %DynamicObject
+{
+	set allowed = 0
+	set iter = entries.%GetIterator()
+	while iter.%GetNext(, .entry) {
+		set:entry.allowed allowed = allowed + 1
+	}
+	quit {"allowed":(allowed), "total":(entries.%Size())}
+}
+
+/// Every distinct privilege any operation declares, sorted. Used in NO_ADMIN_PRIVILEGE errors.
+ClassMethod AllRequiredPrivileges() As %DynamicArray
+{
+	set seen = ""
+	set iter = ##class(FlightDeck.Capability.Spec).Operations().%GetIterator()
+	while iter.%GetNext(, .op) {
+		set r = op.requires.%GetIterator()
+		while r.%GetNext(, .requirement) { set seen(requirement) = "" }
+	}
+	set out = []
+	set key = ""
+	for { set key = $order(seen(key)) quit:key=""  do out.%Push(key) }
+	quit out
+}
+
+}

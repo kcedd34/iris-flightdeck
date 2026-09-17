@@ -1,0 +1,384 @@
+/* Shell geometry: docs/design.md §4/§4.1 and docs/prototype.html (prevails for these components). */
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Glareshield ─── */
+.glare {
+  height: var(--glare);
+  flex: 0 0 var(--glare);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 16px;
+  background: var(--surface-panel);
+  border-bottom: 1px solid var(--line-hairline);
+  position: relative;
+  z-index: 80;
+}
+
+.glare-brand {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.glare-inst {
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.vitals {
+  display: flex;
+  gap: 18px;
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+.vital {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.vital-k {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.vital-v {
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 36px;
+}
+
+.vital-v[data-state="caution"] {
+  color: var(--state-caution);
+}
+
+.vital-v[data-state="warning"] {
+  color: var(--state-warning);
+}
+
+.vital-v[data-state="unavailable"] {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.vital-skeleton {
+  display: inline-block;
+  width: 28px;
+  height: 8px;
+  background: var(--line-hairline);
+  border-radius: var(--r-control);
+}
+
+.mode {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: var(--r-control);
+  border: 1px solid var(--line-strong);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: color var(--t-control) var(--ease), border-color var(--t-control) var(--ease);
+}
+
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.mode[data-mode="disarmed"] {
+  color: var(--state-warning);
+  border-color: var(--state-warning);
+}
+
+.mode[data-mode="disarmed"] .mode-dot {
+  background: var(--state-warning);
+}
+
+.livebar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--state-warning);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t-livebar) var(--ease);
+  pointer-events: none;
+}
+
+.livebar[data-on="true"] {
+  transform: scaleX(1);
+}
+
+.glare-user {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+/* ─── Body ─── */
+.shell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ─── Rail ─── */
+.rail {
+  width: var(--rail);
+  flex: 0 0 var(--rail);
+  background: var(--surface-panel);
+  border-right: 1px solid var(--line-hairline);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  gap: 2px;
+}
+
+.rail-item {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  color: var(--text-muted);
+  border-radius: var(--r-control);
+  transition: color var(--t-control) var(--ease);
+}
+
+.rail-item:hover {
+  color: var(--text-secondary);
+}
+
+.rail-item[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+.rail-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--state-selected);
+}
+
+.tip {
+  background: var(--surface-float);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-float);
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  z-index: 90;
+}
+
+/* ─── Work area ─── */
+.work {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.workhead {
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.workhead-row {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.workhead h1 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.workhead-right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px;
+  overflow-x: auto;
+}
+
+.tab {
+  position: relative;
+  padding: 8px 0 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--t-control) var(--ease);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+.tab[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--state-selected);
+}
+
+.view {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.list {
+  flex: 1;
+  min-width: var(--list-min);
+  overflow: auto;
+  border-right: 1px solid var(--line-hairline);
+  display: flex;
+}
+
+.inspector {
+  width: var(--inspector);
+  flex: 0 0 var(--inspector);
+  background: var(--surface-panel);
+  overflow: auto;
+  padding: 20px 20px 24px;
+}
+
+.inspector h2,
+.inspector-overlay h2 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.inspector-sub,
+.inspector-overlay .inspector-sub {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.inspector-close {
+  float: right;
+}
+
+.inspector-overlay {
+  position: fixed;
+  top: calc(var(--glare) + 8px);
+  right: 8px;
+  bottom: 8px;
+  width: var(--inspector);
+  max-width: calc(100vw - 16px);
+  overflow: auto;
+  padding: 20px 20px 24px;
+  z-index: 60;
+}
+
+.field {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.field-k {
+  width: var(--label-col);
+  flex: 0 0 var(--label-col);
+  color: var(--text-secondary);
+}
+
+.field-v {
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: break-word;
+}
+
+.sect {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-hairline);
+}
+
+.sect-h {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+/* ─── Empty state ─── */
+.empty {
+  margin: auto;
+  text-align: center;
+  max-width: 380px;
+  padding: 40px;
+}
+
+.empty-t {
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.empty-d {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1279px) {
+  .list {
+    min-width: 0;
+    border-right: none;
+  }
+
+  /* Keep every glareshield control visible below the 1280px design width. */
+  .glare {
+    gap: 12px;
+  }
+
+  .glare-brand,
+  .mode-theme-label {
+    display: none;
+  }
+
+  .vitals {
+    gap: 12px;
+  }
+}

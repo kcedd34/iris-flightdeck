@@ -1,0 +1,86 @@
+/*
+ * FlightDeck design tokens. docs/design.md §3 and docs/prototype.html (which prevails for the
+ * components it implements). This is the ONLY file in src/ allowed to contain color values;
+ * scripts/check-tokens.mjs enforces it. Dark is the design default; light is a translation of the
+ * same hierarchy with its own darkened semantic variants.
+ */
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-canvas: #101619;
+  --surface-panel: #171F24;
+  --surface-float: #1E282E;
+  --line-hairline: #2A363D;
+  --line-strong: #3A4A53;
+  --text-primary: #E6EDF0;
+  --text-secondary: #93A3AC;
+  --text-muted: #5E6E77;
+  /* Semantic colors: fixed meaning, never decoration. */
+  --state-actual: #5FBF8B;
+  --state-commanded: #DD7AC8;
+  --state-caution: #E8B04B;
+  --state-warning: #E5574E;
+  --state-selected: #6CC7D9;
+  --scrim: rgba(6, 10, 12, 0.6);
+  --shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-canvas: #E9EDEF;
+  --surface-panel: #F6F8F9;
+  --surface-float: #FFFFFF;
+  --line-hairline: #D2DADE;
+  --line-strong: #B4C0C6;
+  --text-primary: #111A1F;
+  --text-secondary: #4A5B64;
+  --text-muted: #7B8A92;
+  --state-actual: #1E7A4F;
+  --state-commanded: #A8329B;
+  --state-caution: #8A5A00;
+  --state-warning: #C0342B;
+  --state-selected: #0E6E80;
+  --scrim: rgba(30, 45, 52, 0.34);
+  --shadow: 0 16px 48px rgba(17, 26, 31, 0.18);
+}
+
+:root {
+  /* Geometry */
+  --glare: 44px;
+  --rail: 56px;
+  --inspector: 420px;
+  --list-min: 480px;
+  --label-col: 96px;
+  /* Radius hierarchy: 0 structure, 2px controls, 6px floating layers */
+  --r-structure: 0;
+  --r-control: 2px;
+  --r-float: 6px;
+  /* Motion budget */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --t-layer: 120ms;
+  --t-control: 90ms;
+  --t-livebar: 160ms;
+  /* Type */
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-layer: 0ms;
+    --t-control: 0ms;
+    --t-livebar: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

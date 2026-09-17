@@ -1,0 +1,35 @@
+.safemode-pop {
+  width: 280px;
+  padding: 16px;
+  z-index: 70;
+}
+
+.safemode-pop-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.safemode-pop-body {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.safemode-pop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.capability-gate {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.capability-reason {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
