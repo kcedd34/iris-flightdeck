@@ -55,7 +55,7 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
       context: `${c.method} ${c.path}`,
       mono: true,
       mutating: true,
-      enabled: c.allowed,
+      enabled: c.available && c.allowed,
       disabledReason: c.reason,
       run: { type: "operation", to: domain ? `/${domain.id}/${domain.sections[0]!.id}` : "/" },
     });

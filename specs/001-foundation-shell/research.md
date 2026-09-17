@@ -19,6 +19,12 @@ SysAdmin API as **v1 only**: `Api.Admin` routes `/info` plus `/v1/*`, about 197 
 `/v2/security/roles` and `/login` all respond. The same holds for IRIS for Health 2026.2
 (`product: "irisforhealth"`).
 
+> **Superseded in part on 2026-09-17** by the v1 adapter decision (constitution 2.1.0; spec FR-012a
+> amended). IRIS 2026.1 now runs in **limited mode** through a translation layer keyed by v2
+> operation (`FlightDeck.Admin.V1Dialect`). The default install still pins 2026.2. Measurements:
+> `verification/v1-api-2026.1.md`, `v1-adapter-spike.md`, `v1-translations-2026.1.md` and
+> `v1-native-gaps-2026.1.md`. The original decision is kept below for the record.
+
 **Decision**: Pin `intersystemsdc/iris-community:2026.2-zpm` (default) and
 `intersystemsdc/irishealth-community:2026.2-zpm` (alternative, selected by one optional variable).
 The `-zpm` variants are the same builds with IPM preinstalled (R13).

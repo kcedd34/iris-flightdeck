@@ -13,10 +13,13 @@ export interface Session {
     apiVersion: number;
     edition: string;
     namespace: string;
+    /** SysAdmin API dialect selected once per session; "v1" is IRIS 2026.1 limited mode (FR-012a). */
+    dialect: "v2" | "v1";
+    limited: boolean;
   };
   authPath: "in_process";
   privileges: Record<string, { use: boolean }>;
-  capabilitySummary: { allowed: number; total: number };
+  capabilitySummary: { allowed: number; unavailable: number; total: number };
 }
 
 export interface CapabilityEntry {
@@ -28,6 +31,8 @@ export interface CapabilityEntry {
   summary: string;
   requires: string[];
   allowed: boolean;
+  /** False when the instance does not offer the operation (v1 dialect); reason is then the version message. */
+  available: boolean;
   reason: string | null;
 }
 
@@ -57,7 +62,7 @@ export interface EntityEntry {
 export interface EntitySearchGroup {
   domain: DomainId;
   entityType: string;
-  state: "ok" | "forbidden" | "timeout" | "error";
+  state: "ok" | "forbidden" | "unavailable" | "timeout" | "error";
   reason: string | null;
   results: EntityEntry[];
   total: number | null;

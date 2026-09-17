@@ -53,8 +53,13 @@ ClassMethod SharedMemory() As %DynamicObject
 
 /// Fullest mounted local database: used / capacity, capacity = MaxSize when > 0, else
 /// Size + DiskFree (verification/README.md, probe 4).
+/// <p>Where the instance has no database-dir operations (v1 dialect), the native provider fills the
+/// gap with the same figures (Constitution I v2.1.0).
 ClassMethod Disk() As %DynamicObject
 {
+	if '##class(FlightDeck.Admin.Client).Has("GET /v2/database-dirs") || '##class(FlightDeck.Admin.Client).Has("POST /v2/database-dir/info") {
+		quit ..NativeDisk()
+	}
 	set vital = ..Base("disk", "Disk", "api")
 	set haveSession = ($data(%session)#2) && $isobject($get(%session))
 	set last = $select(haveSession:$get(%session.Data("fd.vitals.disk")), 1:"")
@@ -109,6 +114,22 @@ ClassMethod Disk() As %DynamicObject
 	set vital = ..Value(vital, $list(last, 1), $list(last, 2))
 	do vital.%Set("pending", tasks '= "", "boolean")
 	quit vital
+}
+
+/// Native disk vital: same privilege as POST /v2/database-dir/info, synchronous (no async task).
+ClassMethod NativeDisk() As %DynamicObject
+{
+	set vital = ..Base("disk", "Disk", "native")
+	set operation = "POST /v2/database-dir/info"
+	if '##class(FlightDeck.Capability.Map).CurrentUserMay(operation) {
+		set requires = ##class(FlightDeck.Capability.Map).Requires(operation)
+		set text = ""
+		for i=0:1:requires.%Size()-1 { set text = text _ $select(i:" or ", 1:"") _ requires.%Get(i) }
+		quit ..Unavailable(vital, ##class(FlightDeck.API.Response).RequiresMessage(requires), text)
+	}
+	set sc = ##class(FlightDeck.Native.Databases).MaxPercentUsed(.value, .asOf)
+	if $$$ISERR(sc) quit ..Unavailable(vital, ##class(FlightDeck.Native.Databases).#UNREADABLE)
+	quit ..Value(vital, value, asOf)
 }
 
 /// Starts one database-dir/info task per mounted local database. Returns a $list of task ids.

@@ -8,8 +8,16 @@ function basic(u: { user: string; password: string }): string {
   return "Basic " + Buffer.from(`${u.user}:${u.password}`).toString("base64");
 }
 
+/** The SysAdmin API version the install exposes: v2 on IRIS 2026.2+, v1 on IRIS 2026.1 (limited mode). */
+async function adminBase(): Promise<string> {
+  const info = await fetch(`${IRIS}/api/admin/info`, { headers: { Authorization: basic(ADMIN) } });
+  const version = ((await info.json()) as { result: { apiVersion: number } }).result.apiVersion;
+  return `${IRIS}/api/admin/v${version >= 2 ? 2 : 1}`;
+}
+
 export async function ensureUser(name: string, password: string, roles: string[]): Promise<void> {
-  const url = `${IRIS}/api/admin/v2/security/user?name=${encodeURIComponent(name)}`;
+  // Same method, path and body on both versions (verification/v1-api-2026.1.md, same shape).
+  const url = `${await adminBase()}/security/user?name=${encodeURIComponent(name)}`;
   const existing = await fetch(url, { headers: { Authorization: basic(ADMIN) } });
   if (existing.status === 200) return;
   const created = await fetch(url, {

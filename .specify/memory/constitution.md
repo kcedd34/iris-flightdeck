@@ -1,19 +1,20 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 → 2.0.0
-Bump rationale: MAJOR. Principle I is redefined: its scope is narrowed to the running portal, and
-its list of allowed native providers grows from one gap (logs) to two (logs, host CPU/memory).
+Version change: 2.0.0 → 2.1.0
+Bump rationale: MINOR. Scope notes added to Principles I and III for the SysAdmin API v1 dialect
+(IRIS 2026.1), and one new named native-provider gap, valid only on the v1 dialect. No principle
+is redefined.
 
 Modified principles:
   I. Official SysAdmin API First (RN-FD-30)
-     - Scope: governs the running portal's behavior, not the installer bootstrap.
-     - Installer bootstrap exception: narrow, idempotent, recorded in plan Complexity Tracking.
-     - Objects the installer creates beyond FlightDeck's own plumbing (demo data) MUST use the
-       official API.
-     - Native providers: logs AND host CPU/memory metrics (/proc/stat, /proc/meminfo). The
-       SysAdmin API v2 reports only IRIS-internal counters and shared memory, while the contest
-       statement names CPU and memory explicitly.
+     - Dialects: the official API of the instance is the source. When an instance exposes only v1,
+       the v1 dialect IS the official API; translating between dialects is not reimplementation.
+       Replacing an existing endpoint with Security.*/Config.*/SYS.* remains forbidden.
+     - New gap (v1 dialect only): disk usage per database. On v2 the official endpoints stay in use.
+  III. Capabilities Derived From the Spec (RN-FD-02)
+     - Scope note: the capability map stays derived from the v2 specification in both dialects;
+       translations are keyed by v2 operationId; nothing is derived from v1.
 
 Added sections: none
 Removed sections: none
@@ -25,11 +26,12 @@ Templates reviewed (read-only, not modified by this command):
   ✅ .specify/templates/checklist-template.md — no constitution-specific slots
 
 Follow-up TODOs:
-  - docs/prd.md RN-FD-30 and §10.1 still say "native providers: logs only". Update them to match
-    Principle I v2.0.0 (tracked as a polish task in specs/001-foundation-shell/tasks.md).
-  - Project skills for UI code, backend, domain screen structure and contest packaging are still
-    absent from .claude/skills/ (carried over from 1.0.0).
-  - docs/prd.md and docs/design.md cross-reference legacy file names (carried over from 1.0.0).
+  - Namespaces and journal evaluated in verification/v1-native-gaps-2026.1.md (recommendation:
+    namespace reads native on v1, writes unavailable; journal unavailable, because records carry a
+    per-database authorization filter). Awaiting the author's decision; the gap list changes only
+    if namespace reads are approved.
+  - docs/prd.md RN-FD-30 wording: mention the v1 dialect note.
+  - Carried over: project skills absent from .claude/skills/; legacy file names in docs.
 -->
 
 # FlightDeck for InterSystems IRIS Constitution
@@ -51,6 +53,13 @@ register FlightDeck's own web applications before the portal exists.
 
 - The official SysAdmin API (`/api/admin`, v2 operations under `/api/admin/v2`, specified in
   `docs/sysadmin-api-v2.json`) is the source of truth for every administrative operation.
+- **Dialects (scope note).** The source is the official API **of the instance**. When an instance
+  exposes only SysAdmin API v1 (IRIS 2026.1), the v1 dialect *is* the official API. Translating a
+  v2 operation into its v1 method, path, query and body is not reimplementation. The translation
+  lives in one backend layer and is keyed by v2 `operationId`, and each translation MUST be verified
+  live against a v1 instance by its effect, not only by HTTP status. Using `Security.*`,
+  `Config.*`, `SYS.*` or similar classes in place of an endpoint that the instance's dialect exposes
+  remains forbidden in both dialects.
 - Where the API provides an endpoint, the portal MUST use it. Reimplementing an operation it
   already exposes over ObjectScript classes (`Config.*`, `Security.*`, `SYS.*`, etc.) is forbidden.
 - The FlightDeck backend forwards and composes; it MUST NOT rewrite. Composition (effective
@@ -61,8 +70,12 @@ register FlightDeck's own web applications before the portal exists.
     reports only IRIS-internal counters and IRIS shared memory, while the contest statement names
     CPU and memory explicitly. Where both exist, the portal presents IRIS shared memory (from the
     API) and host memory (native) as separate, labeled metrics.
+  - **Disk usage per database, v1 dialect only**: RN-FD-19 requires it, and SysAdmin API v1 has no
+    database-directory or database-metrics operations. On the v2 dialect the official
+    `database-dir/info` and `async-result` operations MUST stay in use.
 
-  Adding any other native provider requires a constitution amendment naming the gap.
+  Adding any other native provider requires a constitution amendment naming the gap. A gap that
+  exists only in one dialect MUST be filled natively only on that dialect.
 - The REST explorer (UC04) uses `/api/mgmnt/` and `%REST.API` because the SysAdmin API does not
   cover it; this is a documented gap, not an exception to the rule.
 - Every one of the 273 official operations MUST be assigned to a domain and either implemented
@@ -105,6 +118,11 @@ the instance.
 - A hand-written permission table, or a per-screen hardcoded privilege check, is a defect.
 - Actions the user cannot perform MUST be shown disabled with the required resource and
   permission stated. They are never hidden.
+- **Dialects (scope note).** The capability map remains derived from the v2 specification in both
+  dialects. Translations are indexed by v2 `operationId`, so an operation's privilege always comes
+  from the canonical v2 contract. Nothing is derived from v1: no v1 specification, no v1 internal
+  classes. On the v1 dialect, an operation with no v1 translation is shown disabled with the
+  version reason, through the same capability mechanism.
 
 Rationale: a derived table cannot drift from the platform; a hand-coded one will.
 
@@ -296,4 +314,4 @@ Every plan (`/speckit-plan` Constitution Check) and every review MUST confirm:
   `/speckit-analyze` pass after tasks are generated, and the pre-submission review of
   `docs/design.md` §7 anti-patterns screen by screen in both themes.
 
-**Version**: 2.0.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-16
+**Version**: 2.1.0 | **Ratified**: 2026-09-16 | **Last Amended**: 2026-09-17

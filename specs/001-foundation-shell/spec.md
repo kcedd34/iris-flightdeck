@@ -133,10 +133,14 @@ armed.
 6. **Given** an invalid credential, **When** sign-in fails, **Then** the message is exactly
    "Invalid credentials. Check your username and password." and does not reveal whether the
    username exists.
-7. **Given** an IRIS instance whose SysAdmin API does not expose v2, **When** a user signs in with
+7. **Given** an IRIS instance that exposes no SysAdmin API at all, **When** a user signs in with
    valid credentials, **Then** sign-in is refused with "Not available on this IRIS version or
-   edition. Requires IRIS 2026.2." together with the version the instance reports, and no session
-   is created.
+   edition. Requires IRIS 2026.1." together with the version the instance reports, and no session
+   is created. *(Amended 2026-09-17 by the v1 adapter decision: IRIS 2026.1 is no longer refused.)*
+8. **Given** IRIS 2026.1, whose SysAdmin API exposes only v1, **When** a user signs in with valid
+   credentials, **Then** the session opens in limited mode: the glareshield shows a persistent
+   limited-mode indicator, and every operation without a v1 route is shown disabled with "Not
+   available on this IRIS version or edition. Requires IRIS 2026.2.".
 
 ---
 
@@ -320,11 +324,25 @@ width, and check tab strips, empty states, the inspector and the URL.
 - **FR-012**: The instance-information endpoint MUST be the source of version, edition and the
   user's privileges. Capability detection MUST NOT parse version strings when that endpoint answers
   the question.
-- **FR-012a**: If the instance does not expose SysAdmin API v2 (`apiVersion` below 2 in the
-  instance-information response, or the `/v2` operations absent), sign-in MUST be refused with §9
-  message 8 ("Not available on this IRIS version or edition. Requires IRIS 2026.2.") plus the
-  detected version string as reported by the instance. The IRIS session opened by the attempt MUST
-  be ended, and no FlightDeck session MUST exist afterward.
+- **FR-012a** *(amended 2026-09-17, v1 adapter decision; constitution 2.1.0)*: The SysAdmin API
+  dialect MUST be selected once per session from the instance's own instance-information response
+  (`apiVersion`), never from the version string.
+  - **v2** (IRIS 2026.2+): full mode.
+  - **v1** (IRIS 2026.1): **limited mode**. Sign-in succeeds. Each v2 operation is translated to
+    its v1 route in one adapter layer, keyed by the v2 operation, and each of the 28
+    different-shape translations is verified live by effect. Operations without a v1 route are
+    unavailable: the capability map marks them (`available: false`) with §9 message 8 ("Not
+    available on this IRIS version or edition. Requires IRIS 2026.2."), controls stay visible and
+    disabled, and the palette names entity types it could not search. The glareshield MUST show a
+    persistent limited-mode indicator (icon and text, with an accessible explanation).
+    Privileges always come from the v2 specification.
+  - **No SysAdmin API**: sign-in MUST be refused with message 8 naming IRIS 2026.1, plus the
+    detected version string. The IRIS session opened by the attempt MUST be ended, and no
+    FlightDeck session MUST exist afterward.
+  - A user without any administrative privilege MUST be refused for privileges (UC01 alternate flow, `NO_ADMIN_PRIVILEGE`), never
+    for the version, on either dialect.
+  - On v1, the Disk vital comes from a native provider with the same figures and the same declared
+    privilege as `database-dir/info` (Constitution I 2.1.0 gap).
 - **FR-013**: The session capability map MUST be computed by crossing the privilege each SysAdmin
   API operation declares in the official specification with the user's privileges. A hand-written
   privilege table is not permitted.
@@ -547,8 +565,8 @@ width, and check tab strips, empty states, the inspector and the URL.
   (UC04, RF12).
 - **Dependency**: the SysAdmin API v2 must be present on the target images, confirmed by probe 1.
   If probe 1 is `confirmed_absent`, the project design must be revisited (`docs/prd.md` §14).
-- **Version floor: IRIS 2026.2** (the first release exposing SysAdmin API v2). Checked on
-  2026-09-16:
+- **Version floor: IRIS 2026.1 in limited mode, IRIS 2026.2 in full** (amended 2026-09-17; the
+  first release exposing SysAdmin API v2 is 2026.2). Checked on 2026-09-16:
 
   | Image | `iris --version` | SysAdmin API |
   |---|---|---|
@@ -557,5 +575,7 @@ width, and check tab strips, empty states, the inspector and the URL.
   | `intersystemsdc/iris-community:2026.2-zpm` | 2026.2.0.221.0 | `apiVersion` 2 |
   | `intersystemsdc/irishealth-community:2026.2-zpm` | 2026.2.0.221.0 | `apiVersion` 2 |
 
-  The `latest` tags of both Community images are **below the floor**. The installation therefore
-  pins the `2026.2-zpm` tags, and FR-012a covers any instance below the floor.
+  The `latest` tags of both Community images run in **limited mode** (FR-012a). The installation
+  still pins the `2026.2-zpm` tags so the default install is complete. Coverage of v1 against v2:
+  `verification/v1-api-2026.1.md`; translations verified by effect:
+  `verification/v1-translations-2026.1.md`.

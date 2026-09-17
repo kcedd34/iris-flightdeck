@@ -29,9 +29,12 @@ Related idea on the InterSystems Ideas Portal: _link pending publication by the 
 - **Docker Engine 24+ with Docker Compose v2.** Works on Linux, macOS and Windows (including WSL2).
 - **About 3 GB of free disk space** for the IRIS Community image (5 GB for IRIS for Health).
 - **Free port 52780**, or pick another one (see [Port already in use](#port-already-in-use)).
-- **IRIS 2026.2 or later.** FlightDeck uses SysAdmin API **v2**, which first ships in IRIS 2026.2.
-  The `latest` tags of the Community images are still IRIS 2026.1, which only has API v1, so the
-  install pins the `2026.2` images for you.
+- **IRIS 2026.2 or later for the full portal.** FlightDeck uses SysAdmin API **v2**, which first
+  ships in IRIS 2026.2, so the install pins the `2026.2` images for you.
+- **IRIS 2026.1 runs in limited mode.** That release (still the `latest` tag of the Community
+  images) only has API v1. FlightDeck translates what v1 offers, shows a **Limited · API v1**
+  indicator at the top, and disables the 72 operations v1 lacks (namespaces, databases, ECP,
+  journal and a few more) with the reason.
 
 ## Quick start
 
@@ -94,7 +97,7 @@ The ready line in the log shows the new URL.
 
 ## Install with IPM on an existing instance
 
-On IRIS 2026.2 or later, in the namespace where you want FlightDeck, from a clone of this
+On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want FlightDeck, from a clone of this
 repository:
 
 ```objectscript
@@ -175,9 +178,11 @@ inconclusive, `1` otherwise, `2` for a usage error. The committed reports and fi
 - **The ready line never appears.** Look for a line starting with `FLIGHTDECK INSTALL FAILED:` in
   `docker compose logs iris`. It names the step and the IRIS error. IRIS stays running so you can
   inspect it.
-- **Sign-in says "Not available on this IRIS version or edition. Requires IRIS 2026.2."** You are
-  pointing FlightDeck at an instance older than 2026.2 (for example a `latest` Community image).
-  Use the pinned images or upgrade.
+- **Sign-in says "Not available on this IRIS version or edition. Requires IRIS 2026.1."** The
+  instance has no SysAdmin API. Use the pinned images or upgrade.
+- **The top bar shows "Limited · API v1".** The instance is IRIS 2026.1 (for example a `latest`
+  Community image). Disabled actions say "Requires IRIS 2026.2"; use the pinned images for the
+  full portal.
 - **Sign-in says "Invalid credentials".** The default account is `_SYSTEM` / `SYS` on the Docker
   install. On an existing instance, use your own IRIS account.
 - **Sign-in says "Requires Use on …".** The account has no administrative privilege. Grant one of

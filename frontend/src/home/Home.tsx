@@ -15,7 +15,7 @@ export function Home() {
   if (!session) return null;
   const counts = DOMAINS.map((d) => {
     const ops = capabilities.filter((c) => c.domain === d.id);
-    return { domain: d, allowed: ops.filter((c) => c.allowed).length, total: ops.length };
+    return { domain: d, allowed: ops.filter((c) => c.available && c.allowed).length, total: ops.length };
   });
   return (
     <div className="home">
@@ -39,6 +39,7 @@ export function Home() {
           <span className="field-k">Access</span>
           <span className="field-v num" data-testid="capability-summary">
             {session.capabilitySummary.allowed} of {session.capabilitySummary.total} operations available to you
+            {session.instance.limited ? ` · ${session.capabilitySummary.unavailable} not offered by this IRIS version` : ""}
           </span>
         </div>
       </section>

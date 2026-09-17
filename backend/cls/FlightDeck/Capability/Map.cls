@@ -31,9 +31,15 @@ ClassMethod Build(privileges As %DynamicObject) As %DynamicArray
 			"operationId": (op.operationId), "method": (op.method), "path": (op.path),
 			"domain": (op.domain), "summary": (op.summary), "requires": (op.requires)
 		}
+		// On the v1 dialect an operation without a v1 route is unavailable (Constitution III, dialect
+		// note): the privilege still comes from the v2 declaration, and the version reason wins.
+		set available = ##class(FlightDeck.Admin.Client).Has(op.operationId)
 		do entry.%Set("mutating", op.mutating, "boolean")
 		do entry.%Set("allowed", allowed, "boolean")
-		if allowed {
+		do entry.%Set("available", available, "boolean")
+		if 'available {
+			do entry.%Set("reason", ##class(FlightDeck.API.Response).#MSGVERSION)
+		} elseif allowed {
 			do entry.%Set("reason", "", "null")
 		} else {
 			do entry.%Set("reason", ##class(FlightDeck.API.Response).RequiresMessage(op.requires))
@@ -61,14 +67,41 @@ ClassMethod Allowed(requires As %DynamicArray, privileges As %DynamicObject) As 
 	quit allowed
 }
 
+/// allowed counts operations the user may run on this instance (privilege held and available);
+/// unavailable counts operations the instance's dialect does not offer.
 ClassMethod Summary(entries As %DynamicArray) As %DynamicObject
 {
-	set allowed = 0
+	set allowed = 0, unavailable = 0
 	set iter = entries.%GetIterator()
 	while iter.%GetNext(, .entry) {
+		if 'entry.available { set unavailable = unavailable + 1 continue }
 		set:entry.allowed allowed = allowed + 1
 	}
-	quit {"allowed":(allowed), "total":(entries.%Size())}
+	quit {"allowed":(allowed), "unavailable":(unavailable), "total":(entries.%Size())}
+}
+
+/// The privileges the v2 specification declares for one operation ("" when unknown).
+ClassMethod Requires(operationId As %String) As %DynamicArray
+{
+	set iter = ##class(FlightDeck.Capability.Spec).Operations().%GetIterator()
+	while iter.%GetNext(, .op) {
+		if op.operationId = operationId return op.requires
+	}
+	quit ""
+}
+
+/// OR semantics over the current process's roles, for native providers that fill a gap in place of
+/// a declared operation: the same privilege the official operation declares is required.
+ClassMethod CurrentUserMay(operationId As %String) As %Boolean
+{
+	set requires = ..Requires(operationId)
+	if '$isobject(requires) quit 0
+	if requires.%Size() = 0 quit 1
+	set iter = requires.%GetIterator()
+	while iter.%GetNext(, .requirement) {
+		if $system.Security.Check($piece(requirement, ":", 1), "USE") return 1
+	}
+	quit 0
 }
 
 /// Every distinct privilege any operation declares, sorted. Used in NO_ADMIN_PRIVILEGE errors.

@@ -15,6 +15,9 @@ Parameter MSGSAFEMODE = "Safe mode is on. Turn it off to make changes in this ta
 /// docs/prd.md section 9, message 8.
 Parameter MSGVERSION = "Not available on this IRIS version or edition. Requires IRIS 2026.2.";
 
+/// Message 8 for an instance without any SysAdmin API FlightDeck speaks (FR-012a).
+Parameter MSGNOAPI = "Not available on this IRIS version or edition. Requires IRIS 2026.1.";
+
 /// docs/prd.md section 9, message 19.
 Parameter MSGENTITYSEARCH = "Entity search is unavailable right now. Portal actions are still available.";
 

@@ -112,7 +112,7 @@ test("7. Given a user without any administrative privilege, when they sign in, t
   await expect(page.getByTestId("glareshield")).toHaveCount(0);
 });
 
-test("8. Given an instance without SysAdmin API v2, when the user signs in, then sign-in is refused with the version message and the detected version (FR-012a)", async ({ page }) => {
+test("8. Given an instance without any SysAdmin API, when the user signs in, then sign-in is refused with the version message and the detected version (FR-012a)", async ({ page }) => {
   await page.route("**/api/flightdeck/v1/session", async (route) => {
     if (route.request().method() === "POST") {
       await route.fulfill({
@@ -121,9 +121,9 @@ test("8. Given an instance without SysAdmin API v2, when the user signs in, then
         body: JSON.stringify({
           error: {
             code: "UNSUPPORTED_VERSION",
-            message: "Not available on this IRIS version or edition. Requires IRIS 2026.2.",
+            message: "Not available on this IRIS version or edition. Requires IRIS 2026.1.",
             raw: null,
-            detectedVersion: "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.1 (Build 234U) Fri Mar 27 2026 14:07:14 EDT",
+            detectedVersion: "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2025.1 (Build 223U) Tue Mar 11 2025 18:01:57 EDT",
           },
         }),
       });
@@ -135,7 +135,7 @@ test("8. Given an instance without SysAdmin API v2, when the user signs in, then
   await page.locator('input[name="username"]').fill("_SYSTEM");
   await page.locator('input[name="password"]').fill("SYS");
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("alert")).toContainText("Not available on this IRIS version or edition. Requires IRIS 2026.2.");
-  await expect(page.getByRole("alert")).toContainText("Detected: IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.1 (Build 234U)");
+  await expect(page.getByRole("alert")).toContainText("Not available on this IRIS version or edition. Requires IRIS 2026.1.");
+  await expect(page.getByRole("alert")).toContainText("Detected: IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2025.1 (Build 223U)");
   await expect(page.getByTestId("glareshield")).toHaveCount(0);
 });

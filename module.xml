@@ -11,7 +11,7 @@
         <License>MIT</License>
       </Author>
       <Packaging>module</Packaging>
-      <SystemRequirements Version=">=2026.2" />
+      <SystemRequirements Version=">=2026.1" />
       <SourcesRoot>backend/cls</SourcesRoot>
       <Resource Name="FlightDeck.PKG" />
       <UnitTest Name="/backend/test" Package="FlightDeck.Test" Phase="test" />

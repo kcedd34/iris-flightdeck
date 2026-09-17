@@ -17,7 +17,8 @@ function describe(error: unknown): { message: string; detail: string | null } {
       case "NO_ADMIN_PRIVILEGE":
         return { message: error.message, detail: null };
       case "UNSUPPORTED_VERSION":
-        return { message: MESSAGES.version, detail: error.detectedVersion ? `Detected: ${error.detectedVersion}` : null };
+        // The server names the minimum version (message 8); only an instance without any SysAdmin API is refused.
+        return { message: error.message, detail: error.detectedVersion ? `Detected: ${error.detectedVersion}` : null };
       default:
         // IRIS text is shown verbatim, never replaced by generic portal text (design §7).
         return { message: error.message, detail: error.raw };

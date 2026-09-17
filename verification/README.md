@@ -102,3 +102,34 @@ They were fixed and the run repeated (the table above).
   declares `(%Admin_Operate:U or %Admin_Secure:U)` and `_SYSTEM` gets 200. The palette shows the
   IRIS error text for that group and marks the search degraded; the other groups are unaffected.
   Observed on IRIS for Health 2026.2 Build 221U.
+
+## SysAdmin API v1 dialect (IRIS 2026.1)
+
+- `v1-api-2026.1.md` / `.json`: coverage of v1 against the v2 specification (173 same shape,
+  28 different shape, 72 absent).
+- `v1-adapter-spike.md`: cost spike over 5 of the 28 translations.
+- `v1-translations-2026.1.md`: **all 28 translations verified live by effect** through the adapter,
+  14/14 test methods in three consecutive runs (`FlightDeck.Test.V1Translations`). Pause and resume
+  of async results can only be verified as reachable: no v1 async task supports them.
+- `v1-native-gaps-2026.1.md`: native disk per database on v1, verified equal to `database-dir/info`
+  on 2026.2 for all 10 databases; evaluation of namespaces (recommend native reads) and journal
+  (recommend none).
+
+### Test matrix, 2026-09-17 (fresh compose installs of the final code)
+
+| Install | Backend | Playwright | Other gates |
+|---|---|---|---|
+| IRIS CE 2026.2 (`2026.2-zpm`, port 52780) | 52/52 (all classes; `V1Translations` skips on v2) | 24 passed, 6 skipped (`limited` project skips on v2) | safe-mode enforcement ok |
+| IRIS CE 2026.1 (`2026.1-zpm`, port 52791, limited mode) | reduced set 25/25: `V1Translations` 14, `Dialect` 6, `NativeDatabases` 5 | `limited` project 6/6 | install and demo complete on v1 |
+
+Static gates on the same tree: `check-generated`, `check-dist`, verification script unit tests,
+`lint`, `check:tokens`, `contrast`, `vitest` (6), `build`.
+
+Findings while installing on 2026.1:
+- **The IPM `SystemRequirements` pin (`>=2026.2`) refused the install**; it is now `>=2026.1`.
+- **`POST /v1/task` rejects a start date and time already in the past** ("ERROR #7432: Start Date
+  and Time must be after the current date and time"); 2026.2 accepted it. The demo tasks now start
+  tomorrow on both versions.
+- **A user without privileges cannot read `%SYS`**, so the v1 dispatcher cannot be detected for
+  them. Detection reports "unknown", the call returns the API's 403, and sign-in refuses for
+  privileges, not for the version (e2e on both versions).

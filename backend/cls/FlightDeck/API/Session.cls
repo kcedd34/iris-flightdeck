@@ -40,8 +40,9 @@ ClassMethod Respond(isSignIn As %Boolean) As %Status
 ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 {
 	set error = ""
-	if '##class(%Dictionary.CompiledClass).%ExistsId("%Api.Admin.Dispatch.v2") {
-		set error = {"status":403, "code":"UNSUPPORTED_VERSION", "message":(##class(FlightDeck.API.Response).#MSGVERSION), "raw":"", "requires":"", "detectedVersion":($zversion)}
+	// FR-012a: refuse only an instance without any SysAdmin API; IRIS 2026.1 (v1) runs in limited mode.
+	if '##class(FlightDeck.Admin.Client).ApiPresent() {
+		set error = {"status":403, "code":"UNSUPPORTED_VERSION", "message":(##class(FlightDeck.API.Response).#MSGNOAPI), "raw":"", "requires":"", "detectedVersion":($zversion)}
 		quit ""
 	}
 	set sc = ##class(FlightDeck.Admin.Client).Call("GET", "/info", , , .status, .json, .raw)
@@ -59,15 +60,11 @@ ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 		quit ""
 	}
 	set info = json.result
-	if (+info.apiVersion < 2) {
-		set error = {"status":403, "code":"UNSUPPORTED_VERSION", "message":(##class(FlightDeck.API.Response).#MSGVERSION), "raw":"", "requires":"", "detectedVersion":(info.serverVersion)}
-		quit ""
-	}
 	set privileges = ##class(FlightDeck.Capability.Map).NormalizePrivileges(info.privileges)
 	set entries = ##class(FlightDeck.Capability.Map).Build(privileges)
 	set version = $zstrip($piece($piece(info.serverVersion, ") ", 2), " (", 1), "<>W")
 	set edition = ..Edition(privileges)
-	quit {
+	set session = {
 		"username": (info.username),
 		"instance": {
 			"product": (info.product),
@@ -75,12 +72,16 @@ ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 			"serverVersion": (info.serverVersion),
 			"apiVersion": (+info.apiVersion),
 			"edition": (edition),
-			"namespace": ($namespace)
+			"namespace": ($namespace),
+			"dialect": (##class(FlightDeck.Admin.Client).Dialect()),
+			"limited": (##class(FlightDeck.Admin.Client).Limited())
 		},
 		"authPath": "in_process",
 		"privileges": (privileges),
 		"capabilitySummary": (##class(FlightDeck.Capability.Map).Summary(entries))
 	}
+	do session.instance.%Set("limited", ##class(FlightDeck.Admin.Client).Limited(), "boolean")
+	quit session
 }
 
 /// "Community" when the license reports a Community platform, "" when not, null when the user

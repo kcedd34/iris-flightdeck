@@ -18,6 +18,8 @@ export default defineConfig({
     { name: "palette", testMatch: /palette\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "shell", testMatch: /shell\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "fixtures", testMatch: /fixtures\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
+    // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.
+    { name: "limited", testMatch: /limited\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
   ],
   webServer: [
     {

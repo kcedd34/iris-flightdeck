@@ -71,7 +71,9 @@ ClassMethod Tasks() As %Status
 			"TimePeriod": "Daily", "TimePeriodEvery": 1, "TimePeriodDay": "",
 			"DailyFrequency": "Once", "DailyFrequencyTime": "", "DailyIncrement": "",
 			"DailyStartTime": ($list(spec, 2)), "DailyEndTime": ($list(spec, 2)),
-			"StartDate": ($zdate($horolog, 3)), "EndDate": "",
+			// Tomorrow: the 2026.1 API rejects a start date and time already past (the daily times are
+			// fixed), and a daily task's first run is tomorrow's anyway.
+			"StartDate": ($zdate($horolog + 1, 3)), "EndDate": "",
 			"Priority": "Normal", "MirrorStatus": "Any", "RunAfterGUID": "",
 			"EmailOnCompletion": [], "EmailOnError": [], "EmailOnExpiration": [], "EmailOutput": false,
 			"Expires": false, "ExpiresDays": "", "ExpiresHours": "", "ExpiresMinutes": "",

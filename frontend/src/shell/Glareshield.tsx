@@ -1,4 +1,5 @@
 import { useSession } from "../session/SessionProvider";
+import { LimitedModeIndicator } from "./LimitedModeIndicator";
 import { SafeModeIndicator } from "./SafeModeIndicator";
 import { ThemeToggle } from "./ThemeToggle";
 import { Vitals } from "./Vitals";
@@ -21,6 +22,7 @@ export function Glareshield() {
         {productLabel(instance.product)} {instance.version}
         {instance.edition === "Community" ? " CE" : ""} · {instance.namespace}
       </span>
+      {instance.limited && <LimitedModeIndicator unavailable={session.capabilitySummary.unavailable} total={session.capabilitySummary.total} />}
       <Vitals />
       <ThemeToggle />
       <SafeModeIndicator />

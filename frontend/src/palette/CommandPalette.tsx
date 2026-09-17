@@ -262,12 +262,13 @@ export function CommandPalette() {
                       {g.entities.map((eg) =>
                         eg.state === "ok" ? (
                           <EntityRows key={eg.entityType} group={eg} onSelect={runEntity} onRefine={() => setDomainFilter(eg.domain as RailDomainId)} />
-                        ) : (
+                        ) : eg.state === "unavailable" ? null : (
                           <div key={eg.entityType} className="palette-note" role="note">
-                            {eg.entityType}: {eg.state === "forbidden" ? eg.reason : eg.state === "timeout" ? "did not respond in time" : eg.reason}
+                            {eg.entityType}: {eg.state === "timeout" ? "did not respond in time" : eg.reason}
                           </div>
                         ),
                       )}
+                      <UnavailableNote groups={g.entities} />
                       {hidden > 0 && g.domain !== "shell" && (
                         <Command.Item value={`refine:${g.domain}`} className="palette-row palette-more" onSelect={() => setDomainFilter(g.domain as RailDomainId)}>
                           {hidden} more — refine to {domainLabel(g.domain)}
@@ -325,5 +326,16 @@ function EntityRows({ group, onSelect, onRefine }: { group: EntitySearchGroup; o
         </Command.Item>
       )}
     </>
+  );
+}
+
+/** Entity types the instance does not offer (limited mode), named once per domain with the version message. */
+function UnavailableNote({ groups }: { groups: EntitySearchGroup[] }) {
+  const unavailable = groups.filter((eg) => eg.state === "unavailable");
+  if (unavailable.length === 0) return null;
+  return (
+    <div className="palette-note" role="note" data-testid="palette-unavailable-types">
+      Not searched: {unavailable.map((eg) => eg.entityType).join(", ")}. {unavailable[0]!.reason}
+    </div>
   );
 }

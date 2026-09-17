@@ -27,6 +27,8 @@ test("glareshield is 44px, the rail is 56px with exactly six destinations in ord
   expect(rail?.width).toBe(56);
   const labels = await page.getByTestId("rail").getByRole("link").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));
   expect(labels).toEqual(DOMAINS.map(([, label]) => label));
+  // A 2026.2 install speaks the full API: no limited-mode indicator (FR-012a).
+  await expect(page.getByTestId("limited-mode-indicator")).toHaveCount(0);
 });
 
 test("section tabs appear only for domains with more than one entity type, and the active tab lives in the URL", async ({ page }) => {

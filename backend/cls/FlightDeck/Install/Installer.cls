@@ -54,14 +54,16 @@ ClassMethod DeployCapture() As %Status
 	quit $$$OK
 }
 
-/// FR-012a: SysAdmin API v2 must exist. Detected by capability (the v2 dispatcher), never by
-/// parsing the version string.
+/// FR-012a: the instance must expose the SysAdmin API. v2 (IRIS 2026.2+) runs in full; v1
+/// (IRIS 2026.1) runs in limited mode. Detected by the API itself, never by parsing the version string.
 ClassMethod CheckVersion() As %Status
 {
-	if '##class(%Dictionary.CompiledClass).%ExistsId("%Api.Admin.Dispatch.v2") {
-		quit $$$ERROR($$$GeneralError, "Requires IRIS 2026.2 (detected "_$zversion_")")
+	do ##class(FlightDeck.Admin.Dialect).Reset()
+	if '##class(FlightDeck.Admin.Client).ApiPresent() {
+		quit $$$ERROR($$$GeneralError, "Requires the SysAdmin API, IRIS 2026.1 or later (detected "_$zversion_")")
 	}
-	write "FlightDeck: SysAdmin API v2 present", !
+	write "FlightDeck: SysAdmin API ", ##class(FlightDeck.Admin.Client).Dialect(), " present"
+	write $select(##class(FlightDeck.Admin.Client).Limited():" (limited mode: operations the instance does not offer are shown unavailable)", 1:""), !
 	quit $$$OK
 }
 
@@ -70,14 +72,9 @@ ClassMethod CheckVersion() As %Status
 /// code without a public grant (research R4).
 ClassMethod EnsureRuntimeRole() As %Status
 {
-	set ns = ##class(FlightDeck.Admin.Client).Get("/v2/namespace", {"name":($namespace)}, .status, .raw)
-	if status '= 200 quit ..ApiError("GET /v2/namespace", status, raw)
-	set db = ##class(FlightDeck.Admin.Client).Get("/v2/database", {"name":(ns.Routines)}, .status, .raw)
-	if status '= 200 quit ..ApiError("GET /v2/database", status, raw)
-	set dir = ##class(FlightDeck.Admin.Client).Get("/v2/database-dir", {"dir":(db.Directory)}, .status, .raw)
-	if status '= 200 quit ..ApiError("GET /v2/database-dir", status, raw)
-	set resource = dir.ResourceName
-	if resource = "" quit $$$ERROR($$$GeneralError, "Database "_ns.Routines_" ("_db.Directory_") has no resource")
+	set sc = ..CodeDatabaseResource(.resource, .database)
+	quit:$$$ISERR(sc) sc
+	if resource = "" quit $$$ERROR($$$GeneralError, "Database "_database_" has no resource")
 	set body = {
 		"Description": "FlightDeck runtime: read access to the FlightDeck code database only. Granted inside the FlightDeck web applications.",
 		"Resources": [ {"Name":(resource), "Permissions":"R"} ]
@@ -88,6 +85,26 @@ ClassMethod EnsureRuntimeRole() As %Status
 	quit:$$$ISERR(sc) sc
 	if status >= 300 quit ..ApiError("PUT /v2/security/role", status, raw, json)
 	write "FlightDeck: role ", ..#RUNTIMEROLE, " ", outcome, " (", resource, ":R)", !
+	quit $$$OK
+}
+
+/// The resource of the database holding FlightDeck's code, through the official namespace,
+/// database and database-dir operations. Where the instance has none of them (v1 dialect), the
+/// installer bootstrap reads it natively (plan Complexity Tracking).
+ClassMethod CodeDatabaseResource(Output resource As %String, Output database As %String) As %Status
+{
+	set resource = "", database = ""
+	if '##class(FlightDeck.Admin.Client).Has("GET /v2/namespace") || '##class(FlightDeck.Admin.Client).Has("GET /v2/database") || '##class(FlightDeck.Admin.Client).Has("GET /v2/database-dir") {
+		quit ##class(FlightDeck.Native.Databases).CodeDatabaseResource($namespace, .resource, .database)
+	}
+	set ns = ##class(FlightDeck.Admin.Client).Get("/v2/namespace", {"name":($namespace)}, .status, .raw)
+	if status '= 200 quit ..ApiError("GET /v2/namespace", status, raw)
+	set database = ns.Routines
+	set db = ##class(FlightDeck.Admin.Client).Get("/v2/database", {"name":(database)}, .status, .raw)
+	if status '= 200 quit ..ApiError("GET /v2/database", status, raw)
+	set dir = ##class(FlightDeck.Admin.Client).Get("/v2/database-dir", {"dir":(db.Directory)}, .status, .raw)
+	if status '= 200 quit ..ApiError("GET /v2/database-dir", status, raw)
+	set resource = dir.ResourceName
 	quit $$$OK
 }
 

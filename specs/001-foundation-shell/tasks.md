@@ -392,6 +392,25 @@ fault-injection run still lists 8 probes and exits 1 (quickstart §1).
 
 ---
 
+## Phase 9: SysAdmin API v1 dialect, limited mode on IRIS 2026.1 (FR-012a amended)
+
+Author decision of 2026-09-17, taken before feature 002, in this order. Constitution 2.1.0.
+
+- [X] T095 Bodyless POST/PATCH sends `{}` as `application/json` (spike finding 4) in `backend/cls/FlightDeck/Admin/Client.cls`; test `AdminClient.TestPostWithoutBodySendsJson`
+- [X] T096 Constitution 2.1.0 (MINOR): dialect scope notes in Principles I and III; native gap "Disk usage per database, v1 dialect only"
+- [X] T097 Dialect selected once per session (`backend/cls/FlightDeck/Admin/Dialect.cls`), translation keyed by v2 operation (`Admin/V1Dialect.cls`, generated `Admin/V1Routes.cls` from `scripts/build/v1-translations.json` via `scripts/build/gen-v1-dialect.py`, added to `check-generated.sh`); no version check outside `FlightDeck.Admin` (callers ask `Client.Has`, `ApiPresent`, `Limited`)
+- [X] T098 Verify all 28 translations live by effect on 2026.1: `backend/test/FlightDeck/Test/V1Translations.cls`; record `verification/v1-translations-2026.1.md`
+- [X] T099 Native disk per database, v1 only: `backend/cls/FlightDeck/Native/Databases.cls`, `Vitals/Service.NativeDisk`; privilege from the v2 spec (`Capability.Map.Requires`, `CurrentUserMay`); parity with `database-dir/info` on 2026.2 in `Test/NativeDatabases.cls`; installer code-database resource on v1 (Complexity Tracking)
+- [X] T100 Evaluate namespaces and journal as v1-only native gaps: `verification/v1-native-gaps-2026.1.md` (recommendation: namespace reads native, writes unavailable; journal unavailable)
+- [ ] T101 Author decision on T100; if namespace reads are approved, amend the constitution gap list and implement them
+- [X] T102 Capability map `available` + version reason, summary `unavailable`; session `instance.dialect`/`limited`, refusal only without any SysAdmin API (`MSGNOAPI`); palette groups `unavailable`; contract `flightdeck-api.openapi.json` and generated `API/OpenAPI.cls`; `Installer.CheckVersion`; `module.xml` `>=2026.1`; demo task start date valid on both dialects
+- [X] T103 Frontend: `src/shell/LimitedModeIndicator.tsx` in the glareshield; `available` in `CapabilityGate`, palette actions and home counts; one "Not searched" note per domain; version refusal text from the server; types
+- [X] T104 Dialect detection for callers who cannot read `%SYS` ("unknown" → the API's 403, never a version refusal); `Test/Dialect.cls`
+- [X] T105 Test matrix: full e2e and backend on 2026.2; reduced 2026.1 set = backend `V1Translations`, `Dialect`, `NativeDatabases` and the Playwright `limited` project (`frontend/e2e/limited.spec.ts`), run against a compose install on 2026.1; quickstart §limited mode
+- [X] T106 Spec (FR-012a, UC01 scenarios 7 and 8, version floor), plan, research R1 note, README requirements and troubleshooting
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

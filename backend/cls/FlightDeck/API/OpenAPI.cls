@@ -154,7 +154,9 @@ XData Document [ MimeType = application/json ]
        "version",
        "serverVersion",
        "apiVersion",
-       "namespace"
+       "namespace",
+       "dialect",
+       "limited"
       ],
       "properties": {
        "product": {
@@ -182,6 +184,18 @@ XData Document [ MimeType = application/json ]
         "nullable": true,
         "example": "Community",
         "description": "'Community' when the license platform is a Community edition; empty when not, or when the user cannot read license information (requires %Admin_Manage:U). The license key is never returned."
+       },
+       "dialect": {
+        "type": "string",
+        "enum": [
+         "v2",
+         "v1"
+        ],
+        "description": "SysAdmin API dialect selected once per session. 'v1' is IRIS 2026.1 (FR-012a limited mode). An instance without any SysAdmin API is refused at sign-in."
+       },
+       "limited": {
+        "type": "boolean",
+        "description": "True when some operations have no route on the instance; the glareshield shows the limited-mode indicator and those operations are unavailable in the capability map."
        }
       }
      },
@@ -211,7 +225,12 @@ XData Document [ MimeType = application/json ]
       "type": "object",
       "properties": {
        "allowed": {
-        "type": "integer"
+        "type": "integer",
+        "description": "Operations the user holds the declared privilege for and the instance offers."
+       },
+       "unavailable": {
+        "type": "integer",
+        "description": "Operations the instance's dialect does not offer (0 on v2)."
        },
        "total": {
         "type": "integer",
@@ -232,6 +251,7 @@ XData Document [ MimeType = application/json ]
      "summary",
      "requires",
      "allowed",
+     "available",
      "reason"
     ],
     "properties": {
@@ -267,11 +287,17 @@ XData Document [ MimeType = application/json ]
       }
      },
      "allowed": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "The user holds a privilege the v2 specification declares for the operation."
+     },
+     "available": {
+      "type": "boolean",
+      "description": "The instance offers the operation (always true on v2; on v1, true when a v1 route exists). Privileges always come from the v2 specification."
      },
      "reason": {
       "type": "string",
-      "nullable": true
+      "nullable": true,
+      "description": "Version message when unavailable, otherwise the privilege message when not allowed, otherwise null."
      }
     }
    },
@@ -442,7 +468,8 @@ XData Document [ MimeType = application/json ]
        "ok",
        "forbidden",
        "timeout",
-       "error"
+       "error",
+       "unavailable"
       ]
      },
      "reason": {

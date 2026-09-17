@@ -37,4 +37,20 @@ Method TestApiErrorIsPassedThrough()
 	do $$$AssertTrue(##class(FlightDeck.Admin.Client).ErrorText(json, raw) [ "does not exist")
 }
 
+Method TestPostWithoutBodySendsJson()
+{
+	// /v2/task/suspend declares an optional body and returns 415 without a JSON content type.
+	do $$$AssertStatusOK(##class(FlightDeck.Install.Demo).Tasks())
+	set tasks = ##class(FlightDeck.Admin.Client).Get("/v2/tasks", {"filter":"FD Demo daily", "maxRows":5}, .status)
+	set id = tasks.%Get(0).Id
+	set sc = ##class(FlightDeck.Admin.Client).Call("POST", "/v2/task/suspend", {"id":(id)}, , .status, .json, .raw)
+	do $$$AssertStatusOK(sc)
+	do $$$AssertEquals(status, 200, raw)
+	set info = ##class(FlightDeck.Admin.Client).Get("/v2/task/info", {"id":(id)}, .status)
+	do $$$AssertTrue(info.Suspended, "task is suspended (effect, not only HTTP 200)")
+	do ##class(FlightDeck.Admin.Client).Call("POST", "/v2/task/resume", {"id":(id)}, , .status)
+	set info = ##class(FlightDeck.Admin.Client).Get("/v2/task/info", {"id":(id)}, .status)
+	do $$$AssertNotTrue(info.Suspended, "task resumed")
+}
+
 }

@@ -107,20 +107,34 @@ scripts/dev/check-safe-mode-enforcement.sh   # signs in via curl, then sends PUT
 Expected: every call gets 403 `SAFE_MODE_ON` (or 400 `MISSING_TAB_ID`), and
 `GET /api/admin/v2/security/roles` shows no change.
 
-Version floor (FR-012a, UC01 scenario 7), against IRIS 2026.1 (`2026.1-zpm` tag, SysAdmin API
-v1 only):
+Limited mode (FR-012a, UC01 scenarios 7 and 8), the reduced IRIS 2026.1 matrix. Run it as a
+separate compose project on another port, so the 2026.2 install stays up:
 
 ```bash
-docker compose down -v
-IRIS_IMAGE=intersystemsdc/iris-community:2026.1-zpm docker compose up -d --build
+cat > /tmp/fd-v1.yml <<'EOF'
+services:
+  iris:
+    image: iris-flightdeck:2026.1-test
+EOF
+IRIS_IMAGE=intersystemsdc/iris-community:2026.1-zpm FLIGHTDECK_PORT=52791 \
+  docker compose -p fd-v1 -f docker-compose.yml -f /tmp/fd-v1.yml up -d --build
+cd frontend && FLIGHTDECK_PORT=52791 npx playwright test --project limited
 ```
 
-Expected: the install completes. Signing in as `_SYSTEM` shows "Not available on this IRIS version
-or edition. Requires IRIS 2026.2." followed by the detected `IRIS for UNIX … 2026.1 (Build 234U) …`
-string, and no shell renders. Afterward restore the default image with `docker compose down -v`.
-If the 2026.1 install itself fails because the demo step needs `/v2`, record it; the installer must
-report `FLIGHTDECK INSTALL FAILED: version: Requires IRIS 2026.2 (detected …)` rather than a raw
-compile or HTTP error.
+Backend, in a 2026.1 container with the repository at `/opt/flightdeck`:
+`FD_DEV_CONTAINER=<container> scripts/dev/test-backend.sh V1Translations` (then `Dialect` and
+`NativeDatabases`).
+
+Expected:
+- The install log shows `SysAdmin API v1 present (limited mode …)`, and the demo is provisioned.
+- e2e: dialect `v1` with 72 of 273 operations unavailable, the glareshield indicator, disabled
+  palette actions with the version message, one "Not searched" note per domain, a native Disk
+  value, and a no-privilege user refused for privileges.
+- Backend: 14 + 6 + 5 tests pass.
+
+Clean up with `docker compose -p fd-v1 -f docker-compose.yml -f /tmp/fd-v1.yml down -v`.
+Scenario 7 (no SysAdmin API at all) has no Community image to run against; the e2e suite covers it
+with a stubbed response (session test 8).
 
 Session expiry and restore (FR-016, FR-017, FR-017a, UC01 scenario 4):
 

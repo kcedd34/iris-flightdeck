@@ -1,5 +1,6 @@
 /// The only way FlightDeck reaches IRIS administration: in-process calls to the official
-/// SysAdmin API handlers (%Api.Admin), under the current user's identity and roles.
+/// SysAdmin API handlers of the instance (%Api.Admin for v2, Api.Admin for v1), under the current
+/// user's identity and roles.
 /// Constitution I and II; research R4.
 /// <p>The official handlers must run with $namespace = "%SYS". The caller's %request, %response
 /// and $namespace are always restored, so a FlightDeck handler can call this any number of times
@@ -7,18 +8,81 @@
 Class FlightDeck.Admin.Client [ Abstract ]
 {
 
-/// Calls one official operation.
+/// Calls one official operation, identified by its v2 method and path.
 /// <ul>
-/// <li><var>method</var>: GET, PUT, POST or DELETE.</li>
-/// <li><var>path</var>: the operation path as in the spec, e.g. "/v2/security/roles".</li>
+/// <li><var>method</var>: GET, PUT, POST or DELETE, as in the v2 specification.</li>
+/// <li><var>path</var>: the v2 operation path, e.g. "/v2/security/roles", or "/info".</li>
 /// <li><var>query</var>: optional %DynamicObject of query parameters.</li>
 /// <li><var>body</var>: optional %DynamicAbstractObject sent as JSON.</li>
 /// </ul>
-/// Outputs the HTTP status code, the parsed JSON (or "" when the body is not JSON) and the raw
-/// body text (max 32 KB). Returns an error %Status only when the call could not be made at all;
-/// an HTTP error from the API is a successful call with status >= 400. <var>headers</var> holds the
-/// response headers by lower-case name.
+/// The dialect is selected once per session (FlightDeck.Admin.Dialect). On the v1 dialect the
+/// operation is translated by FlightDeck.Admin.V1Dialect; an operation without a v1 route answers
+/// 501 with the version message, without calling IRIS. This is the only place that knows about
+/// dialects.
+/// <p>Outputs the HTTP status code, the parsed JSON (or "" when the body is not JSON), the raw body
+/// text and the response headers by lower-case name. Returns an error %Status only when the call
+/// could not be made at all; an HTTP error from the API is a successful call with status >= 400.
 ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "", body As %DynamicAbstractObject = "", Output status As %Integer, Output result As %DynamicAbstractObject, Output raw As %String, Output headers As %String) As %Status
+{
+	set method = $zconvert(method, "U")
+	set status = 0, result = "", raw = ""
+	kill headers
+	set dialect = ##class(FlightDeck.Admin.Dialect).Current()
+	if dialect = "v2" {
+		quit ..Dispatch("%Api.Admin", path, method, query, body, .status, .result, .raw, .headers)
+	}
+	if (dialect = "v1") && ##class(FlightDeck.Admin.V1Dialect).Translate(method _ " " _ path, body, .v1Method, .v1Path, .v1Body) {
+		quit ..Dispatch("Api.Admin", v1Path, v1Method, query, v1Body, .status, .result, .raw, .headers)
+	}
+	if dialect = "unknown" {
+		// The caller cannot read %SYS, so no official handler would run for them: answer like the
+		// <PROTECT> a dispatch raises (403, no administrative privilege).
+		quit ..Dispatch("Api.Admin", path, method, query, body, .status, .result, .raw, .headers)
+	}
+	do ..Unavailable(dialect, .status, .result, .raw)
+	quit $$$OK
+}
+
+/// The dialect selected for this session: "v2", "v1" (limited mode) or "none".
+ClassMethod Dialect() As %String
+{
+	quit ##class(FlightDeck.Admin.Dialect).Current()
+}
+
+/// True unless the instance is known to expose no SysAdmin API FlightDeck speaks. A caller who cannot
+/// read %SYS on a v1 instance ("unknown") is refused for missing privileges instead, by the API's 403.
+ClassMethod ApiPresent() As %Boolean
+{
+	quit ##class(FlightDeck.Admin.Dialect).Current() '= "none"
+}
+
+/// True when some v2 operations have no route on the instance (limited mode, FR-012a).
+ClassMethod Limited() As %Boolean
+{
+	quit ##class(FlightDeck.Admin.Dialect).Current() = "v1"
+}
+
+/// True when the instance offers the v2 operation, in whichever dialect it speaks. Callers that
+/// fill a gap natively ask this instead of asking for a version (Constitution I, dialect note).
+ClassMethod Has(operationId As %String) As %Boolean
+{
+	set dialect = ##class(FlightDeck.Admin.Dialect).Current()
+	if dialect = "v2" quit 1
+	if dialect = "v1" quit ##class(FlightDeck.Admin.V1Dialect).IsAvailable(operationId)
+	quit 0
+}
+
+/// The version answer for an operation the instance's dialect does not have (docs/prd.md §9, message 8).
+ClassMethod Unavailable(dialect As %String, Output status As %Integer, Output result As %DynamicAbstractObject, Output raw As %String)
+{
+	set message = $select(dialect="none":##class(FlightDeck.API.Response).#MSGNOAPI, 1:##class(FlightDeck.API.Response).#MSGVERSION)
+	set status = 501
+	set result = {"status":{"errors":[{"error":(message), "code":"FLIGHTDECK_UNAVAILABLE", "id":"NotAvailableInDialect"}], "summary":(message)}, "console":[], "result":{}}
+	set raw = result.%ToJSON()
+}
+
+/// Low-level in-process call to a dispatcher class. Used by Call and by dialect detection only.
+ClassMethod Dispatch(dispatcher As %String, path As %String, method As %String, query As %DynamicObject = "", body As %DynamicAbstractObject = "", Output status As %Integer, Output result As %DynamicAbstractObject, Output raw As %String, Output headers As %String) As %Status
 {
 	set status = 0, result = "", raw = ""
 	kill headers
@@ -38,6 +102,12 @@ ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "
 				set %request.Data(key, 1) = value
 			}
 		}
+		// A POST without a body is sent as JSON "{}": some official operations whose body is
+		// optional (for example /v2/task/suspend) answer 415 to a request without a JSON content
+		// type (verification/v1-adapter-spike.md, finding 5).
+		if '$isobject(body), $listfind($listbuild("POST", "PATCH"), $zconvert(method, "U")) {
+			set body = {}
+		}
 		if $isobject(body) {
 			set content = ##class(%CSP.CharacterStream).%New()
 			do content.Write(body.%ToJSON())
@@ -52,7 +122,7 @@ ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "
 		try {
 			new $namespace
 			set $namespace = "%SYS"
-			set sc = ##class(%Api.Admin).DispatchRequest(path, $zconvert(method, "U"), 1)
+			set sc = $classmethod(dispatcher, "DispatchRequest", path, $zconvert(method, "U"), 1)
 		} catch inner {
 			// A user who cannot even read %SYS holds no administrative privilege: answer like the
 			// API's own 403 instead of failing the call.

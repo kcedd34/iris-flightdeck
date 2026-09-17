@@ -17,13 +17,15 @@ This feature delivers the frame every later FlightDeck feature sits in, in depen
 5. **Shell**: glareshield, rail, section tabs and list-plus-inspector, in two themes, with every
    domain route rendering an empty state.
 
-**Constitution**: v2.0.0. Principle I is scoped to the running portal and names host CPU/memory
-as a native-provider gap.
+**Constitution**: v2.1.0 (was v2.0.0). Principle I is scoped to the running portal and names host
+CPU/memory, and disk usage per database on the v1 dialect only, as native-provider gaps. Dialect
+scope notes are in Principles I and III.
 
 **Research changed three assumptions** ([research.md](./research.md), all observed on live
 containers):
 - The Community `latest` images are IRIS 2026.1 with SysAdmin API **v1 only**. FlightDeck pins
-  **`2026.2-zpm`** images and requires IRIS 2026.2 (R1).
+  **`2026.2-zpm`** images (R1). *Amended 2026-09-17*: IRIS 2026.1 runs in limited mode through the
+  v1 dialect adapter (FR-012a, constitution 2.1.0).
 - The images' default entrypoint crashes, and `_SYSTEM`'s password is expired at first boot. The
   install bypasses the first and unexpires the second (R2, R3).
 - Probe 2 candidate 1 (**in-process**) works on 2026.2 when calls run in `%SYS`. That becomes the
@@ -100,7 +102,7 @@ Pre-research: PASS. Post-design re-check below reflects research.md and the Phas
 | V | Diff before every mutation | **PASS (N/A for IRIS mutations in this feature)** | The UI changes no IRIS state here. Palette mutating actions only navigate. The re-auth recompute hook (`computationEpoch`) is built and proven with the fixture (R16) for UC10 to consume |
 | VI | Secrets write-only | **PASS** | No secret-bearing screen. The demo wallet collection has no secrets (R14). Error envelope `raw` is IRIS text, and the Authorization header is redacted in logs and reports |
 | VII | Self-protection | **PASS (N/A)** | No destructive operation is exposed. The safe-mode server guard is the first server-side protection layer that UC03/UC05/UC08 checks will extend |
-| VIII | Graceful degradation | **PASS** | Pre-2026.2 instances get a sign-in refusal with the version message (R1). CPU vital is unavailable with a reason. Disk keeps its last value while pending. Palette groups report `forbidden`/`timeout` without failing. Empty states give a cause and next action. Inconclusive probes block planning and never reach users (R11) |
+| VIII | Graceful degradation | **PASS** | IRIS 2026.1 runs in limited mode: operations without a v1 route are disabled with the version message and a glareshield indicator; only an instance without any SysAdmin API is refused (FR-012a, amended). CPU vital is unavailable with a reason. Disk keeps its last value while pending. Palette groups report `forbidden`/`timeout` without failing. Empty states give a cause and next action. Inconclusive probes block planning and never reach users (R11) |
 | IX | API decides what is allowed | **PASS** | Enabled state comes from `CapabilityEntry.allowed` only. No object-level `Can*` fields are rendered in this feature |
 | X | `docs/design.md` binding | **PASS** | Tailwind theme reduced to the design tokens and scales. `check:tokens` gate. Geometry asserted by e2e. Axe and contrast checks in both themes. §7 review checklist (quickstart §5) |
 | XI | English | **PASS** | UI strings use the §9 catalog, and all code, comments and commits are in English |
@@ -224,4 +226,5 @@ so it runs before any application code exists (User Story 1 is first).
 | **Installer bootstrap: IPM code load and compile** (`zpm "load"`) | Classes must exist before any API call can be made in-process | None; there is no API for loading code |
 | **Diagnostic tooling: day-1 verification script probe setup** (`scripts/verify/verify_platform.py`, T014/T020) loads probe classes and creates temporary web apps via `iris session` with `Security.Applications`, and unexpires default passwords in throwaway containers | The script's purpose is to establish, **before the portal exists**, which authentication path and API shapes work. It cannot depend on FlightDeck code, and it must be able to test the in-process candidate itself | Routing probe setup through `/v2/web-app` would make probe 2 depend on probe 1's outcome and on JWT/Basic access to the API being tested, which confounds the result. The script never ships, never runs against a user's instance and removes what it creates |
 | `Security.Users.UnExpireUserPasswords("*")` called directly (Constitution I) in `docker/first-start.sh`, container path only | The image ships `_SYSTEM` with an expired password (R3), so the documented default sign-in fails. No `/v2` operation resets password expiry | Changing the password through `POST /v2/security/user/password` would create a new credential (forbidden by clarification 1). A forced change-password screen is out of scope and adds a manual step |
+| **Installer bootstrap on the v1 dialect: code database resource** (`Native.Databases.CodeDatabaseResource` reads `Config.Namespaces`, `Config.Databases`, `SYS.Database`) | `EnsureRuntimeRole` needs the resource of FlightDeck's code database. IRIS 2026.1 exposes none of the namespace, database or database-dir operations used on v2 | There is no official route on v1. On v2 the official operations stay in use; the native result is verified equal to them on 2026.2 (`FlightDeck.Test.NativeDatabases`) |
 | Entrypoint override of the Community image (Technical Constraints: "run on both images") | The stock post-start hook crashes and shuts IRIS down on 2026.1 and 2026.2 (R2) | No environment switch disables it (R2). Waiting for a fixed image risks the deadline |

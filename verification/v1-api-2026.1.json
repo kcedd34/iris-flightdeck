@@ -1,0 +1,3191 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-17T01:53:51Z",
+  "target": {
+    "image": "intersystemsdc/iris-community:latest",
+    "irisMainVersion": "2026.1.0.234.1",
+    "serverVersion": "IRIS for UNIX (Ubuntu Server LTS for x86-64 Containers) 2026.1 (Build 234U) Fri Mar 27 2026 14:07:14 EDT",
+    "apiVersion": 1,
+    "product": "iris"
+  },
+  "base": {
+    "info": "/api/admin/info",
+    "versioned": "/api/admin/v1/<route>",
+    "v2": "absent (/api/admin/v2/* -> 404)",
+    "dispatchClass": "Api.Admin -> Api.Admin.v1.Dispatch",
+    "routeCount": 197,
+    "jwtLogin": "absent (POST /api/admin/login -> 404)"
+  },
+  "specification": {
+    "publishedByInterSystems": false,
+    "instanceGenerated": "/api/mgmnt/v1/%SYS/spec/api/admin",
+    "format": "Swagger 2.0 generated from the UrlMap",
+    "operations": 195,
+    "hasParameters": false,
+    "hasSchemas": false,
+    "declaresPrivileges": false,
+    "savedAs": "verification/v1-api-2026.1-instance-spec.json"
+  },
+  "privileges": {
+    "published": false,
+    "derivableAt": "runtime only: Api.Admin.v1.Endpoints.*:ResourcesOR() per endpoint class and request type (OR semantics)",
+    "routeToEndpointBindingPublished": false,
+    "endpointClasses": 47,
+    "classesVaryingByType": [
+      "Api.Admin.v1.Endpoints.Security.LDAP",
+      "Api.Admin.v1.Endpoints.Task.CRUD"
+    ],
+    "byEndpoint": {
+      "Api.Admin.v1.Endpoints.AsyncResult": {
+        "list": [
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Operate"
+        ],
+        "post": [
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Device.Settings": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Device.Standard": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Device.SubType": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.DocDB": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.LanguageServer": {
+        "list": [
+          "%Admin_ExternalLanguageServerEdit"
+        ],
+        "get": [
+          "%Admin_ExternalLanguageServerEdit"
+        ],
+        "put": [
+          "%Admin_ExternalLanguageServerEdit"
+        ],
+        "delete": [
+          "%Admin_ExternalLanguageServerEdit"
+        ],
+        "patch": [
+          "%Admin_ExternalLanguageServerEdit"
+        ],
+        "post": [
+          "%Admin_ExternalLanguageServerEdit"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.License.Key": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.License.Server": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Monitor": {
+        "list": [
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Operate"
+        ],
+        "post": [
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Process": {
+        "list": [
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Operate"
+        ],
+        "post": [
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Audit.Enabled": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Audit.Event": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Audit.Record": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Audit.RecordListTask": {
+        "list": [
+          "ERR"
+        ],
+        "get": [
+          "ERR"
+        ],
+        "put": [
+          "ERR"
+        ],
+        "delete": [
+          "ERR"
+        ],
+        "patch": [
+          "ERR"
+        ],
+        "post": [
+          "ERR"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Encryption.AdminInFile": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Encryption.File": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Encryption.Key": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Encryption.KeyInFile": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Encryption.Settings": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.LDAP": {
+        "list": [
+          "%Admin_Secure",
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Secure",
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.MFT": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.Client.ClientConfiguration": {
+        "list": [
+          "%Admin_OAuth2_Client"
+        ],
+        "get": [
+          "%Admin_OAuth2_Client"
+        ],
+        "put": [
+          "%Admin_OAuth2_Client"
+        ],
+        "delete": [
+          "%Admin_OAuth2_Client"
+        ],
+        "patch": [
+          "%Admin_OAuth2_Client"
+        ],
+        "post": [
+          "%Admin_OAuth2_Client"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.Client.ServerDefinition": {
+        "list": [
+          "%Admin_OAuth2_Client"
+        ],
+        "get": [
+          "%Admin_OAuth2_Client"
+        ],
+        "put": [
+          "%Admin_OAuth2_Client"
+        ],
+        "delete": [
+          "%Admin_OAuth2_Client"
+        ],
+        "patch": [
+          "%Admin_OAuth2_Client"
+        ],
+        "post": [
+          "%Admin_OAuth2_Client"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.ResourceServer": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.ResourceServerMapping": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.Server": {
+        "list": [
+          "%Admin_OAuth2_Server"
+        ],
+        "get": [
+          "%Admin_OAuth2_Server"
+        ],
+        "put": [
+          "%Admin_OAuth2_Server"
+        ],
+        "delete": [
+          "%Admin_OAuth2_Server"
+        ],
+        "patch": [
+          "%Admin_OAuth2_Server"
+        ],
+        "post": [
+          "%Admin_OAuth2_Server"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.OAuth2.ServerClients": {
+        "list": [
+          "%Admin_OAuth2_Registration"
+        ],
+        "get": [
+          "%Admin_OAuth2_Registration"
+        ],
+        "put": [
+          "%Admin_OAuth2_Registration"
+        ],
+        "delete": [
+          "%Admin_OAuth2_Registration"
+        ],
+        "patch": [
+          "%Admin_OAuth2_Registration"
+        ],
+        "post": [
+          "%Admin_OAuth2_Registration"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.PrivilegedRoutine": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Resource": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Role": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Service": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.SQLPrivilege.Admin": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.SQLPrivilege.Column": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.SQLPrivilege.Standard": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.SSLConfig": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.Superserver": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.User": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.WebAuth": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Security.X509Credential": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Task.CRUD": {
+        "list": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Task"
+        ],
+        "post": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Task.Manager": {
+        "list": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ],
+        "post": [
+          "%Admin_Task",
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Wallet.Collection": {
+        "list": [
+          "%Admin_Wallet"
+        ],
+        "get": [
+          "%Admin_Wallet"
+        ],
+        "put": [
+          "%Admin_Wallet"
+        ],
+        "delete": [
+          "%Admin_Wallet"
+        ],
+        "patch": [
+          "%Admin_Wallet"
+        ],
+        "post": [
+          "%Admin_Wallet"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.Wallet.Secret": {
+        "list": [
+          "%Admin_Wallet"
+        ],
+        "get": [
+          "%Admin_Wallet"
+        ],
+        "put": [
+          "%Admin_Wallet"
+        ],
+        "delete": [
+          "%Admin_Wallet"
+        ],
+        "patch": [
+          "%Admin_Wallet"
+        ],
+        "post": [
+          "%Admin_Wallet"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.WebApp.App": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.WebApp.PctClassAccess": {
+        "list": [
+          "%Admin_Secure"
+        ],
+        "get": [
+          "%Admin_Secure"
+        ],
+        "put": [
+          "%Admin_Secure"
+        ],
+        "delete": [
+          "%Admin_Secure"
+        ],
+        "patch": [
+          "%Admin_Secure"
+        ],
+        "post": [
+          "%Admin_Secure"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.WebSession": {
+        "list": [
+          "%Admin_Operate"
+        ],
+        "get": [
+          "%Admin_Operate"
+        ],
+        "put": [
+          "%Admin_Operate"
+        ],
+        "delete": [
+          "%Admin_Operate"
+        ],
+        "patch": [
+          "%Admin_Operate"
+        ],
+        "post": [
+          "%Admin_Operate"
+        ]
+      },
+      "Api.Admin.v1.Endpoints.WQMCategory": {
+        "list": [
+          "%Admin_Manage"
+        ],
+        "get": [
+          "%Admin_Manage"
+        ],
+        "put": [
+          "%Admin_Manage"
+        ],
+        "delete": [
+          "%Admin_Manage"
+        ],
+        "patch": [
+          "%Admin_Manage"
+        ],
+        "post": [
+          "%Admin_Manage"
+        ]
+      }
+    }
+  },
+  "authPath": {
+    "in_process": "confirmed_present (cookie-only calls to /info, /v1/security/role/, /v1/process/, /v1/task/ returned 200 through Api.Admin.DispatchRequest in %SYS)",
+    "jwt": "confirmed_absent"
+  },
+  "coverageAgainstV2": {
+    "totals": {
+      "total": 273,
+      "sameShape": 173,
+      "differentShape": 28,
+      "absent": 72
+    },
+    "byDomain": {
+      "shell": {
+        "total": 5,
+        "sameShape": 0,
+        "differentShape": 1,
+        "absent": 4
+      },
+      "web-apps": {
+        "total": 8,
+        "sameShape": 8,
+        "differentShape": 0,
+        "absent": 0
+      },
+      "permissions": {
+        "total": 31,
+        "sameShape": 23,
+        "differentShape": 8,
+        "absent": 0
+      },
+      "security": {
+        "total": 89,
+        "sameShape": 83,
+        "differentShape": 6,
+        "absent": 0
+      },
+      "tasks": {
+        "total": 24,
+        "sameShape": 16,
+        "differentShape": 8,
+        "absent": 0
+      },
+      "system": {
+        "total": 102,
+        "sameShape": 38,
+        "differentShape": 5,
+        "absent": 59
+      },
+      "logs": {
+        "total": 14,
+        "sameShape": 5,
+        "differentShape": 0,
+        "absent": 9
+      }
+    },
+    "operations": {
+      "GET /info": "different-shape",
+      "POST /login": "absent",
+      "POST /logout": "absent",
+      "POST /refresh": "absent",
+      "POST /revoke": "absent",
+      "GET /v2/async-result": "same-shape",
+      "POST /v2/async-result/cancel": "different-shape",
+      "POST /v2/async-result/pause": "different-shape",
+      "POST /v2/async-result/resume": "different-shape",
+      "GET /v2/async-results": "same-shape",
+      "GET /v2/database": "absent",
+      "PUT /v2/database": "absent",
+      "DELETE /v2/database": "absent",
+      "GET /v2/database-dir": "absent",
+      "PUT /v2/database-dir": "absent",
+      "DELETE /v2/database-dir": "absent",
+      "POST /v2/database-dir": "absent",
+      "POST /v2/database-dir/compact": "absent",
+      "POST /v2/database-dir/defragment": "absent",
+      "POST /v2/database-dir/dismount": "absent",
+      "POST /v2/database-dir/expand-volume": "absent",
+      "POST /v2/database-dir/info": "absent",
+      "POST /v2/database-dir/integrity-check": "absent",
+      "POST /v2/database-dir/modify-size": "absent",
+      "POST /v2/database-dir/mount": "absent",
+      "POST /v2/database-dir/truncate": "absent",
+      "GET /v2/database-dir/volumes": "absent",
+      "GET /v2/database-dirs": "absent",
+      "GET /v2/databases": "absent",
+      "GET /v2/device": "same-shape",
+      "PUT /v2/device": "same-shape",
+      "DELETE /v2/device": "same-shape",
+      "GET /v2/device/settings": "same-shape",
+      "PUT /v2/device/settings": "same-shape",
+      "GET /v2/device/subtype": "same-shape",
+      "PUT /v2/device/subtype": "same-shape",
+      "DELETE /v2/device/subtype": "same-shape",
+      "GET /v2/device/subtypes": "same-shape",
+      "GET /v2/devices": "same-shape",
+      "GET /v2/doc-db": "same-shape",
+      "PUT /v2/doc-db": "same-shape",
+      "DELETE /v2/doc-db": "same-shape",
+      "GET /v2/doc-dbs": "same-shape",
+      "DELETE /v2/ecp/application-server-ssl-connection": "absent",
+      "POST /v2/ecp/application-server-ssl-connection/authorize": "absent",
+      "POST /v2/ecp/application-server-ssl-connection/reject": "absent",
+      "GET /v2/ecp/application-server-ssl-connections": "absent",
+      "GET /v2/ecp/application-servers": "absent",
+      "GET /v2/ecp/data-server": "absent",
+      "PUT /v2/ecp/data-server": "absent",
+      "DELETE /v2/ecp/data-server": "absent",
+      "POST /v2/ecp/data-server/action": "absent",
+      "GET /v2/ecp/data-server/databases": "absent",
+      "GET /v2/ecp/data-servers": "absent",
+      "GET /v2/ecp/settings": "absent",
+      "PUT /v2/ecp/settings": "absent",
+      "GET /v2/ext-lang-server": "same-shape",
+      "PUT /v2/ext-lang-server": "same-shape",
+      "DELETE /v2/ext-lang-server": "same-shape",
+      "GET /v2/ext-lang-server/activity": "same-shape",
+      "POST /v2/ext-lang-server/start": "different-shape",
+      "POST /v2/ext-lang-server/stop": "different-shape",
+      "GET /v2/ext-lang-servers": "same-shape",
+      "GET /v2/fs-access-purpose": "absent",
+      "PUT /v2/fs-access-purpose": "absent",
+      "DELETE /v2/fs-access-purpose": "absent",
+      "PUT /v2/fs-access-purpose/path": "absent",
+      "DELETE /v2/fs-access-purpose/path": "absent",
+      "GET /v2/fs-access-purpose/paths": "absent",
+      "GET /v2/fs-access-purposes": "absent",
+      "GET /v2/journal/file": "absent",
+      "POST /v2/journal/file/integrity-check": "absent",
+      "GET /v2/journal/file/record": "absent",
+      "POST /v2/journal/file/records": "absent",
+      "GET /v2/journal/files": "absent",
+      "GET /v2/journal/settings": "absent",
+      "PUT /v2/journal/settings": "absent",
+      "POST /v2/journal/switch-dir": "absent",
+      "POST /v2/journal/switch-file": "absent",
+      "GET /v2/license/key": "same-shape",
+      "PUT /v2/license/key": "same-shape",
+      "POST /v2/license/key/validate": "same-shape",
+      "GET /v2/license/server": "same-shape",
+      "PUT /v2/license/server": "same-shape",
+      "DELETE /v2/license/server": "same-shape",
+      "GET /v2/license/servers": "same-shape",
+      "DELETE /v2/lock": "absent",
+      "GET /v2/locks": "absent",
+      "GET /v2/monitor/dashboard/ecp": "same-shape",
+      "GET /v2/monitor/dashboard/globals-and-routines": "same-shape",
+      "GET /v2/monitor/dashboard/main": "same-shape",
+      "GET /v2/monitor/dashboard/system-resources": "same-shape",
+      "GET /v2/monitor/license-usage": "same-shape",
+      "GET /v2/monitor/system-usage": "same-shape",
+      "GET /v2/monitor/system-usage/shared-memory": "same-shape",
+      "GET /v2/namespace": "absent",
+      "PUT /v2/namespace": "absent",
+      "DELETE /v2/namespace": "absent",
+      "POST /v2/namespace/copy-mappings": "absent",
+      "POST /v2/namespace/enable-interop": "absent",
+      "GET /v2/namespace/global-mapping": "absent",
+      "PUT /v2/namespace/global-mapping": "absent",
+      "DELETE /v2/namespace/global-mapping": "absent",
+      "GET /v2/namespace/global-mappings": "absent",
+      "GET /v2/namespace/package-mapping": "absent",
+      "PUT /v2/namespace/package-mapping": "absent",
+      "DELETE /v2/namespace/package-mapping": "absent",
+      "GET /v2/namespace/package-mappings": "absent",
+      "GET /v2/namespace/routine-mapping": "absent",
+      "PUT /v2/namespace/routine-mapping": "absent",
+      "DELETE /v2/namespace/routine-mapping": "absent",
+      "GET /v2/namespace/routine-mappings": "absent",
+      "GET /v2/namespaces": "absent",
+      "GET /v2/process": "same-shape",
+      "POST /v2/process/broadcast": "same-shape",
+      "POST /v2/process/resume": "different-shape",
+      "POST /v2/process/suspend": "different-shape",
+      "POST /v2/process/terminate": "different-shape",
+      "GET /v2/processes": "same-shape",
+      "GET /v2/security/audit/enabled": "same-shape",
+      "PUT /v2/security/audit/enabled": "same-shape",
+      "GET /v2/security/audit/event": "same-shape",
+      "PUT /v2/security/audit/event": "same-shape",
+      "DELETE /v2/security/audit/event": "same-shape",
+      "POST /v2/security/audit/event/clear-count": "same-shape",
+      "GET /v2/security/audit/events": "same-shape",
+      "GET /v2/security/audit/record": "same-shape",
+      "POST /v2/security/audit/record/copy": "same-shape",
+      "POST /v2/security/audit/record/purge": "same-shape",
+      "POST /v2/security/audit/records": "same-shape",
+      "GET /v2/security/encryption/data-element-keys": "different-shape",
+      "POST /v2/security/encryption/file": "same-shape",
+      "POST /v2/security/encryption/file/activate": "same-shape",
+      "DELETE /v2/security/encryption/file/admin": "same-shape",
+      "POST /v2/security/encryption/file/admin": "same-shape",
+      "GET /v2/security/encryption/file/admins": "same-shape",
+      "DELETE /v2/security/encryption/file/key": "same-shape",
+      "POST /v2/security/encryption/file/key": "same-shape",
+      "GET /v2/security/encryption/file/keys": "same-shape",
+      "POST /v2/security/encryption/key/deactivate": "same-shape",
+      "GET /v2/security/encryption/keys": "same-shape",
+      "GET /v2/security/encryption/settings": "same-shape",
+      "PUT /v2/security/encryption/settings": "same-shape",
+      "GET /v2/security/ldap/configuration": "same-shape",
+      "PUT /v2/security/ldap/configuration": "same-shape",
+      "DELETE /v2/security/ldap/configuration": "same-shape",
+      "POST /v2/security/ldap/configuration/search-password": "same-shape",
+      "GET /v2/security/ldap/configurations": "same-shape",
+      "POST /v2/security/ldap/test": "same-shape",
+      "GET /v2/security/mft/connection": "same-shape",
+      "PUT /v2/security/mft/connection": "same-shape",
+      "DELETE /v2/security/mft/connection": "same-shape",
+      "GET /v2/security/mft/connection/auth-code-url": "same-shape",
+      "DELETE /v2/security/mft/connection/token": "same-shape",
+      "GET /v2/security/mft/connections": "same-shape",
+      "GET /v2/security/oauth2/client/client-configuration": "same-shape",
+      "PUT /v2/security/oauth2/client/client-configuration": "same-shape",
+      "DELETE /v2/security/oauth2/client/client-configuration": "same-shape",
+      "POST /v2/security/oauth2/client/client-configuration/register-client": "same-shape",
+      "POST /v2/security/oauth2/client/client-configuration/rotate-keys": "same-shape",
+      "POST /v2/security/oauth2/client/client-configuration/secrets": "same-shape",
+      "GET /v2/security/oauth2/client/client-configurations": "same-shape",
+      "GET /v2/security/oauth2/client/server-definition": "same-shape",
+      "PUT /v2/security/oauth2/client/server-definition": "same-shape",
+      "DELETE /v2/security/oauth2/client/server-definition": "same-shape",
+      "POST /v2/security/oauth2/client/server-definition": "same-shape",
+      "POST /v2/security/oauth2/client/server-definition/initial-access-token": "same-shape",
+      "GET /v2/security/oauth2/client/server-definitions": "same-shape",
+      "GET /v2/security/oauth2/resource-server": "same-shape",
+      "PUT /v2/security/oauth2/resource-server": "same-shape",
+      "DELETE /v2/security/oauth2/resource-server": "same-shape",
+      "GET /v2/security/oauth2/resource-server/mapping": "same-shape",
+      "PUT /v2/security/oauth2/resource-server/mapping": "same-shape",
+      "DELETE /v2/security/oauth2/resource-server/mapping": "same-shape",
+      "GET /v2/security/oauth2/resource-server/mappings": "same-shape",
+      "POST /v2/security/oauth2/resource-server/secret": "same-shape",
+      "GET /v2/security/oauth2/resource-servers": "same-shape",
+      "POST /v2/security/oauth2/revoke": "different-shape",
+      "GET /v2/security/oauth2/server": "same-shape",
+      "PUT /v2/security/oauth2/server": "same-shape",
+      "DELETE /v2/security/oauth2/server": "same-shape",
+      "GET /v2/security/oauth2/server/client": "same-shape",
+      "PUT /v2/security/oauth2/server/client": "same-shape",
+      "DELETE /v2/security/oauth2/server/client": "same-shape",
+      "POST /v2/security/oauth2/server/client": "same-shape",
+      "POST /v2/security/oauth2/server/client/secret": "same-shape",
+      "GET /v2/security/oauth2/server/clients": "same-shape",
+      "POST /v2/security/oauth2/server/password": "same-shape",
+      "GET /v2/security/privileged-routine": "same-shape",
+      "PUT /v2/security/privileged-routine": "same-shape",
+      "DELETE /v2/security/privileged-routine": "same-shape",
+      "GET /v2/security/privileged-routines": "same-shape",
+      "GET /v2/security/resource": "same-shape",
+      "PUT /v2/security/resource": "same-shape",
+      "DELETE /v2/security/resource": "same-shape",
+      "GET /v2/security/resources": "same-shape",
+      "GET /v2/security/role": "same-shape",
+      "PUT /v2/security/role": "same-shape",
+      "DELETE /v2/security/role": "same-shape",
+      "GET /v2/security/role/owners": "same-shape",
+      "GET /v2/security/roles": "same-shape",
+      "GET /v2/security/service": "same-shape",
+      "PUT /v2/security/service": "same-shape",
+      "GET /v2/security/services": "same-shape",
+      "POST /v2/security/sql-admin-privilege/grant": "different-shape",
+      "POST /v2/security/sql-admin-privilege/revoke": "different-shape",
+      "GET /v2/security/sql-admin-privileges": "different-shape",
+      "POST /v2/security/sql-column-privilege/grant": "different-shape",
+      "POST /v2/security/sql-column-privilege/revoke": "different-shape",
+      "GET /v2/security/sql-column-privileges": "different-shape",
+      "POST /v2/security/sql-privilege/grant": "different-shape",
+      "POST /v2/security/sql-privilege/revoke": "different-shape",
+      "GET /v2/security/sql-privileges": "same-shape",
+      "GET /v2/security/ssl-configuration": "same-shape",
+      "PUT /v2/security/ssl-configuration": "same-shape",
+      "DELETE /v2/security/ssl-configuration": "same-shape",
+      "POST /v2/security/ssl-configuration/test": "same-shape",
+      "GET /v2/security/ssl-configurations": "same-shape",
+      "GET /v2/security/superserver": "same-shape",
+      "PUT /v2/security/superserver": "same-shape",
+      "DELETE /v2/security/superserver": "same-shape",
+      "GET /v2/security/superservers": "same-shape",
+      "GET /v2/security/user": "same-shape",
+      "PUT /v2/security/user": "same-shape",
+      "DELETE /v2/security/user": "same-shape",
+      "POST /v2/security/user": "same-shape",
+      "POST /v2/security/user/password": "same-shape",
+      "GET /v2/security/users": "same-shape",
+      "GET /v2/security/web-auth": "same-shape",
+      "PUT /v2/security/web-auth": "same-shape",
+      "POST /v2/security/web-auth/smtp-password": "same-shape",
+      "GET /v2/security/x509-credential": "same-shape",
+      "PUT /v2/security/x509-credential": "same-shape",
+      "DELETE /v2/security/x509-credential": "same-shape",
+      "POST /v2/security/x509-credential": "same-shape",
+      "GET /v2/security/x509-credential/certificate": "same-shape",
+      "GET /v2/security/x509-credentials": "same-shape",
+      "GET /v2/task": "same-shape",
+      "PUT /v2/task": "same-shape",
+      "DELETE /v2/task": "same-shape",
+      "POST /v2/task": "same-shape",
+      "GET /v2/task/history": "same-shape",
+      "GET /v2/task/info": "same-shape",
+      "GET /v2/task/manager": "same-shape",
+      "POST /v2/task/manager/resume": "different-shape",
+      "POST /v2/task/manager/run": "different-shape",
+      "POST /v2/task/manager/suspend": "different-shape",
+      "POST /v2/task/resume": "different-shape",
+      "POST /v2/task/run": "same-shape",
+      "POST /v2/task/suspend": "different-shape",
+      "GET /v2/task/upcoming": "same-shape",
+      "GET /v2/tasks": "same-shape",
+      "GET /v2/wallet/collection": "different-shape",
+      "PUT /v2/wallet/collection": "different-shape",
+      "DELETE /v2/wallet/collection": "different-shape",
+      "GET /v2/wallet/collections": "different-shape",
+      "PUT /v2/wallet/secret": "same-shape",
+      "DELETE /v2/wallet/secret": "same-shape",
+      "GET /v2/wallet/secrets": "same-shape",
+      "GET /v2/web-app": "same-shape",
+      "PUT /v2/web-app": "same-shape",
+      "DELETE /v2/web-app": "same-shape",
+      "GET /v2/web-app/pct-access": "same-shape",
+      "PUT /v2/web-app/pct-access": "same-shape",
+      "DELETE /v2/web-app/pct-access": "same-shape",
+      "GET /v2/web-app/pct-accesses": "same-shape",
+      "GET /v2/web-apps": "same-shape",
+      "DELETE /v2/web-session": "same-shape",
+      "GET /v2/web-sessions": "same-shape",
+      "GET /v2/wqm-categories": "same-shape",
+      "GET /v2/wqm-category": "same-shape",
+      "PUT /v2/wqm-category": "same-shape",
+      "DELETE /v2/wqm-category": "same-shape"
+    },
+    "sameShapeRoutes": {
+      "GET /v2/async-result": [
+        "GET",
+        "/async-result"
+      ],
+      "GET /v2/async-results": [
+        "GET",
+        "/async-result/"
+      ],
+      "GET /v2/device": [
+        "GET",
+        "/device"
+      ],
+      "PUT /v2/device": [
+        "PUT",
+        "/device"
+      ],
+      "DELETE /v2/device": [
+        "DELETE",
+        "/device"
+      ],
+      "GET /v2/device/settings": [
+        "GET",
+        "/device/settings"
+      ],
+      "PUT /v2/device/settings": [
+        "PUT",
+        "/device/settings"
+      ],
+      "GET /v2/device/subtype": [
+        "GET",
+        "/device/subtype"
+      ],
+      "PUT /v2/device/subtype": [
+        "PUT",
+        "/device/subtype"
+      ],
+      "DELETE /v2/device/subtype": [
+        "DELETE",
+        "/device/subtype"
+      ],
+      "GET /v2/device/subtypes": [
+        "GET",
+        "/device/subtype/"
+      ],
+      "GET /v2/devices": [
+        "GET",
+        "/device/"
+      ],
+      "GET /v2/doc-db": [
+        "GET",
+        "/doc-db"
+      ],
+      "PUT /v2/doc-db": [
+        "PUT",
+        "/doc-db"
+      ],
+      "DELETE /v2/doc-db": [
+        "DELETE",
+        "/doc-db"
+      ],
+      "GET /v2/doc-dbs": [
+        "GET",
+        "/doc-db/"
+      ],
+      "GET /v2/ext-lang-server": [
+        "GET",
+        "/els"
+      ],
+      "PUT /v2/ext-lang-server": [
+        "PUT",
+        "/els"
+      ],
+      "DELETE /v2/ext-lang-server": [
+        "DELETE",
+        "/els"
+      ],
+      "GET /v2/ext-lang-server/activity": [
+        "GET",
+        "/els/activity"
+      ],
+      "GET /v2/ext-lang-servers": [
+        "GET",
+        "/els/"
+      ],
+      "GET /v2/license/key": [
+        "GET",
+        "/license/key"
+      ],
+      "PUT /v2/license/key": [
+        "PUT",
+        "/license/key"
+      ],
+      "POST /v2/license/key/validate": [
+        "POST",
+        "/license/key/validate"
+      ],
+      "GET /v2/license/server": [
+        "GET",
+        "/license/server"
+      ],
+      "PUT /v2/license/server": [
+        "PUT",
+        "/license/server"
+      ],
+      "DELETE /v2/license/server": [
+        "DELETE",
+        "/license/server"
+      ],
+      "GET /v2/license/servers": [
+        "GET",
+        "/license/server/"
+      ],
+      "GET /v2/monitor/dashboard/ecp": [
+        "GET",
+        "/monitor/dashboard/ecp"
+      ],
+      "GET /v2/monitor/dashboard/globals-and-routines": [
+        "GET",
+        "/monitor/dashboard/globals-and-routines"
+      ],
+      "GET /v2/monitor/dashboard/main": [
+        "GET",
+        "/monitor/dashboard/main"
+      ],
+      "GET /v2/monitor/dashboard/system-resources": [
+        "GET",
+        "/monitor/dashboard/system-resources"
+      ],
+      "GET /v2/monitor/license-usage": [
+        "GET",
+        "/monitor/license-usage"
+      ],
+      "GET /v2/monitor/system-usage": [
+        "GET",
+        "/monitor/system-usage"
+      ],
+      "GET /v2/monitor/system-usage/shared-memory": [
+        "GET",
+        "/monitor/system-usage/shared-memory"
+      ],
+      "GET /v2/process": [
+        "GET",
+        "/process"
+      ],
+      "POST /v2/process/broadcast": [
+        "POST",
+        "/process/broadcast"
+      ],
+      "GET /v2/processes": [
+        "GET",
+        "/process/"
+      ],
+      "GET /v2/security/audit/enabled": [
+        "GET",
+        "/security/audit/enabled"
+      ],
+      "PUT /v2/security/audit/enabled": [
+        "PUT",
+        "/security/audit/enabled"
+      ],
+      "GET /v2/security/audit/event": [
+        "GET",
+        "/security/audit/event"
+      ],
+      "PUT /v2/security/audit/event": [
+        "PUT",
+        "/security/audit/event"
+      ],
+      "DELETE /v2/security/audit/event": [
+        "DELETE",
+        "/security/audit/event"
+      ],
+      "POST /v2/security/audit/event/clear-count": [
+        "POST",
+        "/security/audit/event/clear-count"
+      ],
+      "GET /v2/security/audit/events": [
+        "GET",
+        "/security/audit/event/"
+      ],
+      "GET /v2/security/audit/record": [
+        "GET",
+        "/security/audit/record"
+      ],
+      "POST /v2/security/audit/record/copy": [
+        "POST",
+        "/security/audit/record/copy"
+      ],
+      "POST /v2/security/audit/record/purge": [
+        "POST",
+        "/security/audit/record/purge"
+      ],
+      "POST /v2/security/audit/records": [
+        "POST",
+        "/security/audit/record/"
+      ],
+      "POST /v2/security/encryption/file": [
+        "POST",
+        "/security/encryption/file"
+      ],
+      "POST /v2/security/encryption/file/activate": [
+        "POST",
+        "/security/encryption/file/activate"
+      ],
+      "DELETE /v2/security/encryption/file/admin": [
+        "DELETE",
+        "/security/encryption/file/admin"
+      ],
+      "POST /v2/security/encryption/file/admin": [
+        "POST",
+        "/security/encryption/file/admin"
+      ],
+      "GET /v2/security/encryption/file/admins": [
+        "GET",
+        "/security/encryption/file/admin/"
+      ],
+      "DELETE /v2/security/encryption/file/key": [
+        "DELETE",
+        "/security/encryption/file/key"
+      ],
+      "POST /v2/security/encryption/file/key": [
+        "POST",
+        "/security/encryption/file/key"
+      ],
+      "GET /v2/security/encryption/file/keys": [
+        "GET",
+        "/security/encryption/file/key/"
+      ],
+      "POST /v2/security/encryption/key/deactivate": [
+        "POST",
+        "/security/encryption/key/deactivate"
+      ],
+      "GET /v2/security/encryption/keys": [
+        "GET",
+        "/security/encryption/key/"
+      ],
+      "GET /v2/security/encryption/settings": [
+        "GET",
+        "/security/encryption/settings"
+      ],
+      "PUT /v2/security/encryption/settings": [
+        "PUT",
+        "/security/encryption/settings"
+      ],
+      "GET /v2/security/ldap/configuration": [
+        "GET",
+        "/security/ldap/configuration"
+      ],
+      "PUT /v2/security/ldap/configuration": [
+        "PUT",
+        "/security/ldap/configuration"
+      ],
+      "DELETE /v2/security/ldap/configuration": [
+        "DELETE",
+        "/security/ldap/configuration"
+      ],
+      "POST /v2/security/ldap/configuration/search-password": [
+        "POST",
+        "/security/ldap/configuration/search-password"
+      ],
+      "GET /v2/security/ldap/configurations": [
+        "GET",
+        "/security/ldap/configuration/"
+      ],
+      "POST /v2/security/ldap/test": [
+        "POST",
+        "/security/ldap/test"
+      ],
+      "GET /v2/security/mft/connection": [
+        "GET",
+        "/security/mft/connection"
+      ],
+      "PUT /v2/security/mft/connection": [
+        "PUT",
+        "/security/mft/connection"
+      ],
+      "DELETE /v2/security/mft/connection": [
+        "DELETE",
+        "/security/mft/connection"
+      ],
+      "GET /v2/security/mft/connection/auth-code-url": [
+        "GET",
+        "/security/mft/connection/auth-code-url"
+      ],
+      "DELETE /v2/security/mft/connection/token": [
+        "DELETE",
+        "/security/mft/connection/token"
+      ],
+      "GET /v2/security/mft/connections": [
+        "GET",
+        "/security/mft/connection/"
+      ],
+      "GET /v2/security/oauth2/client/client-configuration": [
+        "GET",
+        "/security/oauth2/client/client-configuration"
+      ],
+      "PUT /v2/security/oauth2/client/client-configuration": [
+        "PUT",
+        "/security/oauth2/client/client-configuration"
+      ],
+      "DELETE /v2/security/oauth2/client/client-configuration": [
+        "DELETE",
+        "/security/oauth2/client/client-configuration"
+      ],
+      "POST /v2/security/oauth2/client/client-configuration/register-client": [
+        "POST",
+        "/security/oauth2/client/client-configuration/register-client"
+      ],
+      "POST /v2/security/oauth2/client/client-configuration/rotate-keys": [
+        "POST",
+        "/security/oauth2/client/client-configuration/rotate-keys"
+      ],
+      "POST /v2/security/oauth2/client/client-configuration/secrets": [
+        "POST",
+        "/security/oauth2/client/client-configuration/secrets"
+      ],
+      "GET /v2/security/oauth2/client/client-configurations": [
+        "GET",
+        "/security/oauth2/client/client-configuration/"
+      ],
+      "GET /v2/security/oauth2/client/server-definition": [
+        "GET",
+        "/security/oauth2/client/server-definition"
+      ],
+      "PUT /v2/security/oauth2/client/server-definition": [
+        "PUT",
+        "/security/oauth2/client/server-definition"
+      ],
+      "DELETE /v2/security/oauth2/client/server-definition": [
+        "DELETE",
+        "/security/oauth2/client/server-definition"
+      ],
+      "POST /v2/security/oauth2/client/server-definition": [
+        "POST",
+        "/security/oauth2/client/server-definition"
+      ],
+      "POST /v2/security/oauth2/client/server-definition/initial-access-token": [
+        "POST",
+        "/security/oauth2/client/server-definition/initial-access-token"
+      ],
+      "GET /v2/security/oauth2/client/server-definitions": [
+        "GET",
+        "/security/oauth2/client/server-definition/"
+      ],
+      "GET /v2/security/oauth2/resource-server": [
+        "GET",
+        "/security/oauth2/resource-server"
+      ],
+      "PUT /v2/security/oauth2/resource-server": [
+        "PUT",
+        "/security/oauth2/resource-server"
+      ],
+      "DELETE /v2/security/oauth2/resource-server": [
+        "DELETE",
+        "/security/oauth2/resource-server"
+      ],
+      "GET /v2/security/oauth2/resource-server/mapping": [
+        "GET",
+        "/security/oauth2/resource-server/mapping"
+      ],
+      "PUT /v2/security/oauth2/resource-server/mapping": [
+        "PUT",
+        "/security/oauth2/resource-server/mapping"
+      ],
+      "DELETE /v2/security/oauth2/resource-server/mapping": [
+        "DELETE",
+        "/security/oauth2/resource-server/mapping"
+      ],
+      "GET /v2/security/oauth2/resource-server/mappings": [
+        "GET",
+        "/security/oauth2/resource-server/mapping/"
+      ],
+      "POST /v2/security/oauth2/resource-server/secret": [
+        "POST",
+        "/security/oauth2/resource-server/secret"
+      ],
+      "GET /v2/security/oauth2/resource-servers": [
+        "GET",
+        "/security/oauth2/resource-server/"
+      ],
+      "GET /v2/security/oauth2/server": [
+        "GET",
+        "/security/oauth2/server"
+      ],
+      "PUT /v2/security/oauth2/server": [
+        "PUT",
+        "/security/oauth2/server"
+      ],
+      "DELETE /v2/security/oauth2/server": [
+        "DELETE",
+        "/security/oauth2/server"
+      ],
+      "GET /v2/security/oauth2/server/client": [
+        "GET",
+        "/security/oauth2/server/client"
+      ],
+      "PUT /v2/security/oauth2/server/client": [
+        "PUT",
+        "/security/oauth2/server/client"
+      ],
+      "DELETE /v2/security/oauth2/server/client": [
+        "DELETE",
+        "/security/oauth2/server/client"
+      ],
+      "POST /v2/security/oauth2/server/client": [
+        "POST",
+        "/security/oauth2/server/client"
+      ],
+      "POST /v2/security/oauth2/server/client/secret": [
+        "POST",
+        "/security/oauth2/server/client/secret"
+      ],
+      "GET /v2/security/oauth2/server/clients": [
+        "GET",
+        "/security/oauth2/server/client/"
+      ],
+      "POST /v2/security/oauth2/server/password": [
+        "POST",
+        "/security/oauth2/server/password"
+      ],
+      "GET /v2/security/privileged-routine": [
+        "GET",
+        "/security/privileged-routine"
+      ],
+      "PUT /v2/security/privileged-routine": [
+        "PUT",
+        "/security/privileged-routine"
+      ],
+      "DELETE /v2/security/privileged-routine": [
+        "DELETE",
+        "/security/privileged-routine"
+      ],
+      "GET /v2/security/privileged-routines": [
+        "GET",
+        "/security/privileged-routine/"
+      ],
+      "GET /v2/security/resource": [
+        "GET",
+        "/security/resource"
+      ],
+      "PUT /v2/security/resource": [
+        "PUT",
+        "/security/resource"
+      ],
+      "DELETE /v2/security/resource": [
+        "DELETE",
+        "/security/resource"
+      ],
+      "GET /v2/security/resources": [
+        "GET",
+        "/security/resource/"
+      ],
+      "GET /v2/security/role": [
+        "GET",
+        "/security/role"
+      ],
+      "PUT /v2/security/role": [
+        "PUT",
+        "/security/role"
+      ],
+      "DELETE /v2/security/role": [
+        "DELETE",
+        "/security/role"
+      ],
+      "GET /v2/security/role/owners": [
+        "GET",
+        "/security/role/owner/"
+      ],
+      "GET /v2/security/roles": [
+        "GET",
+        "/security/role/"
+      ],
+      "GET /v2/security/service": [
+        "GET",
+        "/security/service"
+      ],
+      "PUT /v2/security/service": [
+        "PUT",
+        "/security/service"
+      ],
+      "GET /v2/security/services": [
+        "GET",
+        "/security/service/"
+      ],
+      "GET /v2/security/sql-privileges": [
+        "GET",
+        "/security/sql-privilege/"
+      ],
+      "GET /v2/security/ssl-configuration": [
+        "GET",
+        "/security/ssl-configuration"
+      ],
+      "PUT /v2/security/ssl-configuration": [
+        "PUT",
+        "/security/ssl-configuration"
+      ],
+      "DELETE /v2/security/ssl-configuration": [
+        "DELETE",
+        "/security/ssl-configuration"
+      ],
+      "POST /v2/security/ssl-configuration/test": [
+        "POST",
+        "/security/ssl-configuration/test"
+      ],
+      "GET /v2/security/ssl-configurations": [
+        "GET",
+        "/security/ssl-configuration/"
+      ],
+      "GET /v2/security/superserver": [
+        "GET",
+        "/security/superserver"
+      ],
+      "PUT /v2/security/superserver": [
+        "PUT",
+        "/security/superserver"
+      ],
+      "DELETE /v2/security/superserver": [
+        "DELETE",
+        "/security/superserver"
+      ],
+      "GET /v2/security/superservers": [
+        "GET",
+        "/security/superserver/"
+      ],
+      "GET /v2/security/user": [
+        "GET",
+        "/security/user"
+      ],
+      "PUT /v2/security/user": [
+        "PUT",
+        "/security/user"
+      ],
+      "DELETE /v2/security/user": [
+        "DELETE",
+        "/security/user"
+      ],
+      "POST /v2/security/user": [
+        "POST",
+        "/security/user"
+      ],
+      "POST /v2/security/user/password": [
+        "POST",
+        "/security/user/password"
+      ],
+      "GET /v2/security/users": [
+        "GET",
+        "/security/user/"
+      ],
+      "GET /v2/security/web-auth": [
+        "GET",
+        "/security/web-auth"
+      ],
+      "PUT /v2/security/web-auth": [
+        "PUT",
+        "/security/web-auth"
+      ],
+      "POST /v2/security/web-auth/smtp-password": [
+        "POST",
+        "/security/web-auth/smtp-password"
+      ],
+      "GET /v2/security/x509-credential": [
+        "GET",
+        "/security/x509-credential"
+      ],
+      "PUT /v2/security/x509-credential": [
+        "PUT",
+        "/security/x509-credential"
+      ],
+      "DELETE /v2/security/x509-credential": [
+        "DELETE",
+        "/security/x509-credential"
+      ],
+      "POST /v2/security/x509-credential": [
+        "POST",
+        "/security/x509-credential"
+      ],
+      "GET /v2/security/x509-credential/certificate": [
+        "GET",
+        "/security/x509-credential/certificate"
+      ],
+      "GET /v2/security/x509-credentials": [
+        "GET",
+        "/security/x509-credential/"
+      ],
+      "GET /v2/task": [
+        "GET",
+        "/task"
+      ],
+      "PUT /v2/task": [
+        "PUT",
+        "/task"
+      ],
+      "DELETE /v2/task": [
+        "DELETE",
+        "/task"
+      ],
+      "POST /v2/task": [
+        "POST",
+        "/task"
+      ],
+      "GET /v2/task/history": [
+        "GET",
+        "/task/history/"
+      ],
+      "GET /v2/task/info": [
+        "GET",
+        "/task/info"
+      ],
+      "GET /v2/task/manager": [
+        "GET",
+        "/task/manager"
+      ],
+      "POST /v2/task/run": [
+        "POST",
+        "/task/run"
+      ],
+      "GET /v2/task/upcoming": [
+        "GET",
+        "/task/upcoming/"
+      ],
+      "GET /v2/tasks": [
+        "GET",
+        "/task/"
+      ],
+      "PUT /v2/wallet/secret": [
+        "PUT",
+        "/wallet/secret"
+      ],
+      "DELETE /v2/wallet/secret": [
+        "DELETE",
+        "/wallet/secret"
+      ],
+      "GET /v2/wallet/secrets": [
+        "GET",
+        "/wallet/secret/"
+      ],
+      "GET /v2/web-app": [
+        "GET",
+        "/web-app"
+      ],
+      "PUT /v2/web-app": [
+        "PUT",
+        "/web-app"
+      ],
+      "DELETE /v2/web-app": [
+        "DELETE",
+        "/web-app"
+      ],
+      "GET /v2/web-app/pct-access": [
+        "GET",
+        "/web-app/pct-access"
+      ],
+      "PUT /v2/web-app/pct-access": [
+        "PUT",
+        "/web-app/pct-access"
+      ],
+      "DELETE /v2/web-app/pct-access": [
+        "DELETE",
+        "/web-app/pct-access"
+      ],
+      "GET /v2/web-app/pct-accesses": [
+        "GET",
+        "/web-app/pct-access/"
+      ],
+      "GET /v2/web-apps": [
+        "GET",
+        "/web-app/"
+      ],
+      "DELETE /v2/web-session": [
+        "DELETE",
+        "/web-session"
+      ],
+      "GET /v2/web-sessions": [
+        "GET",
+        "/web-session/"
+      ],
+      "GET /v2/wqm-categories": [
+        "GET",
+        "/wqm-category/"
+      ],
+      "GET /v2/wqm-category": [
+        "GET",
+        "/wqm-category"
+      ],
+      "PUT /v2/wqm-category": [
+        "PUT",
+        "/wqm-category"
+      ],
+      "DELETE /v2/wqm-category": [
+        "DELETE",
+        "/wqm-category"
+      ]
+    },
+    "differentShapeRoutes": {
+      "POST /v2/process/terminate": [
+        "DELETE",
+        "/process"
+      ],
+      "POST /v2/process/suspend": [
+        "PATCH",
+        "/process"
+      ],
+      "POST /v2/process/resume": [
+        "PATCH",
+        "/process"
+      ],
+      "POST /v2/security/sql-privilege/grant": [
+        "PUT",
+        "/security/sql-privilege"
+      ],
+      "POST /v2/security/sql-privilege/revoke": [
+        "DELETE",
+        "/security/sql-privilege"
+      ],
+      "POST /v2/security/sql-admin-privilege/grant": [
+        "PUT",
+        "/security/sql-privilege/admin"
+      ],
+      "POST /v2/security/sql-admin-privilege/revoke": [
+        "DELETE",
+        "/security/sql-privilege/admin"
+      ],
+      "GET /v2/security/sql-admin-privileges": [
+        "GET",
+        "/security/sql-privilege/admin/"
+      ],
+      "POST /v2/security/sql-column-privilege/grant": [
+        "PUT",
+        "/security/sql-privilege/column"
+      ],
+      "POST /v2/security/sql-column-privilege/revoke": [
+        "DELETE",
+        "/security/sql-privilege/column"
+      ],
+      "GET /v2/security/sql-column-privileges": [
+        "GET",
+        "/security/sql-privilege/column/"
+      ],
+      "GET /v2/wallet/collection": [
+        "GET",
+        "/wallet"
+      ],
+      "PUT /v2/wallet/collection": [
+        "PUT",
+        "/wallet"
+      ],
+      "DELETE /v2/wallet/collection": [
+        "DELETE",
+        "/wallet"
+      ],
+      "GET /v2/security/encryption/data-element-keys": [
+        "GET",
+        "/security/encryption/key/data-element/"
+      ],
+      "POST /v2/async-result/cancel": [
+        "PATCH",
+        "/async-result"
+      ],
+      "POST /v2/async-result/pause": [
+        "PATCH",
+        "/async-result"
+      ],
+      "POST /v2/async-result/resume": [
+        "PATCH",
+        "/async-result"
+      ],
+      "POST /v2/ext-lang-server/start": [
+        "PATCH",
+        "/els"
+      ],
+      "POST /v2/ext-lang-server/stop": [
+        "PATCH",
+        "/els"
+      ],
+      "POST /v2/task/suspend": [
+        "PATCH",
+        "/task"
+      ],
+      "POST /v2/task/resume": [
+        "PATCH",
+        "/task"
+      ],
+      "POST /v2/task/manager/run": [
+        "PATCH",
+        "/task/manager"
+      ],
+      "POST /v2/task/manager/suspend": [
+        "PATCH",
+        "/task/manager"
+      ],
+      "POST /v2/task/manager/resume": [
+        "PATCH",
+        "/task/manager"
+      ],
+      "POST /v2/security/oauth2/revoke": [
+        "POST",
+        "/security/oauth2/server/revoke"
+      ],
+      "GET /info": [
+        "GET",
+        "/info (Api.Admin, outside /v1)"
+      ],
+      "GET /v2/wallet/collections": [
+        "GET",
+        "/wallet/"
+      ]
+    },
+    "v1OnlyRoutes": [
+      [
+        "HEAD",
+        "/security/sql-privilege",
+        "HeadSQLPrivilege"
+      ],
+      [
+        "HEAD",
+        "/security/sql-privilege/admin",
+        "HeadAdminSQLPrivilege"
+      ],
+      [
+        "HEAD",
+        "/security/sql-privilege/column",
+        "HeadSQLColumnPrivilege"
+      ],
+      [
+        "POST",
+        "/security/ssl-configuration/private-key-password",
+        "PostSSLConfigurationPrivateKeyPassword"
+      ]
+    ],
+    "correctionNote": "2026-09-17: removed stale differentShapeRoutes entries for operations classified same-shape (POST /v2/task/run is POST /v1/task/run; POST /v2/process/broadcast is POST /v1/process/broadcast). Totals unchanged. See v1-adapter-spike.md."
+  },
+  "responseShapes": {
+    "probedGetOperations": 43,
+    "identicalFieldSets": 31,
+    "differing": [
+      [
+        "GET /v2/processes",
+        "/process/",
+        200,
+        "ok",
+        [
+          "EXEName"
+        ],
+        [
+          "EXEname"
+        ]
+      ],
+      [
+        "GET /v2/security/services",
+        "/security/service/",
+        200,
+        "ok",
+        [
+          "EnabledBoolean"
+        ],
+        []
+      ]
+    ],
+    "emptyOnFreshInstance": [
+      "GET /v2/async-results",
+      "GET /v2/doc-dbs",
+      "GET /v2/security/encryption/keys",
+      "GET /v2/security/mft/connections",
+      "GET /v2/security/oauth2/client/server-definitions",
+      "GET /v2/security/oauth2/resource-servers",
+      "GET /v2/security/oauth2/server",
+      "GET /v2/security/oauth2/server/clients",
+      "GET /v2/security/privileged-routines",
+      "GET /v2/security/x509-credentials"
+    ],
+    "errors": [
+      [
+        "GET /v2/security/oauth2/server",
+        "/security/oauth2/server",
+        404
+      ]
+    ],
+    "notes": "EXEname vs EXEName also appears on IRIS 2026.2 (spec casing issue, not a v1 difference)."
+  },
+  "v1Routes": [
+    [
+      "GET",
+      "/task/",
+      "ListTasks"
+    ],
+    [
+      "GET",
+      "/task/upcoming/",
+      "ListUpcomingTasks"
+    ],
+    [
+      "POST",
+      "/task",
+      "CreateTask"
+    ],
+    [
+      "PATCH",
+      "/task/manager",
+      "PatchTaskManager"
+    ],
+    [
+      "GET",
+      "/task/manager",
+      "GetTaskManager"
+    ],
+    [
+      "GET",
+      "/task/history/",
+      "GetTaskHistory"
+    ],
+    [
+      "GET",
+      "/task/info",
+      "GetTaskInfo"
+    ],
+    [
+      "GET",
+      "/task",
+      "GetTask"
+    ],
+    [
+      "DELETE",
+      "/task",
+      "DeleteTask"
+    ],
+    [
+      "PUT",
+      "/task",
+      "PutTask"
+    ],
+    [
+      "PATCH",
+      "/task",
+      "PatchTask"
+    ],
+    [
+      "POST",
+      "/task/run",
+      "RunTask"
+    ],
+    [
+      "GET",
+      "/license/key",
+      "GetLicenseKey"
+    ],
+    [
+      "PUT",
+      "/license/key",
+      "PutLicenseKey"
+    ],
+    [
+      "POST",
+      "/license/key/validate",
+      "ValidateLicenseKey"
+    ],
+    [
+      "GET",
+      "/license/server/",
+      "ListLicenseServers"
+    ],
+    [
+      "GET",
+      "/license/server",
+      "GetLicenseServer"
+    ],
+    [
+      "PUT",
+      "/license/server",
+      "PutLicenseServer"
+    ],
+    [
+      "DELETE",
+      "/license/server",
+      "DeleteLicenseServer"
+    ],
+    [
+      "GET",
+      "/els/",
+      "ListLanguageServers"
+    ],
+    [
+      "GET",
+      "/els",
+      "GetLanguageServer"
+    ],
+    [
+      "PUT",
+      "/els",
+      "PutLanguageServer"
+    ],
+    [
+      "DELETE",
+      "/els",
+      "DeleteLanguageServer"
+    ],
+    [
+      "PATCH",
+      "/els",
+      "PatchLanguageServer"
+    ],
+    [
+      "GET",
+      "/els/activity",
+      "ListLanguageServerActivity"
+    ],
+    [
+      "GET",
+      "/device/",
+      "ListDevices"
+    ],
+    [
+      "GET",
+      "/device/settings",
+      "GetDeviceSettings"
+    ],
+    [
+      "PUT",
+      "/device/settings",
+      "PutDeviceSettings"
+    ],
+    [
+      "GET",
+      "/device",
+      "GetDevice"
+    ],
+    [
+      "PUT",
+      "/device",
+      "PutDevice"
+    ],
+    [
+      "DELETE",
+      "/device",
+      "DeleteDevice"
+    ],
+    [
+      "GET",
+      "/device/subtype/",
+      "ListDeviceSubtypes"
+    ],
+    [
+      "GET",
+      "/device/subtype",
+      "GetDeviceSubtype"
+    ],
+    [
+      "PUT",
+      "/device/subtype",
+      "PutDeviceSubtype"
+    ],
+    [
+      "DELETE",
+      "/device/subtype",
+      "DeleteDeviceSubtype"
+    ],
+    [
+      "GET",
+      "/process/",
+      "ListProcesses"
+    ],
+    [
+      "POST",
+      "/process/broadcast",
+      "BroadcastMessage"
+    ],
+    [
+      "DELETE",
+      "/process",
+      "DeleteProcess"
+    ],
+    [
+      "PATCH",
+      "/process",
+      "PatchProcess"
+    ],
+    [
+      "GET",
+      "/process",
+      "GetProcess"
+    ],
+    [
+      "GET",
+      "/security/service",
+      "GetSecurityService"
+    ],
+    [
+      "GET",
+      "/security/service/",
+      "ListSecurityServices"
+    ],
+    [
+      "PUT",
+      "/security/service",
+      "PutSecurityService"
+    ],
+    [
+      "GET",
+      "/security/resource/",
+      "ListSecurityResources"
+    ],
+    [
+      "DELETE",
+      "/security/resource",
+      "DeleteSecurityResource"
+    ],
+    [
+      "GET",
+      "/security/resource",
+      "GetSecurityResource"
+    ],
+    [
+      "PUT",
+      "/security/resource",
+      "PutSecurityResource"
+    ],
+    [
+      "GET",
+      "/security/ssl-configuration/",
+      "ListSSLConfiguration"
+    ],
+    [
+      "GET",
+      "/security/ssl-configuration",
+      "GetSSLConfiguration"
+    ],
+    [
+      "PUT",
+      "/security/ssl-configuration",
+      "PutSSLConfiguration"
+    ],
+    [
+      "DELETE",
+      "/security/ssl-configuration",
+      "DeleteSSLConfiguration"
+    ],
+    [
+      "POST",
+      "/security/ssl-configuration/test",
+      "TestSSLConfiguration"
+    ],
+    [
+      "POST",
+      "/security/ssl-configuration/private-key-password",
+      "PostSSLConfigurationPrivateKeyPassword"
+    ],
+    [
+      "GET",
+      "/security/x509-credential/",
+      "ListX509Credentials"
+    ],
+    [
+      "POST",
+      "/security/x509-credential",
+      "PostX509Credential"
+    ],
+    [
+      "GET",
+      "/security/x509-credential",
+      "GetX509Credential"
+    ],
+    [
+      "DELETE",
+      "/security/x509-credential",
+      "DeleteX509Credential"
+    ],
+    [
+      "PUT",
+      "/security/x509-credential",
+      "PutX509Credential"
+    ],
+    [
+      "GET",
+      "/security/x509-credential/certificate",
+      "GetX509CredentialCertInfo"
+    ],
+    [
+      "GET",
+      "/security/audit/enabled",
+      "GetAuditEnabled"
+    ],
+    [
+      "PUT",
+      "/security/audit/enabled",
+      "PutAuditEnabled"
+    ],
+    [
+      "GET",
+      "/security/audit/event/",
+      "ListAuditEvents"
+    ],
+    [
+      "GET",
+      "/security/audit/event",
+      "GetAuditEvent"
+    ],
+    [
+      "DELETE",
+      "/security/audit/event",
+      "DeleteAuditEvent"
+    ],
+    [
+      "PUT",
+      "/security/audit/event",
+      "PutAuditEvent"
+    ],
+    [
+      "POST",
+      "/security/audit/event/clear-count",
+      "ClearAuditEventCount"
+    ],
+    [
+      "POST",
+      "/security/audit/record/copy",
+      "CopyAuditRecords"
+    ],
+    [
+      "POST",
+      "/security/audit/record/purge",
+      "PurgeAuditRecords"
+    ],
+    [
+      "POST",
+      "/security/audit/record/",
+      "ListAuditRecords"
+    ],
+    [
+      "GET",
+      "/security/audit/record",
+      "GetAuditRecord"
+    ],
+    [
+      "GET",
+      "/security/mft/connection/",
+      "ListMFTConnections"
+    ],
+    [
+      "GET",
+      "/security/mft/connection",
+      "GetMFTConnection"
+    ],
+    [
+      "DELETE",
+      "/security/mft/connection",
+      "DeleteMFTConnection"
+    ],
+    [
+      "PUT",
+      "/security/mft/connection",
+      "PutMFTConnection"
+    ],
+    [
+      "DELETE",
+      "/security/mft/connection/token",
+      "RevokeMFTToken"
+    ],
+    [
+      "GET",
+      "/security/mft/connection/auth-code-url",
+      "GetMFTConnectionAuthCodeURL"
+    ],
+    [
+      "GET",
+      "/doc-db/",
+      "ListDocDBapps"
+    ],
+    [
+      "GET",
+      "/doc-db",
+      "GetDocDBapp"
+    ],
+    [
+      "PUT",
+      "/doc-db",
+      "PutDocDBapp"
+    ],
+    [
+      "DELETE",
+      "/doc-db",
+      "DeleteDocDBapp"
+    ],
+    [
+      "GET",
+      "/web-session/",
+      "ListWebSessions"
+    ],
+    [
+      "DELETE",
+      "/web-session",
+      "DeleteWebSession"
+    ],
+    [
+      "GET",
+      "/security/role/",
+      "ListRoles"
+    ],
+    [
+      "GET",
+      "/security/role/owner/",
+      "ListRoleOwners"
+    ],
+    [
+      "GET",
+      "/security/role",
+      "GetRole"
+    ],
+    [
+      "PUT",
+      "/security/role",
+      "PutRole"
+    ],
+    [
+      "DELETE",
+      "/security/role",
+      "DeleteRole"
+    ],
+    [
+      "GET",
+      "/security/oauth2/resource-server/mapping/",
+      "ListOAuthResourceServerMappings"
+    ],
+    [
+      "GET",
+      "/security/oauth2/resource-server/mapping",
+      "GetOAuthResourceServerMapping"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/resource-server/mapping",
+      "PutOAuthResourceServerMapping"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/resource-server/mapping",
+      "DeleteOAuthResourceServerMapping"
+    ],
+    [
+      "GET",
+      "/security/oauth2/resource-server/",
+      "ListOAuthResourceServers"
+    ],
+    [
+      "GET",
+      "/security/oauth2/resource-server",
+      "GetOAuthResourceServer"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/resource-server",
+      "PutOAuthResourceServer"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/resource-server",
+      "DeleteOAuthResourceServer"
+    ],
+    [
+      "POST",
+      "/security/oauth2/resource-server/secret",
+      "ChangeOAuthResourceServerSecret"
+    ],
+    [
+      "GET",
+      "/security/oauth2/client/server-definition/",
+      "ListOAuthServerDefinitions"
+    ],
+    [
+      "GET",
+      "/security/oauth2/client/server-definition",
+      "GetOAuthServerDefinition"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/client/server-definition",
+      "PutOAuthServerDefinition"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/client/server-definition",
+      "DeleteOAuthServerDefinition"
+    ],
+    [
+      "POST",
+      "/security/oauth2/client/server-definition/initial-access-token",
+      "UpdateOAuthServerDefinitionInitialAccessToken"
+    ],
+    [
+      "POST",
+      "/security/oauth2/client/server-definition",
+      "PostOAuthServerDefinition"
+    ],
+    [
+      "GET",
+      "/security/oauth2/client/client-configuration/",
+      "ListOAuthClientConfigurations"
+    ],
+    [
+      "GET",
+      "/security/oauth2/client/client-configuration",
+      "GetOAuthClientConfiguration"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/client/client-configuration",
+      "DeleteOAuthClientConfiguration"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/client/client-configuration",
+      "PutOAuthClientConfiguration"
+    ],
+    [
+      "POST",
+      "/security/oauth2/client/client-configuration/secrets",
+      "PostOAuthClientConfigurationSecrets"
+    ],
+    [
+      "POST",
+      "/security/oauth2/client/client-configuration/rotate-keys",
+      "RotateKeysOAuthClientConfiguration"
+    ],
+    [
+      "POST",
+      "/security/oauth2/client/client-configuration/register-client",
+      "RegsiterClientOAuthClientConfiguration"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/server",
+      "DeleteOAuthServer"
+    ],
+    [
+      "GET",
+      "/security/oauth2/server",
+      "GetOAuthServer"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/server",
+      "PutOAuthServer"
+    ],
+    [
+      "POST",
+      "/security/oauth2/server/password",
+      "ChangeOAuthServerPassword"
+    ],
+    [
+      "POST",
+      "/security/oauth2/server/revoke",
+      "RevokeOAuthToken"
+    ],
+    [
+      "GET",
+      "/security/oauth2/server/client/",
+      "ListOAuthServerClients"
+    ],
+    [
+      "GET",
+      "/security/oauth2/server/client",
+      "GetOAuthServerClient"
+    ],
+    [
+      "PUT",
+      "/security/oauth2/server/client",
+      "PutOAuthServerClient"
+    ],
+    [
+      "DELETE",
+      "/security/oauth2/server/client",
+      "DeleteOAuthServerClient"
+    ],
+    [
+      "POST",
+      "/security/oauth2/server/client/secret",
+      "UpdateOAuthServerClientSecret"
+    ],
+    [
+      "POST",
+      "/security/oauth2/server/client",
+      "PostOAuthServerClient"
+    ],
+    [
+      "GET",
+      "/security/ldap/configuration/",
+      "ListLDAPConfigs"
+    ],
+    [
+      "GET",
+      "/security/ldap/configuration",
+      "GetLDAPConfig"
+    ],
+    [
+      "PUT",
+      "/security/ldap/configuration",
+      "PutLDAPConfig"
+    ],
+    [
+      "DELETE",
+      "/security/ldap/configuration",
+      "DeleteLDAPConfig"
+    ],
+    [
+      "POST",
+      "/security/ldap/configuration/search-password",
+      "PostLDAPSearchPassword"
+    ],
+    [
+      "POST",
+      "/security/ldap/test",
+      "TestLDAPAuth"
+    ],
+    [
+      "GET",
+      "/security/privileged-routine/",
+      "ListPrivRoutineApps"
+    ],
+    [
+      "GET",
+      "/security/privileged-routine",
+      "GetPrivRoutineApp"
+    ],
+    [
+      "PUT",
+      "/security/privileged-routine",
+      "PutPrivRoutineApp"
+    ],
+    [
+      "DELETE",
+      "/security/privileged-routine",
+      "DeletePrivRoutineApp"
+    ],
+    [
+      "GET",
+      "/security/user/",
+      "ListUsers"
+    ],
+    [
+      "POST",
+      "/security/user",
+      "CreateUser"
+    ],
+    [
+      "GET",
+      "/security/user",
+      "GetUser"
+    ],
+    [
+      "POST",
+      "/security/user/password",
+      "ChangeUserPassword"
+    ],
+    [
+      "PUT",
+      "/security/user",
+      "PutUser"
+    ],
+    [
+      "DELETE",
+      "/security/user",
+      "DeleteUser"
+    ],
+    [
+      "GET",
+      "/web-app/",
+      "ListWebApps"
+    ],
+    [
+      "GET",
+      "/web-app",
+      "GetWebApp"
+    ],
+    [
+      "PUT",
+      "/web-app",
+      "PutWebApp"
+    ],
+    [
+      "DELETE",
+      "/web-app",
+      "DeleteWebApp"
+    ],
+    [
+      "GET",
+      "/web-app/pct-access/",
+      "ListWebAppPctAccess"
+    ],
+    [
+      "PUT",
+      "/web-app/pct-access",
+      "PutWebAppPctAccess"
+    ],
+    [
+      "GET",
+      "/web-app/pct-access",
+      "GetWebAppPctAccess"
+    ],
+    [
+      "DELETE",
+      "/web-app/pct-access",
+      "DeleteWebAppPctAccess"
+    ],
+    [
+      "GET",
+      "/wallet/",
+      "ListWalletCollections"
+    ],
+    [
+      "GET",
+      "/wallet",
+      "GetWalletCollection"
+    ],
+    [
+      "PUT",
+      "/wallet",
+      "PutWalletCollection"
+    ],
+    [
+      "DELETE",
+      "/wallet",
+      "DeleteWalletCollection"
+    ],
+    [
+      "GET",
+      "/wallet/secret/",
+      "ListWalletSecrets"
+    ],
+    [
+      "PUT",
+      "/wallet/secret",
+      "PutWalletSecret"
+    ],
+    [
+      "DELETE",
+      "/wallet/secret",
+      "DeleteWalletSecret"
+    ],
+    [
+      "POST",
+      "/security/encryption/file",
+      "PostEncryptionFile"
+    ],
+    [
+      "POST",
+      "/security/encryption/file/activate",
+      "ActivateEncryptionFile"
+    ],
+    [
+      "GET",
+      "/security/encryption/file/admin/",
+      "ListEncryptionFileAdmins"
+    ],
+    [
+      "POST",
+      "/security/encryption/file/admin",
+      "PostEncryptionFileAdmin"
+    ],
+    [
+      "DELETE",
+      "/security/encryption/file/admin",
+      "DeleteEncryptionFileAdmin"
+    ],
+    [
+      "GET",
+      "/security/encryption/file/key/",
+      "ListEncryptionFileKeys"
+    ],
+    [
+      "POST",
+      "/security/encryption/file/key",
+      "PostEncryptionFileKey"
+    ],
+    [
+      "DELETE",
+      "/security/encryption/file/key",
+      "DeleteEncryptionFileKey"
+    ],
+    [
+      "GET",
+      "/security/encryption/key/data-element/",
+      "ListDataElementEncryptionKeys"
+    ],
+    [
+      "GET",
+      "/security/encryption/key/",
+      "ListActivatedEncryptionKeys"
+    ],
+    [
+      "POST",
+      "/security/encryption/key/deactivate",
+      "DeactivateEncryptionKey"
+    ],
+    [
+      "PUT",
+      "/security/encryption/settings",
+      "PutEncryptionSettings"
+    ],
+    [
+      "GET",
+      "/security/encryption/settings",
+      "GetEncryptionSettings"
+    ],
+    [
+      "GET",
+      "/security/sql-privilege/admin/",
+      "ListAdminSQLPrivileges"
+    ],
+    [
+      "HEAD",
+      "/security/sql-privilege/admin",
+      "HeadAdminSQLPrivilege"
+    ],
+    [
+      "DELETE",
+      "/security/sql-privilege/admin",
+      "DeleteAdminSQLPrivilege"
+    ],
+    [
+      "PUT",
+      "/security/sql-privilege/admin",
+      "PutAdminSQLPrivilege"
+    ],
+    [
+      "GET",
+      "/security/sql-privilege/",
+      "ListSQLPrivileges"
+    ],
+    [
+      "HEAD",
+      "/security/sql-privilege",
+      "HeadSQLPrivilege"
+    ],
+    [
+      "PUT",
+      "/security/sql-privilege",
+      "PutSQLPrivilege"
+    ],
+    [
+      "DELETE",
+      "/security/sql-privilege",
+      "DeleteSQLPrivilege"
+    ],
+    [
+      "GET",
+      "/security/sql-privilege/column/",
+      "ListSQLColumnPrivileges"
+    ],
+    [
+      "HEAD",
+      "/security/sql-privilege/column",
+      "HeadSQLColumnPrivilege"
+    ],
+    [
+      "PUT",
+      "/security/sql-privilege/column",
+      "PutSQLColumnPrivilege"
+    ],
+    [
+      "DELETE",
+      "/security/sql-privilege/column",
+      "DeleteSQLColumnPrivilege"
+    ],
+    [
+      "GET",
+      "/monitor/license-usage",
+      "ListLicenseUsage"
+    ],
+    [
+      "GET",
+      "/monitor/system-usage",
+      "GetBasicSystemUsage"
+    ],
+    [
+      "GET",
+      "/monitor/system-usage/shared-memory",
+      "GetSHMSystemUsage"
+    ],
+    [
+      "GET",
+      "/monitor/dashboard/main",
+      "GetMainDashboard"
+    ],
+    [
+      "GET",
+      "/monitor/dashboard/globals-and-routines",
+      "GetGlobalsAndRoutinesDashboard"
+    ],
+    [
+      "GET",
+      "/monitor/dashboard/ecp",
+      "GetECPDashboard"
+    ],
+    [
+      "GET",
+      "/monitor/dashboard/system-resources",
+      "GetSystemResourcesDashboard"
+    ],
+    [
+      "GET",
+      "/security/superserver/",
+      "ListSuperservers"
+    ],
+    [
+      "DELETE",
+      "/security/superserver",
+      "DeleteSuperserver"
+    ],
+    [
+      "GET",
+      "/security/superserver",
+      "GetSuperserver"
+    ],
+    [
+      "PUT",
+      "/security/superserver",
+      "PutSuperserver"
+    ],
+    [
+      "GET",
+      "/security/web-auth",
+      "GetWebAuth"
+    ],
+    [
+      "PUT",
+      "/security/web-auth",
+      "PutWebAuth"
+    ],
+    [
+      "POST",
+      "/security/web-auth/smtp-password",
+      "PostWebAuthSMTPPassword"
+    ],
+    [
+      "GET",
+      "/wqm-category/",
+      "ListWQMCategories"
+    ],
+    [
+      "GET",
+      "/wqm-category",
+      "GetWQMCategory"
+    ],
+    [
+      "PUT",
+      "/wqm-category",
+      "PutWQMCategory"
+    ],
+    [
+      "DELETE",
+      "/wqm-category",
+      "DeleteWQMCategory"
+    ],
+    [
+      "GET",
+      "/async-result",
+      "GetAsyncResult"
+    ],
+    [
+      "PATCH",
+      "/async-result",
+      "PatchAsyncResult"
+    ],
+    [
+      "GET",
+      "/async-result/",
+      "ListAsyncResults"
+    ]
+  ]
+}

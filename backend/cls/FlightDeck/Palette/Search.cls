@@ -89,6 +89,14 @@ ClassMethod Run(q As %String, domain As %String = "", limit As %Integer = 5) As 
 			set group = {"domain":(dom), "entityType":($list(pres, 1)), "state":"ok", "results":[]}
 			do group.%Set("reason", "", "null")
 			do group.%Set("total", "", "null")
+			// An entity type the instance does not offer (v1 dialect) is not searched and does not
+			// degrade the search: it is reported with the version reason.
+			if '##class(FlightDeck.Admin.Client).Has(op.operationId) {
+				set group.state = "unavailable"
+				set group.reason = ##class(FlightDeck.API.Response).#MSGVERSION
+				do groups.%Push(group)
+				continue
+			}
 			if '##class(FlightDeck.Capability.Map).Allowed(op.requires, privileges) {
 				set group.state = "forbidden"
 				set group.reason = ##class(FlightDeck.API.Response).RequiresMessage(op.requires)
