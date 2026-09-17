@@ -1,0 +1,1417 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FlightDeck API additions for feature 002",
+    "version": "1.1.0",
+    "description": "Merged into the served FlightDeck OpenAPI document (feature 001 contract) during implementation; the served document stays the single source (research R3). Every request carries X-FlightDeck-Tab. Mutating routes are guarded by the feature 001 safe-mode guard; POST /v1/mutations/preview and POST /v1/rest/execute are allow-listed, and execute applies the guard to the method under test (research R8)."
+  },
+  "paths": {
+    "/v1/domains/{domain}/{entityType}": {
+      "get": {
+        "operationId": "listEntities",
+        "summary": "List entities of a descriptor-backed entity type through its official list operation",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": ""
+          },
+          {
+            "name": "maxRows",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/domains/{domain}/{entityType}/item": {
+      "get": {
+        "operationId": "getEntity",
+        "summary": "One entity through its official detail operation; query parameters are the descriptor keys",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityDetailResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/domains/{domain}/{entityType}/links": {
+      "get": {
+        "operationId": "getEntityLinks",
+        "summary": "Incoming and outgoing links composed from official reads",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinksResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/mutations/preview": {
+      "post": {
+        "operationId": "previewMutation",
+        "summary": "Dry-run: current against commanded, grade, impact, self-protection, fingerprint. Changes nothing; allowed while safe mode is armed",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/mutations/apply": {
+      "post": {
+        "operationId": "applyMutation",
+        "summary": "Re-read, compare fingerprint, re-check grade and self-protection, then send the official write",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-FlightDeck-Safe-Mode",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "armed",
+                "disarmed"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplyResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "STATE_CHANGED: fresh preview, nothing sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateChangedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "UPSTREAM_REJECTED: official API rejection, verbatim",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplyRejectedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rest/services": {
+      "get": {
+        "operationId": "listRestServices",
+        "summary": "Discovered REST services (%REST.API, in-process, as the user)",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestServicesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rest/services/specification": {
+      "get": {
+        "operationId": "getRestSpecification",
+        "summary": "Specification of one service, or the platform-reported routes as metadata",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "webApplication",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": ""
+          },
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecificationResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rest/execute": {
+      "post": {
+        "operationId": "executeRestRequest",
+        "summary": "Run a test request in-process against a REST web application of this instance. GET, HEAD and OPTIONS run directly; POST, PUT, PATCH and DELETE require /v1/mutations/apply in request mode",
+        "parameters": [
+          {
+            "name": "X-FlightDeck-Tab",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-FlightDeck-Safe-Mode",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "armed",
+                "disarmed"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecuteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error envelope from feature 001",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Grade": {
+        "type": "string",
+        "enum": [
+          "simple",
+          "reinforced",
+          "maximum"
+        ]
+      },
+      "Marker": {
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "tone"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Web applications: open-api, no-auth, static-only (research R10)"
+          },
+          "text": {
+            "type": "string"
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "caution",
+              "warning",
+              "neutral"
+            ]
+          }
+        }
+      },
+      "MutationCapability": {
+        "type": "object",
+        "required": [
+          "operationId",
+          "allowed",
+          "available",
+          "reason"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "EntityListResponse": {
+        "type": "object",
+        "required": [
+          "entityType",
+          "operationId",
+          "items",
+          "total",
+          "capped"
+        ],
+        "properties": {
+          "entityType": {
+            "type": "string"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "object",
+                "markers"
+              ],
+              "properties": {
+                "object": {
+                  "type": "object",
+                  "description": "Official list item, unchanged"
+                },
+                "markers": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Marker"
+                  }
+                },
+                "keys": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "displayName": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "capped": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EntityDetailResponse": {
+        "type": "object",
+        "required": [
+          "entityType",
+          "object",
+          "displayName",
+          "isSystem",
+          "isFlightDeck",
+          "markers",
+          "availableMutations"
+        ],
+        "properties": {
+          "entityType": {
+            "type": "string"
+          },
+          "object": {
+            "type": "object",
+            "description": "Official detail object, unchanged; secret fields removed"
+          },
+          "keys": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isSystem": {
+            "type": "boolean"
+          },
+          "isFlightDeck": {
+            "type": "boolean"
+          },
+          "markers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Marker"
+            }
+          },
+          "availableMutations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MutationCapability"
+            }
+          }
+        }
+      },
+      "LinkItem": {
+        "type": "object",
+        "required": [
+          "entityType",
+          "domain",
+          "displayName",
+          "keys"
+        ],
+        "properties": {
+          "entityType": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "keys": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "LinksResponse": {
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "provider",
+                "direction",
+                "label",
+                "state",
+                "count",
+                "items"
+              ],
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "in",
+                    "out"
+                  ]
+                },
+                "label": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "forbidden",
+                    "unavailable",
+                    "undetermined"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "count": {
+                  "type": "integer",
+                  "nullable": true
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LinkItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "TestRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "path"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "HEAD",
+              "OPTIONS",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/(?!/)",
+            "description": "Relative to the instance; no scheme, host, backslash or dot segments"
+          },
+          "query": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Authorization and Cookie are rejected"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "required": [
+          "operationId"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "example": "PUT /v2/web-app"
+          },
+          "keys": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "proposed": {
+            "type": "object",
+            "description": "Changed fields for edit, full object for create, absent for delete"
+          },
+          "request": {
+            "$ref": "#/components/schemas/TestRequest"
+          }
+        }
+      },
+      "DiffRow": {
+        "type": "object",
+        "required": [
+          "field",
+          "label",
+          "changed",
+          "secret"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "current": {
+            "nullable": true
+          },
+          "commanded": {
+            "nullable": true
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "secret": {
+            "type": "boolean",
+            "description": "When true, current and commanded are omitted"
+          }
+        }
+      },
+      "Impact": {
+        "type": "object",
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "undetermined",
+              "none"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkItem"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PreviewResponse": {
+        "type": "object",
+        "required": [
+          "kind",
+          "target",
+          "rows",
+          "noChange",
+          "grade",
+          "fingerprint"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "create",
+              "edit",
+              "delete",
+              "request"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiffRow"
+            }
+          },
+          "noChange": {
+            "type": "boolean"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/Grade"
+          },
+          "confirmText": {
+            "type": "string",
+            "nullable": true
+          },
+          "consequence": {
+            "type": "string",
+            "nullable": true
+          },
+          "impact": {
+            "$ref": "#/components/schemas/Impact"
+          },
+          "blocked": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "requestMode": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "request": {
+                "$ref": "#/components/schemas/TestRequest"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ApplyRequest": {
+        "type": "object",
+        "required": [
+          "operationId",
+          "fingerprint"
+        ],
+        "properties": {
+          "operationId": {
+            "type": "string"
+          },
+          "keys": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "proposed": {
+            "type": "object"
+          },
+          "request": {
+            "$ref": "#/components/schemas/TestRequest"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "confirmation": {
+            "type": "string"
+          },
+          "acknowledged": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TrailRecord": {
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "operationId",
+          "kind",
+          "target",
+          "rows",
+          "result",
+          "status",
+          "message",
+          "concurrency"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiffRow"
+            }
+          },
+          "request": {
+            "$ref": "#/components/schemas/TestRequest"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "Applied",
+              "Failed",
+              "Blocked"
+            ]
+          },
+          "status": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrency": {
+            "type": "string"
+          }
+        }
+      },
+      "ApplyResponse": {
+        "type": "object",
+        "required": [
+          "result",
+          "trail"
+        ],
+        "properties": {
+          "result": {
+            "description": "Re-read official object, or ExecuteResponse in request mode"
+          },
+          "trail": {
+            "$ref": "#/components/schemas/TrailRecord"
+          }
+        }
+      },
+      "StateChangedResponse": {
+        "type": "object",
+        "required": [
+          "error",
+          "preview"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/PreviewResponse"
+          }
+        }
+      },
+      "ApplyRejectedResponse": {
+        "type": "object",
+        "required": [
+          "error",
+          "trail",
+          "validation"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "flightdeck-api.openapi.json#/components/schemas/Error"
+          },
+          "trail": {
+            "$ref": "#/components/schemas/TrailRecord"
+          },
+          "validation": {
+            "type": "boolean",
+            "description": "True when the official API reported an input error with a 5xx status (research R2)"
+          }
+        }
+      },
+      "RestService": {
+        "type": "object",
+        "required": [
+          "webApplication",
+          "namespace",
+          "dispatchClass",
+          "enabled",
+          "kind",
+          "hasSpecification"
+        ],
+        "properties": {
+          "webApplication": {
+            "type": "string"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "dispatchClass": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "specification-first",
+              "hand-coded"
+            ]
+          },
+          "hasSpecification": {
+            "type": "boolean"
+          },
+          "specificationSource": {
+            "type": "string",
+            "enum": [
+              "specification-first",
+              "published"
+            ],
+            "nullable": true
+          },
+          "routesReportedByPlatform": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RestServicesResponse": {
+        "type": "object",
+        "required": [
+          "services",
+          "namespaces"
+        ],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RestService"
+            }
+          },
+          "namespaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "forbidden",
+                    "error"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "SpecificationResponse": {
+        "type": "object",
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "openapi-2.0",
+              "openapi-3.0",
+              "routes"
+            ]
+          },
+          "document": {
+            "type": "object",
+            "nullable": true
+          },
+          "routes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "method": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "call": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ExecuteRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TestRequest"
+          }
+        ]
+      },
+      "ExecuteResponse": {
+        "type": "object",
+        "required": [
+          "status",
+          "elapsedMs",
+          "headers",
+          "body",
+          "bodySize",
+          "truncated",
+          "resolved",
+          "rolesMode"
+        ],
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "elapsedMs": {
+            "type": "number"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "type": "string"
+          },
+          "bodySize": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolved": {
+            "type": "object",
+            "properties": {
+              "webApplication": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
+              },
+              "dispatchClass": {
+                "type": "string"
+              }
+            }
+          },
+          "rolesMode": {
+            "type": "string",
+            "enum": [
+              "current-kept",
+              "login-only"
+            ],
+            "description": "Spike T-EXEC-1: roles are only kept or reduced to login roles, never set to another value"
+          },
+          "grantsNotApplied": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Roles the target application would grant to a real call and the test request did not receive"
+          }
+        }
+      },
+      "CompositeCapability": {
+        "type": "object",
+        "required": [
+          "id",
+          "requires",
+          "allowed",
+          "available",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "rest.execute"
+          },
+          "requires": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "AND across inner OR lists, derived from the official operations the composite calls"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

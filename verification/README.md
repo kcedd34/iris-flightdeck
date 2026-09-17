@@ -144,3 +144,14 @@ Findings while installing on 2026.1:
 - **A user without privileges cannot read `%SYS`**, so the v1 dispatcher cannot be detected for
   them. Detection reports "unknown", the call returns the API's 403, and sign-in refuses for
   privileges, not for the version (e2e on both versions).
+
+## Feature 002 pre-task checks, 2026-09-17
+
+- `rest-executor-spike-2026.2.md`: spike T-EXEC-1. `$ROLES` can be cleared to login roles by any
+  user, but set to a non-empty value only by IRISSYS writers, who can then add any role, including
+  `%All`. In-process dispatch matches HTTP when roles match and diverges toward less privilege when
+  the target application grants roles. The executor design was revised (feature 002 research R8).
+- `flightdeck-web-apps-exposure-2026.2.md`: `/api/flightdeck` answers 401 to every anonymous request,
+  including unknown routes and the OpenAPI document. `/flightdeck` serves only the 13 built static
+  files and answers 405 to other methods. No defect. The web applications list grades
+  unauthenticated exposure accordingly (feature 002 research R10).
