@@ -44,14 +44,20 @@ Method TestSecureRequiredForRoles()
 	do $$$AssertEquals(roles.reason, "Requires Use on %Admin_Secure. Ask your instance administrator for access.")
 }
 
+/// Any one of several declared privileges is enough. The operation is chosen from the map by
+/// availability, so the test holds on every instance (no version check, Constitution III).
 Method TestOrSemantics()
 {
-	set entries = ##class(FlightDeck.Capability.Map).Build(..Privileges("%Admin_Operate"))
-	set dbs = ..Find(entries, "GET /v2/databases")
-	do $$$AssertTrue(dbs.allowed, "databases allowed with Operate only")
-	do $$$AssertEquals(dbs.reason, "")
-	set none = ##class(FlightDeck.Capability.Map).Build(..Privileges())
-	do $$$AssertEquals(..Find(none, "GET /v2/databases").reason, "Requires Use on %Admin_Manage or %Admin_Operate. Ask your instance administrator for access.")
+	set all = ##class(FlightDeck.Capability.Map).Build(..Privileges()), op = ""
+	set iter = all.%GetIterator()
+	while iter.%GetNext(, .e) { if e.available && (e.requires.%Size() > 1) { set op = e quit } }
+	do $$$AssertTrue($isobject(op), "an available operation declares more than one privilege")
+	quit:'$isobject(op)
+	set first = $piece(op.requires.%Get(0), ":", 1), second = $piece(op.requires.%Get(1), ":", 1)
+	set entry = ..Find(##class(FlightDeck.Capability.Map).Build(..Privileges(second)), op.operationId)
+	do $$$AssertTrue(entry.allowed, op.operationId_" allowed with "_second_" only")
+	do $$$AssertEquals(entry.reason, "")
+	do $$$AssertEquals(..Find(all, op.operationId).reason, "Requires Use on "_first_" or "_second_". Ask your instance administrator for access.")
 }
 
 Method TestInfoAlwaysAllowed()

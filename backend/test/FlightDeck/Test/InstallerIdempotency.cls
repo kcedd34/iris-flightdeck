@@ -34,4 +34,19 @@ Method TestRuntimeRoleGrantsOnlyCodeDatabaseRead()
 	do $$$AssertEquals(role.Resources.%Get(0).Permissions, "R", "read only")
 }
 
+Method TestFlightDeckApplicationsRecordedForSelfProtection()
+{
+	do $$$AssertStatusOK(##class(FlightDeck.Install.Installer).VerifyWebApps())
+	do $$$AssertStatusOK(##class(FlightDeck.Install.Installer).VerifyWebApps())
+	set count = 0, name = ""
+	for { set name = $order(^FlightDeck.Install("applications", name)) quit:name=""  set count = count + 1 }
+	do $$$AssertEquals(count, 2, "exactly the two declared applications, after two runs")
+	set api = ##class(FlightDeck.Domain.Facts).FlightDeckApplication("/api/flightdeck")
+	do $$$AssertEquals(api.requiredAuthBits, 32)
+	do $$$AssertEquals(api.runtimeRole, "FlightDeck_Runtime")
+	do $$$AssertEquals(api.namespace, $namespace)
+	do $$$AssertEquals(##class(FlightDeck.Domain.Facts).FlightDeckApplication("/flightdeck").requiredAuthBits, 64)
+	do $$$AssertNotTrue(##class(FlightDeck.Domain.Facts).IsFlightDeckApplication("/csp/fd-demo"))
+}
+
 }

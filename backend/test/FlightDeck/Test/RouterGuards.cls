@@ -11,7 +11,10 @@ Method TestUrlMapMatchesOpenApi()
 			set url = $piece($piece(line, "Url=""", 2), """", 1)
 			set method = $piece($piece(line, "Method=""", 2), """", 1)
 			// strip the /v1 prefix: the OpenAPI server URL is /api/flightdeck/v1
-			set routes(method _ " " _ $extract(url, 4, *)) = ""
+			set url = $extract(url, 4, *)
+			// UrlMap ":name" segments are OpenAPI "{name}" path parameters
+			for i=1:1:$length(url, "/") { set segment = $piece(url, "/", i) if $extract(segment) = ":" set $piece(url, "/", i) = "{"_$extract(segment, 2, *)_"}" }
+			set routes(method _ " " _ url) = ""
 		}
 	}
 	set spec = ##class(FlightDeck.API.OpenAPI).Document()
@@ -63,6 +66,19 @@ Method TestTabHeaderRequired()
 	do $$$AssertEquals(##class(FlightDeck.API.Router).GuardDecision("GET", "/v1/vitals", "", "armed"), "MISSING_TAB_ID")
 	do $$$AssertEquals(##class(FlightDeck.API.Router).GuardDecision("GET", "/v1/openapi.json", "", ""), "OK")
 	do $$$AssertEquals(##class(FlightDeck.API.Router).GuardDecision("GET", "/v1/vitals", "tab", "armed"), "OK")
+}
+
+/// Feature 002: preview changes nothing and is allowed armed; apply is a mutation; execute applies
+/// the guard to the method under test itself (research R3, R8).
+Method TestMutationServiceRoutes()
+{
+	set R = "FlightDeck.API.Router"
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "POST", "/v1/mutations/preview", "t", "armed"), "OK")
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "POST", "/v1/mutations/apply", "t", "armed"), "SAFE_MODE_ON")
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "POST", "/v1/mutations/apply", "t", "disarmed"), "OK")
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "POST", "/v1/rest/execute", "t", "armed"), "OK")
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "GET", "/v1/domains/web-apps/web-application", "t", "armed"), "OK")
+	do $$$AssertEquals($classmethod(R, "GuardDecision", "GET", "/v1/domains/web-apps/web-application", "", "armed"), "MISSING_TAB_ID")
 }
 
 }

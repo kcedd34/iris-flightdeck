@@ -31,11 +31,12 @@ test("2. Given the term matches entities of different domains, when results show
   ];
   for (const [heading, name, context] of expected) {
     const group = palette.locator("[cmdk-group]").filter({ has: page.locator("[cmdk-group-heading]", { hasText: heading }) });
-    const row = group.locator("[cmdk-item]", { hasText: name });
+    // The first line of a row is the entity name; match it exactly (/csp/fd-demo vs /csp/fd-demo-reports).
+    const row = group.locator("[cmdk-item]").filter({ has: page.getByText(name, { exact: true }) });
     await expect(row).toBeVisible();
     await expect(row).toContainText(context);
   }
-  await expect(palette).toContainText("9 results");
+  await expect(palette).toContainText("10 results");
 });
 
 test("3. Given entity search is unavailable, when the user types, then local actions are still offered and the unavailability is signaled", async ({ page }) => {

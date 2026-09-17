@@ -49,7 +49,16 @@ cd frontend && FLIGHTDECK_PORT=52780 npx playwright test
 ```
 
 Expected: the 12 PRD scenarios of UC03, UC04 and UC10, the spec's additional scenarios, and feature
-001's suites pass; the `limited` project skips.
+001's suites pass; the `limited` project skips. Projects added by this feature: `webapps`,
+`mutation`, `rest` (explorer and confinement), `audit` (credential audit and axe) and, in
+`fixtures`, the pattern catalog.
+
+Three specs use `docker exec` for checks that have no HTTP surface on purpose: the container's
+connection table (`rest-confinement`), the IRIS logs (`audit`) and the pattern catalog switch
+(`pattern`). They use the container named by `FD_CONTAINER` (default `iris-flightdeck-iris-1`); for
+another install pass both, for example
+`FLIGHTDECK_PORT=52792 FD_CONTAINER=fd-health-iris-1 npx playwright test`. Without Docker access the
+connection-table and log checks skip with a stated reason.
 
 ## 4. Server-side enforcement without the UI (SC-003, SC-004)
 
@@ -86,9 +95,9 @@ is cleared, nothing was written; confirming again applies only Description, and 
 
 `frontend/e2e/rest-confinement.spec.ts` posts, through the executor, paths such as
 `http://example.com/`, `//example.com/x`, `/api/../../etc`, `/%2e%2e/`, `\\host\share`, and a
-`Host` header override. Expected: every one is refused with `TARGET_OUTSIDE_INSTANCE` (or the header
-ignored) and no network connection leaves the container (checked with the container's connection
-table before and after).
+`Host` header override. Expected: every path is refused with 400 `TARGET_OUTSIDE_INSTANCE`, the
+header with 400 `CREDENTIAL_HEADER`, and no network connection leaves the container (checked with
+the container's connection table before and after).
 
 ## 7. Credential audit extended (SC-010)
 

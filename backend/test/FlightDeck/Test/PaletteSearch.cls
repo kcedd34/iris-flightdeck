@@ -19,7 +19,7 @@ Method TestDemoObjectsFoundUnderTheirDomains()
 {
 	set result = ##class(FlightDeck.Palette.Search).Run("FD_Demo", "", 5)
 	do $$$AssertNotTrue(result.degraded)
-	for pair = "Role:permissions:2", "Resource:permissions:2", "Web application:web-apps:1", "Task:tasks:3", "Wallet collection:security:1" {
+	for pair = "Role:permissions:2", "Resource:permissions:2", "Web application:web-apps:2", "Task:tasks:3", "Wallet collection:security:1" {
 		set group = ..Group(result, $piece(pair, ":", 1))
 		do $$$AssertTrue($isobject(group), "group "_$piece(pair, ":", 1))
 		continue:'$isobject(group)
@@ -28,6 +28,19 @@ Method TestDemoObjectsFoundUnderTheirDomains()
 		set first = group.results.%Get(0)
 		do $$$AssertTrue((first.context '= "") && (first.target.route [ ("/"_group.domain_"/")), "context and route")
 	}
+}
+
+/// REST services are found through discovery and open in the REST APIs section (feature 002 T075).
+Method TestRestServicesFound()
+{
+	set result = ##class(FlightDeck.Palette.Search).Run("api/flightdeck", "web-apps", 5)
+	set group = ..Group(result, "REST service")
+	do $$$AssertTrue($isobject(group), "REST service group")
+	quit:'$isobject(group)
+	set first = group.results.%Get(0)
+	do $$$AssertEquals(first.name, "/api/flightdeck")
+	do $$$AssertEquals(first.target.route, "/web-apps/rest-apis")
+	do $$$AssertEquals(first.target.inspect.keys.webApplication, "/api/flightdeck")
 }
 
 Method TestExactMatchRanksFirst()

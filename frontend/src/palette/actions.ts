@@ -16,6 +16,7 @@ export interface ActionEntry {
     | { type: "theme"; theme: "dark" | "light" }
     | { type: "safe-mode"; to: "armed" | "disarmed" }
     | { type: "sign-out" }
+    | { type: "trail" }
     | { type: "operation"; to: string };
 }
 
@@ -42,6 +43,7 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
     shell("shell:theme-light", "Switch to light theme", { type: "theme", theme: "light" }),
     shell("shell:safe-mode-disarm", "Turn off safe mode in this tab", { type: "safe-mode", to: "disarmed" }),
     shell("shell:safe-mode-arm", "Turn on safe mode", { type: "safe-mode", to: "armed" }),
+    shell("shell:trail", "Session trail", { type: "trail" }),
     shell("shell:sign-out", "Sign out", { type: "sign-out" }),
   ];
   for (const c of capabilities) {

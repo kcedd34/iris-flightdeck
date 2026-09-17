@@ -27,3 +27,22 @@ export async function ensureUser(name: string, password: string, roles: string[]
   });
   if (created.status >= 300) throw new Error(`Creating ${name} failed: HTTP ${created.status} ${await created.text()}`);
 }
+
+/** Official SysAdmin API call as the admin test account (test infrastructure, feature 002 fixtures). */
+export async function adminRequest(method: "GET" | "PUT" | "DELETE", path: string, query: Record<string, string>, body?: unknown): Promise<{ status: number; json: unknown }> {
+  const url = new URL(`${await adminBase()}${path}`);
+  for (const [k, v] of Object.entries(query)) url.searchParams.set(k, v);
+  const response = await fetch(url, {
+    method,
+    headers: { Authorization: basic(ADMIN), ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await response.text();
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = text;
+  }
+  return { status: response.status, json };
+}

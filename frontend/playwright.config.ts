@@ -17,7 +17,11 @@ export default defineConfig({
     { name: "session", testMatch: /session\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "palette", testMatch: /palette\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "shell", testMatch: /shell\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
-    { name: "fixtures", testMatch: /fixtures\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
+    { name: "webapps", testMatch: /webapps\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "mutation", testMatch: /mutation\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
+    { name: "rest", testMatch: /rest(-confinement)?\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "audit", testMatch: /audit\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
+    { name: "fixtures", testMatch: /(fixtures|pattern)\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
     // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.
     { name: "limited", testMatch: /limited\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
   ],

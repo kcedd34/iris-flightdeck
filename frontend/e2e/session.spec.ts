@@ -43,9 +43,10 @@ test("3. Given the instance's sign-in path, when the user authenticates, then ac
   const storage = await page.evaluate(() => ({
     local: Object.keys(window.localStorage),
     session: Object.keys(window.sessionStorage),
-    values: Object.values(window.localStorage).join(" "),
+    values: Object.values(window.localStorage).join(" ") + " " + Object.values(window.sessionStorage).join(" "),
   }));
-  expect(storage.session).toEqual([]);
+  // Feature 002: the session trail is the only session storage entry allowed, and it holds no credential.
+  for (const key of storage.session) expect(key).toBe("flightdeck.trail.v1");
   for (const key of storage.local) expect(key).toMatch(/^flightdeck:(theme|recent):/);
   expect(storage.values).not.toContain('"SYS"');
   // Only IRIS-owned cookies: the CSP session, browser id and web server affinity. None is a credential.

@@ -52,7 +52,11 @@ export interface EntityEntry {
   name: string;
   context: string;
   sourceOperationId: string;
-  target: { route: string; inspect: { entityType: string; name: string } };
+  target: {
+    route: string;
+    /** domain, descriptorType and keys are present for entity types built on the domain pattern (feature 002). */
+    inspect: { entityType: string; name: string; domain?: string; descriptorType?: string; keys?: Keys };
+  };
 }
 
 export interface EntitySearchGroup {
@@ -69,4 +73,197 @@ export interface EntitySearchResponse {
   degraded: boolean;
   reason: string | null;
   totalResults: number;
+}
+
+// Feature 002 (specs/002-webapps-explorer-mutations/contracts/flightdeck-api-002.openapi.json).
+
+export type Grade = "simple" | "reinforced" | "maximum";
+
+export interface Marker {
+  id: string;
+  text: string;
+  tone: "caution" | "warning" | "neutral";
+}
+
+export interface MutationCapability {
+  operationId: string;
+  allowed: boolean;
+  available: boolean;
+  reason: string | null;
+}
+
+export type Keys = Record<string, string>;
+
+export interface EntityListItem {
+  object: Record<string, unknown>;
+  markers: Marker[];
+  keys: Keys;
+  displayName: string;
+  facts: Record<string, unknown>;
+}
+
+export interface EntityListResponse {
+  entityType: string;
+  operationId: string;
+  items: EntityListItem[];
+  total: number;
+  capped: boolean;
+}
+
+export interface EntityDetailResponse {
+  entityType: string;
+  object: Record<string, unknown>;
+  keys: Keys;
+  displayName: string;
+  isSystem: boolean;
+  isFlightDeck: boolean;
+  markers: Marker[];
+  facts: Record<string, unknown>;
+  availableMutations: MutationCapability[];
+}
+
+export interface LinkItem {
+  entityType: string;
+  domain: DomainId;
+  displayName: string;
+  keys: Keys;
+  detail: string | null;
+}
+
+export interface LinkGroup {
+  provider: string;
+  direction: "in" | "out";
+  label: string;
+  state: "ok" | "forbidden" | "unavailable" | "undetermined";
+  reason: string | null;
+  count: number | null;
+  items: LinkItem[];
+}
+
+export interface LinksResponse {
+  groups: LinkGroup[];
+}
+
+export type HttpMethod = "GET" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+export interface TestRequest {
+  method: HttpMethod;
+  path: string;
+  query?: Record<string, string>;
+  headers?: Record<string, string>;
+  body?: string | null;
+}
+
+export interface PreviewRequest {
+  operationId: string;
+  keys?: Keys;
+  proposed?: Record<string, unknown>;
+  request?: TestRequest;
+}
+
+export interface DiffRow {
+  field: string;
+  label: string;
+  current?: unknown;
+  commanded?: unknown;
+  changed: boolean;
+  secret: boolean;
+}
+
+export interface Impact {
+  state: "ok" | "undetermined" | "none";
+  summary?: string;
+  users?: string[];
+  objects?: LinkItem[];
+  reason?: string | null;
+}
+
+export interface PreviewResponse {
+  kind: "create" | "edit" | "delete" | "request";
+  target: string;
+  rows: DiffRow[];
+  noChange: boolean;
+  grade: Grade;
+  confirmText: string | null;
+  consequence: string | null;
+  impact?: Impact;
+  blocked: { message: string } | null;
+  fingerprint: string;
+  requestMode: { request: TestRequest; reason: string } | null;
+  /** Present only when blocked: the server's Blocked record (FR-014). */
+  trail?: TrailRecord;
+}
+
+export interface ApplyRequest extends PreviewRequest {
+  fingerprint: string;
+  confirmation?: string;
+  acknowledged?: boolean;
+}
+
+export interface TrailRecord {
+  id: string;
+  time: string;
+  operationId: string;
+  kind: string;
+  target: string;
+  rows: DiffRow[];
+  request?: TestRequest;
+  result: "Applied" | "Failed" | "Blocked";
+  status: number;
+  message: string | null;
+  concurrency: string;
+}
+
+export interface ApplyResponse {
+  result: unknown;
+  trail: TrailRecord;
+}
+
+export interface RestService {
+  /** The web application, or the specification name when no web application serves it. */
+  name: string;
+  webApplication: string;
+  namespace: string;
+  dispatchClass: string;
+  enabled: boolean;
+  kind: "specification-first" | "hand-coded";
+  hasSpecification: boolean;
+  specificationSource: "specification-first" | "published" | null;
+  routesReportedByPlatform: boolean;
+  specificationName?: string;
+  markers: Marker[];
+}
+
+export interface RestServicesResponse {
+  services: RestService[];
+  namespaces: { name: string; state: "ok" | "forbidden" | "error"; reason: string | null }[];
+}
+
+export interface SpecificationResponse {
+  format: "openapi-2.0" | "openapi-3.0" | "routes";
+  document: Record<string, unknown> | null;
+  routes: { method: string; path: string; call: string }[] | null;
+}
+
+export type ExecuteRequest = TestRequest;
+
+export interface ExecuteResponse {
+  status: number;
+  elapsedMs: number;
+  headers: Record<string, string>;
+  body: string;
+  bodySize: number;
+  truncated: boolean;
+  contentType: string | null;
+  resolved: { webApplication: string; namespace: string; dispatchClass: string };
+  rolesMode: "current-kept" | "login-only";
+  grantsNotApplied: string[];
+}
+
+export interface CompositeCapability {
+  id: string;
+  requires: string[][];
+  allowed: boolean;
+  available: boolean;
+  reason: string | null;
 }

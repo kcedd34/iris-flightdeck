@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import { MutationProvider } from "./mutation/useMutation";
 import { CommandPalette } from "./palette/CommandPalette";
 import { AppRoutes } from "./routes";
 import { ReauthOverlay } from "./session/ReauthOverlay";
@@ -21,17 +22,19 @@ function Shell() {
   if (state === "loading") return null;
   if (state === "signed_out" || !session) return <SignIn />;
   return (
-    <div className="app">
-      <Glareshield />
-      <div className="shell">
-        <Rail />
-        <main className="work">
-          <AppRoutes />
-        </main>
+    <MutationProvider>
+      <div className="app">
+        <Glareshield />
+        <div className="shell">
+          <Rail />
+          <main className="work">
+            <AppRoutes />
+          </main>
+        </div>
+        <CommandPalette />
+        <ReauthOverlay />
       </div>
-      <CommandPalette />
-      <ReauthOverlay />
-    </div>
+    </MutationProvider>
   );
 }
 

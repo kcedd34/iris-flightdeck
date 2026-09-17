@@ -1,0 +1,87 @@
+/* REST API explorer (UC04). Tokens only. */
+
+.spath {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.spath-h {
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 4px 0;
+}
+
+.sop-h {
+  padding-left: 0;
+}
+
+.sop-method {
+  min-width: 56px;
+  color: var(--text-primary);
+}
+
+.sop-b {
+  padding: 4px 0 8px 12px;
+}
+
+.sop-k {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 10px 0 4px;
+}
+
+.stree {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 1px 0;
+}
+
+.stree-c {
+  padding-left: 14px;
+  border-left: 1px solid var(--line-hairline);
+}
+
+.rbuilder textarea,
+.rbuilder input[type="text"],
+.rbuilder select {
+  width: 100%;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.rbuilder select {
+  width: auto;
+}
+
+.rrow {
+  display: flex;
+  gap: 6px;
+}
+
+.rlabel {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 8px 0 3px;
+}
+
+.rresponse {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-hairline);
+}
+
+.rbody {
+  max-height: 360px;
+  overflow: auto;
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-hairline);
+  padding: 8px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

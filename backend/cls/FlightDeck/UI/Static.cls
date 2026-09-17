@@ -4,6 +4,11 @@
 Class FlightDeck.UI.Static Extends %CSP.REST
 {
 
+/// Declares that this dispatcher serves only the built static files of the SPA. The web
+/// applications list trusts it only together with a UrlMap that exposes GET routes alone
+/// (FlightDeck.Domain.Facts.StaticFilesDispatcher; verification/flightdeck-web-apps-exposure-2026.2.md).
+Parameter EXPOSURE = "static-files";
+
 Parameter UseSession = 0;
 
 Parameter HandleCorsRequest = 0;

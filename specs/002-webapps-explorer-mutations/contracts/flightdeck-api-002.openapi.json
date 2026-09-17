@@ -3,10 +3,10 @@
   "info": {
     "title": "FlightDeck API additions for feature 002",
     "version": "1.1.0",
-    "description": "Merged into the served FlightDeck OpenAPI document (feature 001 contract) during implementation; the served document stays the single source (research R3). Every request carries X-FlightDeck-Tab. Mutating routes are guarded by the feature 001 safe-mode guard; POST /v1/mutations/preview and POST /v1/rest/execute are allow-listed, and execute applies the guard to the method under test (research R8)."
+    "description": "Merged into the served FlightDeck OpenAPI document (feature 001 contract) during implementation; the served document stays the single source (research R3). Every request carries X-FlightDeck-Tab. Mutating routes are guarded by the feature 001 safe-mode guard; POST /mutations/preview and POST /rest/execute are allow-listed, and execute applies the guard to the method under test (research R8). Paths are relative to the server URL /api/flightdeck/v1, as in the feature 001 contract."
   },
   "paths": {
-    "/v1/domains/{domain}/{entityType}": {
+    "/domains/{domain}/{entityType}": {
       "get": {
         "operationId": "listEntities",
         "summary": "List entities of a descriptor-backed entity type through its official list operation",
@@ -98,7 +98,7 @@
         }
       }
     },
-    "/v1/domains/{domain}/{entityType}/item": {
+    "/domains/{domain}/{entityType}/item": {
       "get": {
         "operationId": "getEntity",
         "summary": "One entity through its official detail operation; query parameters are the descriptor keys",
@@ -172,7 +172,7 @@
         }
       }
     },
-    "/v1/domains/{domain}/{entityType}/links": {
+    "/domains/{domain}/{entityType}/links": {
       "get": {
         "operationId": "getEntityLinks",
         "summary": "Incoming and outgoing links composed from official reads",
@@ -236,7 +236,7 @@
         }
       }
     },
-    "/v1/mutations/preview": {
+    "/mutations/preview": {
       "post": {
         "operationId": "previewMutation",
         "summary": "Dry-run: current against commanded, grade, impact, self-protection, fingerprint. Changes nothing; allowed while safe mode is armed",
@@ -304,7 +304,7 @@
         }
       }
     },
-    "/v1/mutations/apply": {
+    "/mutations/apply": {
       "post": {
         "operationId": "applyMutation",
         "summary": "Re-read, compare fingerprint, re-check grade and self-protection, then send the official write",
@@ -394,7 +394,7 @@
         }
       }
     },
-    "/v1/rest/services": {
+    "/rest/services": {
       "get": {
         "operationId": "listRestServices",
         "summary": "Discovered REST services (%REST.API, in-process, as the user)",
@@ -431,7 +431,7 @@
         }
       }
     },
-    "/v1/rest/services/specification": {
+    "/rest/services/specification": {
       "get": {
         "operationId": "getRestSpecification",
         "summary": "Specification of one service, or the platform-reported routes as metadata",
@@ -497,10 +497,10 @@
         }
       }
     },
-    "/v1/rest/execute": {
+    "/rest/execute": {
       "post": {
         "operationId": "executeRestRequest",
-        "summary": "Run a test request in-process against a REST web application of this instance. GET, HEAD and OPTIONS run directly; POST, PUT, PATCH and DELETE require /v1/mutations/apply in request mode",
+        "summary": "Run a test request in-process against a REST web application of this instance. GET, HEAD and OPTIONS run directly; POST, PUT, PATCH and DELETE require /mutations/apply in request mode",
         "parameters": [
           {
             "name": "X-FlightDeck-Tab",
@@ -680,6 +680,10 @@
                 },
                 "displayName": {
                   "type": "string"
+                },
+                "facts": {
+                  "type": "object",
+                  "description": "Server-computed facts the markers were evaluated on (for example restDispatcher, unauthenticated, staticFiles, system). Used by list filters; never a privilege."
                 }
               }
             }
@@ -737,6 +741,10 @@
             "items": {
               "$ref": "#/components/schemas/MutationCapability"
             }
+          },
+          "facts": {
+            "type": "object",
+            "description": "Server-computed facts, as in list items."
           }
         }
       },
@@ -1032,6 +1040,14 @@
                 "type": "string"
               }
             }
+          },
+          "trail": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrailRecord"
+              }
+            ],
+            "description": "Present only when blocked: the server's Blocked record for the session trail (FR-014)."
           }
         }
       },

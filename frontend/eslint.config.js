@@ -34,12 +34,15 @@ export default tseslint.config(
     },
   },
   ...[
-    { ignores: ["src/api/client.ts", "src/prefs/storage.ts"], fetch: true, storage: true },
-    { only: "src/api/client.ts", fetch: false, storage: true },
-    { only: "src/prefs/storage.ts", fetch: true, storage: false },
+    { ignores: ["src/api/client.ts", "src/prefs/storage.ts", "src/mutation/trail.ts"], fetch: true, storage: true, session: true },
+    { only: "src/api/client.ts", fetch: false, storage: true, session: true },
+    { only: "src/prefs/storage.ts", fetch: true, storage: false, session: true },
+    // Feature 002 spec FR-014 (author decision 2026-09-17): the session trail, and only the trail,
+    // lives in this tab's sessionStorage. Safe mode stays memory-only (Constitution IV).
+    { only: "src/mutation/trail.ts", fetch: true, storage: true, session: false },
   ].map((c) => ({
     // Only src/api/client.ts may call fetch. Constitution IV: only src/prefs/storage.ts may touch
-    // browser storage, and nothing may touch cookies.
+    // localStorage, only src/mutation/trail.ts may touch sessionStorage, and nothing may touch cookies.
     files: c.only ? [c.only] : ["src/**/*.{ts,tsx}"],
     ...(c.ignores ? { ignores: c.ignores } : {}),
     rules: {
@@ -49,15 +52,17 @@ export default tseslint.config(
         ...(c.storage
           ? [
               { name: "localStorage", message: "Use src/prefs/storage.ts." },
-              { name: "sessionStorage", message: "Session storage is forbidden." },
+              ...(c.session ? [{ name: "sessionStorage", message: "Session storage is forbidden outside src/mutation/trail.ts." }] : []),
               { name: "indexedDB", message: "IndexedDB is forbidden." },
             ]
-          : [{ name: "sessionStorage", message: "Session storage is forbidden." }]),
+          : c.session
+            ? [{ name: "sessionStorage", message: "Session storage is forbidden outside src/mutation/trail.ts." }]
+            : []),
       ],
       "no-restricted-properties": [
         "error",
         { object: "document", property: "cookie", message: "FlightDeck never reads or writes cookies." },
-        { object: "window", property: "sessionStorage", message: "Session storage is forbidden." },
+        ...(c.session ? [{ object: "window", property: "sessionStorage", message: "Session storage is forbidden outside src/mutation/trail.ts." }] : []),
         ...(c.storage
           ? [
               { object: "window", property: "localStorage", message: "Use src/prefs/storage.ts." },

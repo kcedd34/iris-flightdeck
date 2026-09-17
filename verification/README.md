@@ -145,6 +145,33 @@ Findings while installing on 2026.1:
   them. Detection reports "unknown", the call returns the API's 403, and sign-in refuses for
   privileges, not for the version (e2e on both versions).
 
+## SysAdmin API findings for web applications (feature 002 research R2), 2026-09-17
+
+Observed on IRIS CE 2026.2 (Build 221U), install `iris-flightdeck-iris-1`, as `_SYSTEM`.
+
+- **`IsSystemApp` is never set.**
+  - `GET /v2/web-apps?maxRows=500` returns 25 applications, all with `"IsSystemApp": false`.
+  - The platform's own applications report `"Type": "System,CSP"` in the same response, for
+    example `/csp/sys`, `/csp/sys/mgr` and `/csp/sys/sec`.
+  - The list schema promises a system marking the platform does not provide.
+  - FlightDeck marks an application as a system application when **either** field says so; both
+    are the API's own statements, and no name pattern is used. `FlightDeck.Test.WebAppSystemMarking`
+    fails if the two fields ever disagree, so the workaround gets revisited.
+- **Input validation errors return HTTP 500, not 400.**
+  - `PUT /v2/web-app?name=/csp/fdt-probe` with `{"Timeout":"abc"}` returns 500 with
+    `ERROR #7207: Datatype value 'abc' is not a valid number > ERROR #5802: Datatype validation failed
+    on property 'Security.Applications:Timeout'`.
+  - `PUT /v2/web-app/pct-access?name=/csp/fd-demo&allowType=AllowPackage&class=FDTProbe` with
+    `{"AllowAccess":false}` returns 500 with
+    `ERROR #1498: Class name or package must start with a %` (`WebAppPctAccessMustStartWithPct`).
+  - The error text is precise; only the status class is wrong. This is the same pattern already
+    recorded for v1 input errors.
+  - FlightDeck's mutation layer treats these codes as a rejected input: the form is kept, the text
+    is shown verbatim, the attempt is not retried, and the 500 is recorded unchanged in the trail.
+- **`PUT /v2/web-app` merges fields** (not a defect, recorded because the design relies on it).
+  - A body with only `Description` changed that field and kept `NameSpace` and `AutheEnabled`.
+  - Creating returns 201; editing returns 200.
+
 ## Feature 002 pre-task checks, 2026-09-17
 
 - `rest-executor-spike-2026.2.md`: spike T-EXEC-1. `$ROLES` can be cleared to login roles by any
@@ -155,3 +182,29 @@ Findings while installing on 2026.1:
   including unknown routes and the OpenAPI document. `/flightdeck` serves only the 13 built static
   files and answers 405 to other methods. No defect. The web applications list grades
   unauthenticated exposure accordingly (feature 002 research R10).
+
+## Mutation-boundary gate probe (feature 002 T081, SC-011), 2026-09-17
+
+Four temporary files under `frontend/src/domains/web-apps/`, each breaking one rule, then
+`npm run check:mutation-boundary`:
+
+| Probe file | Violation | Gate output |
+|---|---|---|
+| `ProbeDialog.tsx` | imports `@radix-ui/react-dialog` | `renders a dialog (confirmations use the shared dry-run)` |
+| `ProbeDiff.tsx` | `data-diff` and a `COMMANDED` column | `renders a diff view (use the shared dry-run)` |
+| `ProbeInternals.tsx` | imports `mutation/DryRun` | `imports mutation internals (mutation/DryRun)` |
+| `ProbeStorage.ts` | writes `sessionStorage` | `uses sessionStorage (the trail store lives in src/mutation/)` |
+
+Result: exit 1, every file named with its line. After removing the probes: exit 0,
+`ok (3 declared exceptions)`. The gate runs inside `npm run build`, so none of these can ship.
+
+Found while building the pattern catalog (T078 to T080), both fixed in the shared layer rather
+than in a domain:
+
+- **Secrets in list rows.** `GET /v1/domains/{domain}/{entityType}` returned list items without
+  applying the entity type's `secretFields`; web applications declare none, so nothing leaked, but
+  the first later domain with a secret in its list would have. Lists now remove them like detail
+  reads.
+- **Blocked attempts missing from the trail.** A block decided at preview left Apply disabled, so the
+  UI never reached apply and no `Blocked` record was written (FR-014). A blocked preview now
+  carries the server's masked `Blocked` record, which the shared layer appends once.

@@ -108,14 +108,42 @@ ClassMethod CodeDatabaseResource(Output resource As %String, Output database As 
 	quit $$$OK
 }
 
+/// FlightDeck's own web applications as module.xml declares them: name, the authentication bit the
+/// portal needs, and whether the runtime role must stay in MatchRoles.
+ClassMethod DeclaredApplications() As %DynamicArray
+{
+	quit [
+		{"name":"/api/flightdeck", "requiredAuthBits":32, "runtimeRole":(..#RUNTIMEROLE)},
+		{"name":"/flightdeck", "requiredAuthBits":64, "runtimeRole":(..#RUNTIMEROLE)}
+	]
+}
+
+/// Verifies the declared applications through the official API and records them for server-side
+/// self-protection (feature 002 research R7). The record is keyed by application name, holds the
+/// namespace the API reports, and is rewritten on every run (idempotent).
 ClassMethod VerifyWebApps() As %Status
 {
-	for app = "/api/flightdeck", "/flightdeck" {
-		set result = ##class(FlightDeck.Admin.Client).Get("/v2/web-app", {"name":(app)}, .status, .raw)
+	set status = 200, raw = "", recorded = []
+	set iter = ..DeclaredApplications().%GetIterator()
+	while iter.%GetNext(, .app) {
+		set result = ##class(FlightDeck.Admin.Client).Get("/v2/web-app", {"name":(app.name)}, .status, .raw)
 		if status '= 200 quit
-		write "FlightDeck: web application ", app, " present", !
+		do app.%Set("namespace", result.NameSpace)
+		do recorded.%Push(app)
+		write "FlightDeck: web application ", app.name, " present", !
 	}
 	if status '= 200 quit ..ApiError("GET /v2/web-app", status, raw)
+	quit ..RecordApplications(recorded)
+}
+
+ClassMethod RecordApplications(applications As %DynamicArray) As %Status
+{
+	kill ^FlightDeck.Install("applications")
+	set iter = applications.%GetIterator()
+	while iter.%GetNext(, .app) {
+		set ^FlightDeck.Install("applications", app.name) = app.%ToJSON()
+	}
+	write "FlightDeck: recorded ", applications.%Size(), " web applications for self-protection", !
 	quit $$$OK
 }
 

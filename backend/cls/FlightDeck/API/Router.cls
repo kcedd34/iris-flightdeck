@@ -16,7 +16,9 @@ Parameter CHARSET = "utf-8";
 Parameter CONTENTTYPE = "application/json";
 
 /// Mutating requests that change no IRIS state and are allowed while safe mode is armed.
-Parameter SAFEMODEALLOWLIST = "POST /v1/session,DELETE /v1/session";
+/// POST /v1/mutations/preview changes nothing (feature 002 research R3). POST /v1/rest/execute
+/// applies the guard itself to the method of the request under test (research R8).
+Parameter SAFEMODEALLOWLIST = "POST /v1/session,DELETE /v1/session,POST /v1/mutations/preview,POST /v1/rest/execute";
 
 /// Requests allowed without the X-FlightDeck-Tab header.
 Parameter TABOPTIONAL = "GET /v1/openapi.json";
@@ -31,6 +33,14 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 <Route Url="/v1/vitals" Method="GET" Call="FlightDeck.API.Vitals:Get"/>
 <Route Url="/v1/palette/entities" Method="GET" Call="FlightDeck.API.Palette:Search"/>
 <Route Url="/v1/openapi.json" Method="GET" Call="FlightDeck.API.OpenAPI:Get"/>
+<Route Url="/v1/domains/:domain/:entityType" Method="GET" Call="FlightDeck.API.Entities:List"/>
+<Route Url="/v1/domains/:domain/:entityType/item" Method="GET" Call="FlightDeck.API.Entities:Item"/>
+<Route Url="/v1/domains/:domain/:entityType/links" Method="GET" Call="FlightDeck.API.Entities:Links"/>
+<Route Url="/v1/mutations/preview" Method="POST" Call="FlightDeck.API.Mutations:Preview"/>
+<Route Url="/v1/mutations/apply" Method="POST" Call="FlightDeck.API.Mutations:Apply"/>
+<Route Url="/v1/rest/services" Method="GET" Call="FlightDeck.API.Rest:Services"/>
+<Route Url="/v1/rest/services/specification" Method="GET" Call="FlightDeck.API.Rest:Specification"/>
+<Route Url="/v1/rest/execute" Method="POST" Call="FlightDeck.API.Rest:Execute"/>
 </Routes>
 }
 
@@ -65,6 +75,14 @@ ClassMethod GuardDecision(method As %String, path As %String, tabHeader As %Stri
 		quit "SAFE_MODE_ON"
 	}
 	quit "OK"
+}
+
+/// Published specification convention (feature 002 research R9): REST discovery reports a service
+/// whose dispatch class implements this method as having a specification. FlightDeck's own API
+/// publishes the OpenAPI document it serves.
+ClassMethod PublishedSpecification() As %DynamicObject
+{
+	quit ##class(FlightDeck.API.OpenAPI).Document()
 }
 
 /// Errors thrown by handlers keep the envelope; the IRIS text is passed through verbatim.

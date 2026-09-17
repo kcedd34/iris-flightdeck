@@ -1,7 +1,7 @@
 import { openPalette } from "../palette/bus";
 import type { Domain, Section } from "./domains";
 import { EmptyState } from "./EmptyState";
-import { ListInspector, useInspect } from "./ListInspector";
+import { ListInspector, useInspect } from "../pattern/ListInspector";
 
 /**
  * Every domain section in this feature (contracts/ui-shell.md). The list shows a declared empty

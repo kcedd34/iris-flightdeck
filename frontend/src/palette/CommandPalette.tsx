@@ -12,6 +12,8 @@ import { useTheme } from "../theme/ThemeProvider";
 import { buildActions, matchActions, type ActionEntry } from "./actions";
 import { onOpenPalette } from "./bus";
 import { useEntitySearch } from "./useEntitySearch";
+import { encodeInspect } from "../pattern/useEntityType";
+import { useMutation } from "../mutation/useMutation";
 import "./palette.css";
 
 const GROUP_LIMIT = 5;
@@ -23,6 +25,7 @@ const DOMAIN_ORDER: DomainId[] = ["shell", ...DOMAINS.map((d) => d.id)];
  */
 export function CommandPalette() {
   const { session, capabilities, signOut } = useSession();
+  const { openTrail } = useMutation();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -103,6 +106,9 @@ export function CommandPalette() {
         if (run.to === "armed") arm();
         else disarm();
         break;
+      case "trail":
+        openTrail();
+        break;
       case "sign-out":
         void signOut();
         break;
@@ -113,8 +119,12 @@ export function CommandPalette() {
   function runEntity(entity: EntityEntry) {
     const id = `entity:${entity.entityType}:${entity.name}`;
     remember(id, entity.name, entity.domain, "entity");
-    const inspect = encodeURIComponent(`${entity.target.inspect.entityType}:${entity.target.inspect.name}`);
-    navigate(`${entity.target.route}?inspect=${inspect}`);
+    const target = entity.target.inspect;
+    const value =
+      target.domain && target.descriptorType && target.keys
+        ? encodeInspect({ domain: target.domain, entityType: target.descriptorType, keys: target.keys })
+        : `${target.entityType}:${target.name}`;
+    navigate(`${entity.target.route}?inspect=${encodeURIComponent(value)}`);
     close();
   }
 

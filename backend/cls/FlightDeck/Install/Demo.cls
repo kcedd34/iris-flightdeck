@@ -37,14 +37,24 @@ ClassMethod Roles() As %Status
 	})
 }
 
-/// Intentionally unauthenticated, so the Web applications screen shows the exposure warning.
+/// Two demo applications: one intentionally unauthenticated, so the Web applications screen shows
+/// the exposure warning, and one protected by FD_Demo_Reports, so its inspector links the roles that
+/// grant that resource (feature 002, UC03 scenario 2).
 ClassMethod WebApp() As %Status
 {
-	quit ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo", {
+	set sc = ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo", {
 		"Description": "FlightDeck demo: intentionally unauthenticated",
 		"NameSpace": ($namespace),
 		"Enabled": true,
 		"AutheEnabled": 64
+	})
+	quit:$$$ISERR(sc) sc
+	quit ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo-reports", {
+		"Description": "FlightDeck demo: protected by FD_Demo_Reports",
+		"NameSpace": ($namespace),
+		"Enabled": true,
+		"AutheEnabled": 32,
+		"Resource": "FD_Demo_Reports"
 	})
 }
 

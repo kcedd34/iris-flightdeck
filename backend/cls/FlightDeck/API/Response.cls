@@ -53,7 +53,7 @@ ClassMethod RequiresMessage(requires As %DynamicArray) As %String
 
 ClassMethod StatusLine(code As %Integer) As %String
 {
-	quit code _ " " _ $case(code, 200:"OK", 204:"No Content", 400:"Bad Request", 401:"Unauthorized", 403:"Forbidden", 404:"Not Found", 500:"Internal Server Error", 502:"Bad Gateway", :"Status")
+	quit code _ " " _ $case(code, 200:"OK", 201:"Created", 204:"No Content", 400:"Bad Request", 401:"Unauthorized", 403:"Forbidden", 404:"Not Found", 405:"Method Not Allowed", 409:"Conflict", 422:"Unprocessable Entity", 500:"Internal Server Error", 501:"Not Implemented", 502:"Bad Gateway", 504:"Gateway Timeout", :"Status")
 }
 
 }

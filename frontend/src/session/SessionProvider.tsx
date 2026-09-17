@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ApiError, registerSessionExpiry, request, setSessionActive, signIn as apiSignIn } from "../api/client";
 import type { CapabilityEntry, Session } from "../api/types";
+import { clearTrail } from "../mutation/useMutation";
 import { arm } from "./safeMode";
 
 export type SessionState = "loading" | "signed_out" | "active" | "expired";
@@ -44,6 +45,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     registerSessionExpiry(() => {
       if (stateRef.current === "active") {
         setSessionActive(false);
+        // The trail is cleared when expiry is detected (feature 002 spec FR-014).
+        clearTrail();
         setState("expired");
       }
     });
@@ -96,6 +99,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
     arm();
     setSessionActive(false);
+    clearTrail();
     queryClient.clear();
     setSession(null);
     setCapabilities([]);

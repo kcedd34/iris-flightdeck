@@ -125,16 +125,31 @@ ClassMethod Run(q As %String, domain As %String = "", limit As %Integer = 5) As 
 			continue:total=0
 			set group.total = total
 			set totalResults = totalResults + total
+			// Entity types built on the domain pattern (feature 002) open their descriptor inspector.
+			set descriptor = ..DescriptorFor(op.operationId)
 			for i=0:1:$select(total<limit:total, 1:limit)-1 {
 				set m = matches.%Get(i)
+				set inspect = {"entityType": ($list(pres, 1)), "name": (m.name)}
+				if $isobject(descriptor) {
+					set inspect.domain = descriptor.domain
+					set inspect.descriptorType = descriptor.entityType
+					set inspect.keys = ##class(FlightDeck.Domain.Entity).KeysFromItem(descriptor, m.row)
+				}
 				do group.results.%Push({
 					"kind": "entity", "domain": (dom), "entityType": ($list(pres, 1)),
 					"name": (m.name), "context": (..Context(m.row, $list(pres, 1))),
 					"sourceOperationId": (op.operationId),
-					"target": {"route": ("/"_dom_"/"_$list(pres, 2)), "inspect": {"entityType": ($list(pres, 1)), "name": (m.name)}}
+					"target": {"route": ("/"_dom_"/"_$list(pres, 2)), "inspect": (inspect)}
 				})
 			}
 			do groups.%Push(group)
+		}
+		if dom = "web-apps" {
+			set group = ..RestServices(needle, limit, started, .degraded)
+			if $isobject(group) {
+				do groups.%Push(group)
+				set totalResults = totalResults + +group.total
+			}
 		}
 	}
 	if degraded set reason = "Some domains did not respond in time or returned an error."
@@ -142,6 +157,37 @@ ClassMethod Run(q As %String, domain As %String = "", limit As %Integer = 5) As 
 	do out.%Set("degraded", degraded, "boolean")
 	do out.%Set("reason", reason, $select(reason="":"null", 1:"string"))
 	quit out
+}
+
+/// REST services (UC04) are not an official list operation: they come from in-process discovery,
+/// which reports only namespaces the user can read. Returns the group, or "" when nothing matches.
+ClassMethod RestServices(needle As %String, limit As %Integer, started As %Numeric, ByRef degraded As %Boolean) As %DynamicObject
+{
+	set group = {"domain":"web-apps", "entityType":"REST service", "state":"ok", "results":[]}
+	do group.%Set("reason", "", "null")
+	do group.%Set("total", "", "null")
+	if ($zhorolog - started) * 1000 > ..#DEADLINE {
+		set group.state = "timeout", group.reason = "Did not respond in time.", degraded = 1
+		quit group
+	}
+	set rows = []
+	set iter = ##class(FlightDeck.Rest.Discovery).Services().services.%GetIterator()
+	while iter.%GetNext(, .service) { do rows.%Push({"Name":(service.name), "Namespace":(service.namespace), "service":(service)}) }
+	set matches = ..Match(rows, needle, "Name")
+	set total = matches.%Size()
+	quit:total=0 ""
+	set group.total = total
+	for i=0:1:$select(total<limit:total, 1:limit)-1 {
+		set service = matches.%Get(i).row.service
+		set keys = $select(service.webApplication'="":{"webApplication":(service.webApplication)}, 1:{"name":(service.name)})
+		do group.results.%Push({
+			"kind": "entity", "domain": "web-apps", "entityType": "REST service",
+			"name": (service.name), "context": (..Context(matches.%Get(i).row, "REST service")),
+			"sourceOperationId": "FLIGHTDECK REST services",
+			"target": {"route": "/web-apps/rest-apis", "inspect": {"entityType": "REST service", "name": (service.name), "domain": "web-apps", "descriptorType": "rest-service", "keys": (keys)}}
+		})
+	}
+	quit group
 }
 
 /// Ranks rows whose name contains the needle: exact, then prefix, then substring.
@@ -190,6 +236,14 @@ ClassMethod Context(row As %DynamicObject, entityType As %String) As %String
 		if value '= "" quit
 	}
 	quit $select($get(value)'="":entityType_" · "_value, 1:entityType)
+}
+
+/// The entity-type descriptor whose list operation is this operation, or "".
+ClassMethod DescriptorFor(operationId As %String) As %DynamicObject
+{
+	set iter = ##class(FlightDeck.Domain.Descriptor).EntityTypes().%GetIterator()
+	while iter.%GetNext(, .type) { if type.listOperation = operationId return type }
+	quit ""
 }
 
 }

@@ -1,0 +1,292 @@
+/* Domain screen pattern (contracts/ui-pattern.md §2; docs/prototype.html prevails). Tokens only. */
+
+.dlist {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dlist-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.dlist-search {
+  width: 220px;
+}
+
+.dlist-search::placeholder {
+  color: var(--text-secondary);
+}
+
+.dlist-search,
+.dlist-filter select {
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.dlist-count {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.dlist-rows {
+  overflow: auto;
+}
+
+.dlist-error {
+  margin: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--state-warning);
+  color: var(--text-primary);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line-hairline);
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--surface-panel);
+}
+
+.item[aria-current="true"] {
+  background: var(--surface-panel);
+  box-shadow: inset 2px 0 0 var(--state-selected);
+}
+
+.item .nm {
+  color: var(--text-primary);
+}
+
+.item .meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.item-markers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.marker-warning {
+  color: var(--state-warning);
+}
+
+.marker-caution {
+  color: var(--state-caution);
+}
+
+.marker-neutral {
+  color: var(--text-secondary);
+}
+
+.glyph {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+}
+
+.skeleton {
+  display: block;
+  height: 12px;
+  background: var(--line-hairline);
+  border-radius: var(--r-control);
+}
+
+.skeleton-row .skeleton {
+  width: 40%;
+}
+
+.pinspector-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pinspector-markers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.psect-first {
+  margin-top: 0;
+}
+
+.lgroup {
+  padding: 4px 0 8px;
+}
+
+.lgroup-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.lgroup-h .c {
+  color: var(--text-primary);
+}
+
+.lgroup-reason {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 2px 0 4px;
+}
+
+.link {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0 4px 12px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--state-selected);
+}
+
+.link-detail {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.link-more {
+  color: var(--text-secondary);
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.action-reason {
+  font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 360px;
+}
+
+.oform h2 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.oform-armed {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--state-caution);
+  font-size: 13px;
+}
+
+.oform-section {
+  border: none;
+  border-top: 1px solid var(--line-hairline);
+  margin: 16px 0 0;
+  padding: 12px 0 0;
+}
+
+.oform-field .field-v {
+  flex: 1;
+}
+
+.oform input[type="text"],
+.oform input[type="password"],
+.oform select,
+.oform textarea {
+  width: 100%;
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.oform input[readonly],
+.oform textarea[readonly] {
+  color: var(--text-secondary);
+}
+
+.oform-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.oform-checks label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.oform-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.oform-row {
+  display: flex;
+  gap: 6px;
+}

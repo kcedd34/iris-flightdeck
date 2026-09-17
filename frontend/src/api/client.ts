@@ -21,6 +21,8 @@ export class ApiError extends Error {
     readonly raw: string | null = null,
     readonly requires: string[] = [],
     readonly detectedVersion: string | null = null,
+    /** The parsed response body, when it was JSON (for example a fresh preview on 409). */
+    readonly body: unknown = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -62,6 +64,7 @@ async function toApiError(response: Response): Promise<ApiError> {
         (e.raw as string | null) ?? null,
         (e.requires as string[] | undefined) ?? [],
         (e.detectedVersion as string | null) ?? null,
+        parsed,
       );
     }
   } catch {

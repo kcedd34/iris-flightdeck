@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { signIn } from "./setup/helpers";
-import { NO_PRIVILEGE, OPERATOR } from "./setup/users";
+import { disarm, signIn } from "./setup/helpers";
+import { NO_PRIVILEGE, OPERATOR, adminRequest } from "./setup/users";
 
 // FR-012a limited mode: the reduced IRIS 2026.1 matrix. Run against a 2026.1 install with
 //   FLIGHTDECK_PORT=<port> npx playwright test --project limited
@@ -124,4 +124,58 @@ test("for a user without the declared privilege, the namespace group is refused 
   await page.getByTestId("palette-input").fill("USER");
   const system = page.getByTestId("command-palette").locator("[cmdk-group]").filter({ has: page.locator("[cmdk-group-heading]", { hasText: "System" }) });
   await expect(system.getByRole("note").filter({ hasText: "Namespace" })).toContainText("Requires Use on %Admin_Manage");
+});
+
+// Feature 002 (SC-013): web applications on the limited instance. Whether reads and the write are
+// offered comes from the capability map only; the test follows the map, not the version.
+async function capability(page: import("@playwright/test").Page, operationId: string): Promise<Entry> {
+  return page.evaluate(async (id) => {
+    const map = await fetch("/api/flightdeck/v1/session/capabilities", { headers: { "X-FlightDeck-Tab": "e2e-limited" } });
+    return ((await map.json()) as { entries: { operationId: string; available: boolean; reason: string | null }[] }).entries.find((e) => e.operationId === id)!;
+  }, operationId);
+}
+
+test("web applications are listed and inspected with exposure markers, as the capability map offers them", async ({ page }) => {
+  const list = await capability(page, "GET /v2/web-apps");
+  await page.goto("web-apps/web-applications");
+  if (!list.available) {
+    await expect(page.getByTestId("domain-list")).toContainText(list.reason!);
+    return;
+  }
+  const row = page.getByTestId("list-row").filter({ has: page.locator(".nm", { hasText: /^\/csp\/fd-demo$/ }) });
+  await expect(row.getByTestId("marker-no-auth")).toBeVisible();
+  await row.click();
+  await expect(page.getByTestId("entity-inspector").getByRole("heading", { name: "/csp/fd-demo" })).toBeVisible();
+  await expect(page.getByTestId("links-panel")).toBeVisible();
+  await page.goto("web-apps/rest-apis");
+  await expect(page.getByTestId("list-row").filter({ hasText: "/api/flightdeck" })).toBeVisible();
+});
+
+test("one web application write goes through the shared dry-run when the capability map offers it", async ({ page }) => {
+  const APP = "/csp/fd-e2e-limited";
+  const put = await capability(page, "PUT /v2/web-app");
+  await adminRequest("DELETE", "/web-app", { name: APP });
+  const created = await adminRequest("PUT", "/web-app", { name: APP }, { NameSpace: "USER", Description: "Limited mode application", Enabled: true, AutheEnabled: 32 });
+  test.skip(created.status >= 300, `the official API refused the fixture application: HTTP ${created.status}`);
+  try {
+    await page.goto(`web-apps/web-applications?inspect=${encodeURIComponent(`web-apps/web-application:${APP}`)}`);
+    const edit = page.getByTestId("action-PUT-v2-web-app-edit");
+    if (!put.available) {
+      await expect(edit).toHaveAttribute("aria-disabled", "true");
+      await expect(page.getByText(put.reason!).first()).toBeVisible();
+      return;
+    }
+    await disarm(page);
+    await edit.click();
+    await page.getByTestId("object-form").locator("#f-Description").fill("Edited in limited mode");
+    await page.getByTestId("object-form").getByTestId("form-submit").click();
+    const dryRun = page.getByTestId("dry-run");
+    await expect(dryRun.getByTestId("dry-run-row-Description")).toHaveAttribute("data-changed", "true");
+    await dryRun.getByTestId("dry-run-apply").click();
+    await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+    const after = (await adminRequest("GET", "/web-app", { name: APP })).json as { result: { Description: string } };
+    expect(after.result.Description).toBe("Edited in limited mode");
+  } finally {
+    await adminRequest("DELETE", "/web-app", { name: APP });
+  }
 });

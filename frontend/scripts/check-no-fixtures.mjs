@@ -7,7 +7,7 @@ const offenders = readdirSync(dir)
   .filter((f) => f.endsWith(".js"))
   .filter((f) => {
     const text = readFileSync(join(dir, f), "utf8");
-    return text.includes("__fixtures__") || text.includes("Re-authentication fixture") || text.includes("fixture-apply");
+    return text.includes("__fixtures__") || text.includes("Re-authentication fixture") || text.includes("fixture-apply") || text.includes("catalog-drift") || text.includes("/fixture/catalog-item");
   });
 if (offenders.length) {
   console.error(`check-no-fixtures: fixture code found in ${offenders.join(", ")}`);

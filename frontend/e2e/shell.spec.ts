@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
-import { signIn } from "./setup/helpers";
+import { expect, test } from "@playwright/test";
+import { setTheme, signIn } from "./setup/helpers";
 
 // User Story 5 (FR-029 to FR-039), design gates SC-006 to SC-008.
 
@@ -12,12 +12,6 @@ const DOMAINS: [string, string][] = [
   ["system", "System"],
   ["logs", "Logs"],
 ];
-
-async function setTheme(page: Page, theme: "dark" | "light") {
-  const current = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
-  if (current !== theme) await page.getByRole("button", { name: `Switch to ${theme} theme` }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-}
 
 test("glareshield is 44px, the rail is 56px with exactly six destinations in order", async ({ page }) => {
   await signIn(page);
@@ -49,7 +43,8 @@ test("section tabs appear only for domains with more than one entity type, and t
       await page.reload();
       await expect(page.getByTestId("section-tabs").locator('[aria-current="page"]')).toHaveAttribute("href", href!);
     }
-    await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toBeVisible();
+    // Web applications and APIs is implemented (feature 002); the other domains keep the empty state.
+    if (id !== "web-apps") await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toBeVisible();
   }
 });
 

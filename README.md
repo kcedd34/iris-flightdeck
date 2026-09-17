@@ -12,13 +12,17 @@ official **SysAdmin API** (`/api/admin/v2`).
 - **Your IRIS identity, nothing stored.** You sign in with your IRIS account. FlightDeck keeps no
   password or token anywhere. What you can do comes from the privileges the SysAdmin API declares
   for each operation.
+- **Web applications and REST APIs.** Web applications are listed with graded exposure markers,
+  edited through a field-by-field dry run, and linked to the roles and REST services behind them.
+  Every REST service the instance serves is discovered, with its OpenAPI specification when it has
+  one (FlightDeck's own API included), and can be tried from the browser.
 - **Real host telemetry.** CPU and memory come from the host; IRIS shared memory and database usage
   come from the SysAdmin API.
 
-> This release is the **foundation**: sign-in, safe mode, command palette, instance telemetry,
-> installation and the full navigation shell. The six domain screens (web applications, permissions,
-> security, tasks, system, logs) are being built on top of it. Their routes already exist and
-> explain what is coming.
+> This release adds **web applications and the REST API explorer** to the foundation (sign-in, safe
+> mode, command palette, instance telemetry, installation and the navigation shell). The remaining
+> domain screens (permissions, security, tasks, system, logs) are built on the same pattern; their
+> routes already exist and explain what is coming.
 
 Related idea on the InterSystems Ideas Portal: _link pending publication by the author_
 
@@ -146,8 +150,40 @@ SysAdmin API, and re-running creates no duplicates.
   so reloads, new tabs and duplicated tabs always start in safe mode. Every request carries the
   tab's state, and the FlightDeck API rejects any change request from a tab in safe mode before it
   reaches IRIS.
+- **Changes.** Every change opens the same confirmation view: current and commanded values side by
+  side, graded confirmation (deleting or disabling asks you to type the name), and the effect on
+  users when it can be determined. The server recomputes the preview and refuses the change if the
+  object changed in the meantime. FlightDeck refuses changes that would disable its own
+  applications.
+- **Session trail.** Applied, failed and blocked changes are recorded in a trail you can open from
+  the confirmation view or the palette and export as JSON. The trail is local to the browser tab
+  (session storage, cleared at sign-out and when the session expires), holds no secret values, and
+  does **not** replace IRIS auditing.
 - **Users without administrative privileges** cannot open a session. FlightDeck lists the
   privileges they would need.
+
+## REST API explorer: what a test request can and cannot do
+
+- **Confined to this instance.** A test request names only a method, a path, query parameters,
+  headers and a body. Scheme, host and port always come from the instance serving FlightDeck. Paths
+  with a scheme, a host, `..` segments (plain or percent-encoded) or backslashes are refused, and so
+  are `Authorization`, `Cookie`, `Proxy-Authorization` and `Host` headers. **The executor is not an
+  outbound proxy**: it opens no network connection at all. The request is dispatched in-process to
+  the REST application that serves the path.
+- **Runs as you.** The request runs with your IRIS identity, in the application's namespace, and
+  only if the application is enabled and you hold its resource. Your roles are kept or reduced,
+  never raised: when an application grants extra roles to real callers (its role mapping), a test
+  request does not receive them, and the result can differ from a real call. The explorer says so
+  before and after running.
+- **Safe mode applies.** `GET`, `HEAD` and `OPTIONS` run directly. `POST`, `PUT`, `PATCH` and
+  `DELETE` are refused by the server while the tab is in safe mode; otherwise they open the shared
+  confirmation view showing exactly what will be sent (a `DELETE` asks you to type the path), and
+  are recorded in the session trail.
+- **Copy as curl.** The copied command targets this instance and carries the literal placeholder
+  `-u '<user>:<password>'`, never your credentials.
+- FlightDeck's own API requires the `X-FlightDeck-Tab` header on every call, and
+  `X-FlightDeck-Safe-Mode: disarmed` on changes. Its specification declares both; the explorer adds
+  nothing on your behalf, so a request without them returns the API's own 400 or 403.
 
 ## Day-1 platform verification
 

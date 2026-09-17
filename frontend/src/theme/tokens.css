@@ -29,6 +29,8 @@
   --state-selected: #6CC7D9;
   --scrim: rgba(6, 10, 12, 0.6);
   --shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  /* Dry-run reveal: starting opacity of the changed-row flash (docs/prototype.html). */
+  --flash: 0.1;
 }
 
 :root[data-theme="light"] {
@@ -48,6 +50,7 @@
   --state-selected: #0E6E80;
   --scrim: rgba(30, 45, 52, 0.34);
   --shadow: 0 16px 48px rgba(17, 26, 31, 0.18);
+  --flash: 0.14;
 }
 
 :root {

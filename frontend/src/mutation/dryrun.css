@@ -1,0 +1,243 @@
+/* The dry-run (docs/design.md §6, docs/prototype.html prevails). The only orchestrated motion in the
+   product: the COMMANDED column slides 8px in 160ms; changed rows flash and decay over 240ms after
+   140ms. scripts/check-tokens.mjs allows the 240ms decay only in this file. */
+
+.dryrun {
+  position: fixed;
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 760px;
+  max-width: 94vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 60;
+}
+
+.dhead {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.dtitle {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.dsub {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.dmessage {
+  margin: 12px 20px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--state-caution);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.dbody {
+  overflow: auto;
+  padding-bottom: 8px;
+}
+
+.diff,
+.drequest {
+  padding: 6px 0;
+}
+
+.dcols {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr;
+  padding: 6px 20px 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.drow {
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr;
+  gap: 8px;
+  padding: 7px 20px;
+  font-size: 13px;
+  position: relative;
+}
+
+.drequest .drow {
+  grid-template-columns: 200px 1fr;
+}
+
+.drow .k {
+  color: var(--text-secondary);
+}
+
+.drow .cur,
+.drow .cmd {
+  color: var(--text-muted);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.drow.changed .cur {
+  color: var(--state-actual);
+}
+
+.drow.changed .cmd {
+  color: var(--state-commanded);
+}
+
+.drow .cmd {
+  opacity: 0;
+  transform: translateX(8px);
+}
+
+.reveal .drow .cmd {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.drow.changed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--state-commanded);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reveal .drow.changed::after {
+  animation: dryrun-flash 240ms var(--ease) 140ms both;
+}
+
+@keyframes dryrun-flash {
+  from {
+    opacity: var(--flash);
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.dbody-pre {
+  margin: 0;
+  font-size: 12px;
+}
+
+.impact {
+  margin: 8px 20px 4px;
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  border: 1px solid var(--line-hairline);
+  background: var(--surface-panel);
+}
+
+.impact-h {
+  color: var(--state-caution);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.impact-b {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.impact-u {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+.dfoot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line-hairline);
+}
+
+.dask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.dask input {
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 5px 8px;
+  color: var(--text-primary);
+  font: 13px var(--font-mono);
+  width: 220px;
+}
+
+.dack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.dsp {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.dapplied {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drow .cmd {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal .drow .cmd {
+    transition: none;
+  }
+
+  .reveal .drow.changed::after {
+    animation: none;
+  }
+}
+
+.trail-entry .item {
+  gap: 14px;
+}
+
+.trail-result {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 56px;
+}
+
+.trail-detail {
+  padding: 4px 0 10px;
+}
+
+.trail-detail .drow .cmd {
+  opacity: 1;
+  transform: none;
+}
+
+.trail-detail .impact-u {
+  padding: 0 20px;
+}

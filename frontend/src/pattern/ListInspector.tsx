@@ -34,9 +34,10 @@ export function useInspect(): [{ entityType: string; name: string } | null, () =
  * List plus inspector (design §4, FR-034). Detail never navigates away: it opens beside the list
  * at 1280px and wider, and as an overlay below.
  */
-export function ListInspector({ list, inspector, inspectorLabel }: { list: ReactNode; inspector: ReactNode | null; inspectorLabel: string }) {
+export function ListInspector({ list, inspector, inspectorLabel, onClose }: { list: ReactNode; inspector: ReactNode | null; inspectorLabel: string; onClose?: () => void }) {
   const wide = useWide();
-  const [, close] = useInspect();
+  const [, closeInspect] = useInspect();
+  const close = onClose ?? closeInspect;
   return (
     <div className="view">
       <div className="list">{list}</div>

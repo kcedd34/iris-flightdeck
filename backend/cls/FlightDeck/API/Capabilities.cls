@@ -10,7 +10,9 @@ ClassMethod List() As %Status
 		quit ##class(FlightDeck.API.Response).WriteError($select(status=403:403, 1:502), "UPSTREAM_ERROR", "The capability map could not be built.", ##class(FlightDeck.Admin.Client).ErrorText(json, raw))
 	}
 	set privileges = ##class(FlightDeck.Capability.Map).NormalizePrivileges(json.result.privileges)
-	quit ##class(FlightDeck.API.Response).WriteJSON({"entries":(##class(FlightDeck.Capability.Map).Build(privileges))})
+	set response = {"entries":(##class(FlightDeck.Capability.Map).Build(privileges))}
+	set response.composites = ##class(FlightDeck.Capability.Composite).Build(privileges)
+	quit ##class(FlightDeck.API.Response).WriteJSON(response)
 }
 
 }

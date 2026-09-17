@@ -36,7 +36,10 @@ function check(path) {
     }
     for (const m of code.matchAll(/(\d+(?:\.\d+)?)(ms|s)\b/g)) {
       const ms = m[2] === "s" ? parseFloat(m[1]) * 1000 : parseFloat(m[1]);
-      if (/transition|animation|--t-/.test(code) && ms > 200) failures.push(`${where} motion over 200ms: ${line.trim()}`);
+      // Named exception (docs/design.md §6, feature 002 research R12): the dry-run reveal's 240ms
+      // decay of changed rows, in the shared dry-run stylesheet only.
+      const dryRunReveal = rel === "mutation/dryrun.css" && ms === 240;
+      if (/transition|animation|--t-/.test(code) && ms > 200 && !dryRunReveal) failures.push(`${where} motion over 200ms: ${line.trim()}`);
     }
     if (/text-transform\s*:\s*uppercase/.test(code) || /textTransform:\s*["']uppercase/.test(code)) {
       failures.push(`${where} uppercase transform`);
