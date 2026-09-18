@@ -43,6 +43,18 @@ XData Declined [ MimeType = application/json ]
  "PUT /v2/security/encryption/settings": {
   "reason": "FlightDeck does not change encryption settings. They decide what the instance encrypts at startup, and a wrong value is discovered at the next restart.",
   "nativePath": "System Administration > Encryption in the platform's management portal"
+ },
+ "POST /v2/database-dir/truncate": {
+  "reason": "FlightDeck grows databases but does not truncate them: truncation returns space to the file system with no recovery from the portal, and there is no safe way to rehearse it.",
+  "nativePath": "System Administration > Configuration > Local Databases in the platform's management portal"
+ },
+ "DELETE /v2/database": {
+  "reason": "FlightDeck creates databases but does not delete them: deletion removes data with no recovery from the portal, and there is no safe way to rehearse it.",
+  "nativePath": "System Administration > Configuration > Local Databases in the platform's management portal"
+ },
+ "DELETE /v2/namespace": {
+  "reason": "FlightDeck creates namespaces but does not delete them: deletion detaches mappings and data with no recovery from the portal, and there is no safe way to rehearse it.",
+  "nativePath": "System Administration > Configuration > Namespaces in the platform's management portal"
  }
 }
 }

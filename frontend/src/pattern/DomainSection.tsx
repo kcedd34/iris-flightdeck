@@ -28,6 +28,8 @@ export interface DomainSectionProps {
   /** The form shown in place of the inspector, for whichever mode the actions opened. */
   renderForm?: (form: NonNullable<FormState>, done: (keys?: Record<string, string>) => void) => ReactNode;
   actions?: (detail: EntityDetailResponse, openForm: (form: NonNullable<FormState>) => void) => ReactNode;
+  /** One extra panel in the inspector, beside the links (feature 004: a task's recent runs). */
+  inspectorExtra?: (detail: EntityDetailResponse) => ReactNode;
   empty: { title: string; cause: string; nextAction: string };
   /** State filter options; omitted when the entity has no enabled/disabled notion. */
   stateFilter?: { label: string; options: { value: string; label: string }[]; matches: (item: EntityListItem, value: string) => boolean };
@@ -101,7 +103,12 @@ export function DomainSection(props: DomainSectionProps) {
             if (keys) open({ domain: DOMAIN, entityType: props.entityType, keys });
           })
         ) : target ? (
-          <EntityInspector key={JSON.stringify(target)} entity={target} actions={props.actions ? (detail) => props.actions!(detail, setForm) : undefined} />
+          <EntityInspector
+            key={JSON.stringify(target)}
+            entity={target}
+            extra={props.inspectorExtra}
+            actions={props.actions ? (detail) => props.actions!(detail, setForm) : undefined}
+          />
         ) : null
       }
     />

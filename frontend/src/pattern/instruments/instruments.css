@@ -1,0 +1,160 @@
+/* The instrument cluster (docs/design.md §5). Geometry is identical across instruments: repetition
+   is what makes the row read as a panel instead of as cards. */
+.ins-cluster {
+  padding: 16px;
+  border-bottom: 1px solid var(--line-hairline);
+  background: var(--surface-panel);
+}
+
+.ins-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+
+.ins {
+  min-width: 180px;
+  flex: 1 1 180px;
+  color: var(--state-actual);
+}
+
+.ins[data-band="caution"] {
+  color: var(--state-caution);
+}
+
+.ins[data-band="warning"] {
+  color: var(--state-warning);
+}
+
+.ins-k {
+  color: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* Primary reading: 40px, weight 500, tabular numerals (design §5). The colour changes on a crossed
+   threshold and the glyph appears; it never blinks and never animates. */
+.ins-v {
+  color: var(--text-primary);
+  font-size: 40px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ins[data-band="caution"] .ins-v,
+.ins[data-band="warning"] .ins-v {
+  color: currentColor;
+}
+
+.ins-v .glyph {
+  width: 12px;
+  height: 12px;
+  align-self: center;
+}
+
+.ins-u {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.ins-absent {
+  color: var(--text-muted);
+}
+
+/* Secondary reading: the series. Fixed height so every instrument keeps the same geometry, whether
+   it has a value, a reason, or a series that has not filled yet. */
+.ins-series {
+  display: block;
+  width: 100%;
+  height: 36px;
+  color: currentColor;
+}
+
+.ins-d,
+.ins-reason,
+.ins-msg {
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-height: 36px;
+}
+
+/* A reason, a staleness note and the window note are information, not placeholders: they take the
+   readable secondary token, which passes contrast for text (docs/design.md §3). */
+.ins-reason {
+  color: var(--text-secondary);
+}
+
+.ins-msg {
+  color: var(--state-warning);
+  min-height: 0;
+}
+
+.ins-stale {
+  color: var(--text-secondary);
+}
+
+.ins-mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.ins-interval {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ins-interval select {
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 2px 4px;
+  font: inherit;
+}
+
+.ins-window {
+  color: var(--text-secondary);
+}
+
+.ins-resources {
+  padding: 16px;
+}
+
+.ins-note {
+  color: var(--text-secondary);
+  font-size: 11px;
+  max-width: 72ch;
+  margin: 0 0 8px;
+}
+
+.dtable {
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.dtable th,
+.dtable td {
+  border-bottom: 1px solid var(--line-hairline);
+  padding: 4px 12px 4px 0;
+  text-align: left;
+}
+
+.dtable thead th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.dtable td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

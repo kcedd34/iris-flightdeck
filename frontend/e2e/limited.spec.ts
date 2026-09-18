@@ -36,9 +36,9 @@ test("sign-in succeeds in limited mode: the capability map marks what the instan
   // Two reasons make an operation unavailable, and they are counted apart (feature 003): what this
   // instance does not offer is limited mode; what FlightDeck declines to offer is policy, on every
   // version.
-  expect(result.summary).toMatchObject({ unavailable: 65, declined: 8, total: 273 });
-  expect(result.entries.filter((e) => !e.available && !e.declined)).toHaveLength(65);
-  expect(result.entries.filter((e) => e.declined)).toHaveLength(8);
+  expect(result.summary).toMatchObject({ unavailable: 62, declined: 11, total: 273 });
+  expect(result.entries.filter((e) => !e.available && !e.declined)).toHaveLength(62);
+  expect(result.entries.filter((e) => e.declined)).toHaveLength(11);
   const byId = new Map(result.entries.map((e) => [e.operationId, e]));
   expect(byId.get("GET /v2/databases")).toMatchObject({ available: false, reason: VERSION_MESSAGE });
   expect(byId.get("GET /v2/namespaces")).toMatchObject({ available: true });
@@ -50,7 +50,7 @@ test("the glareshield shows a persistent limited-mode indicator, with icon and t
   await expect(indicator).toBeVisible();
   await expect(indicator).toContainText("Limited");
   await expect(indicator).not.toContainText("v1");
-  await expect(indicator).toHaveAccessibleDescription(/65 of 273 operations are not offered by this IRIS version/);
+  await expect(indicator).toHaveAccessibleDescription(/62 of 273 operations are not offered by this IRIS version/);
   for (const route of ["security/tls", "system", "logs"]) {
     await page.goto(route);
     await expect(page.getByTestId("limited-mode-indicator")).toBeVisible();
@@ -99,7 +99,7 @@ test("entity types the instance does not offer are named once with the version m
 });
 
 test("home counts exclude operations the instance does not offer, and the Disk vital reads natively", async ({ page }) => {
-  await expect(page.getByTestId("capability-summary")).toContainText("65 not offered by this IRIS version");
+  await expect(page.getByTestId("capability-summary")).toContainText("62 not offered by this IRIS version");
   await expect(page.getByTestId("vital-disk")).toContainText(/\d+%/);
 });
 
@@ -238,5 +238,41 @@ test("one permissions write on the limited instance goes through the shared conf
     expect(after.result.Description).toBe("Edited in limited mode");
   } finally {
     await adminRequest("DELETE", "/security/role", { name: ROLE });
+  }
+});
+
+test("feature 004: the instrument cluster reads on the limited instance, and says what is not offered", async ({ page }) => {
+  await page.goto("system/instruments");
+  const cluster = page.getByTestId("instrument-cluster");
+  await expect(cluster).toBeVisible();
+  // Whether an instrument has a number comes from the capability map, never from the version: on
+  // this install the disk value is read through the v1 route the dialect layer translates.
+  for (const id of ["cpu", "memory", "disk", "processes"]) {
+    const instrument = page.getByTestId(`instrument-${id}`);
+    await expect(instrument, id).toBeVisible();
+    if ((await instrument.getAttribute("data-available")) === "false") {
+      await expect(page.getByTestId(`instrument-reason-${id}`), id).not.toBeEmpty();
+    } else {
+      await expect(page.getByTestId(`instrument-value-${id}`), id).not.toBeEmpty();
+    }
+  }
+  await expect(page.getByTestId("telemetry-mode")).toContainText("polling");
+});
+
+test("feature 004: a system write on the limited instance follows the capability map, and the declined ones state their reason", async ({ page }) => {
+  // Declined by FlightDeck on every version, so this install must say so with the native path.
+  const truncate = await capability(page, "POST /v2/database-dir/truncate");
+  expect(truncate?.available).toBe(false);
+  expect(truncate?.declined).toBe(true);
+  expect(truncate?.reason).toContain("Local Databases");
+  // A task read the instance does offer works, and the recent-history band comes with it.
+  await page.goto("tasks/tasks");
+  const list = page.getByTestId("domain-list");
+  await expect(list).toBeVisible();
+  const runTask = await capability(page, "POST /v2/task/run");
+  if (runTask?.available) {
+    await expect(list.getByTestId("list-row").first()).toBeVisible();
+  } else {
+    await expect(list).toContainText(/No |not available/i);
   }
 });

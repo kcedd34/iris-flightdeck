@@ -81,6 +81,16 @@ ClassMethod WebApp() As %Status
 	})
 }
 
+/// The id the instance gave a task, or "" when it does not list it.
+ClassMethod TaskId(name As %String) As %String
+{
+	set tasks = ##class(FlightDeck.Admin.Client).Get("/v2/tasks", {"filter":(name), "maxRows":100}, .status)
+	quit:(status'=200)||'$isobject(tasks) ""
+	set iter = tasks.%GetIterator()
+	while iter.%GetNext(, .task) { quit:task.Name=name }
+	quit $select($isobject($get(task)) && (task.Name = name):task.Id, 1:"")
+}
+
 ClassMethod Tasks() As %Status
 {
 	set existing = ##class(FlightDeck.Admin.Client).Get("/v2/tasks", {"filter":"FD Demo", "maxRows":100}, .status, .raw)
@@ -121,6 +131,21 @@ ClassMethod Tasks() As %Status
 			quit
 		}
 		write "FlightDeck demo: task ", name, " created", !
+		// A failed run has to exist for the screens to show one: the recent-history band, the complete
+		// message, and the jump to the logs of that period all rest on a real run (feature 004 UC07
+		// scenarios 1 and 2). The task is the one written to fail, so running it changes nothing else.
+		if $list(spec, 3) {
+			set id = ..TaskId(name)
+			if id '= "" {
+				set sc2 = ##class(FlightDeck.Admin.Client).Call("POST", "/v2/task/run", {"id":(id)}, {"RunNow":true}, .runStatus, .runJson, .runRaw)
+				if $$$ISOK(sc2), runStatus < 300 {
+					write "FlightDeck demo: task ", name, " run once so a failed run exists", !
+				} else {
+					// Not fatal: the demo is a fixture, and the instance's own message says why.
+					write "FlightDeck demo: task ", name, " could not be run (", ##class(FlightDeck.Admin.Client).ErrorText(runJson, runRaw), ")", !
+				}
+			}
+		}
 	}
 	quit $get(sc, $$$OK)
 }

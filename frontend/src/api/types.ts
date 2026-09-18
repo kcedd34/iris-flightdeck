@@ -93,6 +93,13 @@ export interface MutationCapability {
   available: boolean;
   declined?: boolean;
   reason: string | null;
+  /**
+   * What this object itself allows (RN-FD-34, feature 004). Where an official schema states a
+   * capability over an object — a process's CanBeTerminated, a lock's Removable — the server
+   * evaluates it and answers here. The screen renders the answer; it never infers permission.
+   */
+  objectEnabled?: boolean;
+  objectReason?: string | null;
 }
 
 export type Keys = Record<string, string>;
@@ -214,6 +221,8 @@ export interface PreviewResponse {
   notice?: string | null;
   /** What to tell the user while the instance works on it, for operations known to be slow. */
   applyNotice?: string | null;
+  /** How long the platform is expected to take, when the descriptor declares it (feature 004). */
+  expectedDuration?: string | null;
 }
 
 export interface ApplyRequest extends PreviewRequest {
@@ -307,4 +316,27 @@ export interface CompositeCapability {
   allowed: boolean;
   available: boolean;
   reason: string | null;
+}
+
+/** Feature 004: one reading of the instrument cluster (contracts/flightdeck-api-004.openapi.json). */
+export interface TelemetryInstrument {
+  id: string;
+  label: string;
+  unit: string;
+  value: number | null;
+  band: "normal" | "caution" | "warning";
+  scope: string | null;
+  available: boolean;
+  reason: string | null;
+  detail: string | null;
+  async?: { state: string; lastValueAt: string | null; stale: boolean; message: string | null };
+}
+
+export interface TelemetryReading {
+  /** The transport in use. Polling is the only one: the official API offers no streaming endpoint. */
+  mode: "polling";
+  intervalSeconds: number;
+  asOf: string;
+  instruments: TelemetryInstrument[];
+  resources: { Name: string; Seize: number; Nseize: number; Aseize: number; Bseize: number; BusySet: number }[];
 }

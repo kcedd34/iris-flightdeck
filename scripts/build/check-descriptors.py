@@ -60,12 +60,24 @@ def predicate(expr, roots):
     for key in ("path", "bitsPath", "rolePath"):
         if key in expr and expr[key].split(".")[0] not in roots:
             return f"path '{expr[key]}' is outside {','.join(sorted(roots))}"
+    # Operand names are part of the operator. "in" takes values (a list), "equals" and "contains"
+    # take value: getting it wrong is an <INVALID OREF> at request time, which is exactly what this
+    # gate exists to prevent (feature 004).
+    if op == "in" and not isinstance(expr.get("values"), list):
+        return "operator 'in' needs a values list"
+    if op in ("equals", "contains") and "value" not in expr:
+        return f"operator '{op}' needs a value"
+    if op in ("equals", "in", "contains", "defined", "empty", "bitsCleared", "lacksTargetRole") and "path" not in expr:
+        return f"operator '{op}' needs a path"
     return ""
 
 
-def action(op, mutation, problems):
+def action(op, mutation, problems, singletons=frozenset()):
     """Mirrors the action-kind rules of FlightDeck.Domain.Descriptor (feature 003 data-model 5.1)."""
-    if not mutation.get("params") and not mutation.get("localParams") and not mutation.get("optionalParams"):
+    # A singleton has no keys by design, so an action on it takes no parameters: the object it acts
+    # on is the instance itself (feature 004: the task manager, the device and ECP settings).
+    if (not mutation.get("params") and not mutation.get("localParams") and not mutation.get("optionalParams")
+            and mutation.get("entityType") not in singletons):
         problems.append(f"action {op} declares no parameters at all")
     if not mutation.get("target"):
         problems.append(f"action {op} has no target")
@@ -88,6 +100,7 @@ def main():
     entity_types = xdata(entity_path, "EntityTypes")
     mutations = xdata(mutation_path, "Mutations")
     declined = set(xdata(POLICY, "Declined")) if POLICY.exists() else set()
+    singletons = {tid for tid, t in xdata(entity_path, "EntityTypes").items() if t.get("singleton")}
     problems = []
     for tid, t in entity_types.items():
         forbidden(t, f"entity type {tid}", problems)
@@ -110,7 +123,7 @@ def main():
     for op, m in mutations.items():
         forbidden(m, f"mutation {op}", problems)
         if m.get("kind") == "action":
-            action(op, m, problems)
+            action(op, m, problems, singletons)
             for candidate in [op] + ([m["readOperation"]] if "readOperation" in m else []):
                 if candidate not in operations:
                     problems.append(f"mutation {op} names unknown operation '{candidate}'")
@@ -121,12 +134,20 @@ def main():
         if (m.get("kind") in ("delete", "request") or "grade" in m) and not m.get("target"):
             problems.append(f"mutation {op} has no target")
         if "impactWhen" in m:
-            problem = predicate(m["impactWhen"], {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind", "params"})
+            problem = predicate(m["impactWhen"], {"current", "proposed", "isSystem", "isFlightDeck", "isOwnSession", "facts", "request", "kind", "params"})
             if problem:
                 problems.append(f"mutation {op} impactWhen: {problem}")
+        if "refusedWhen" in m:
+            problem = predicate(m["refusedWhen"], {"current", "proposed", "isSystem", "isFlightDeck", "isOwnSession", "facts", "request", "kind", "params"})
+            if problem:
+                problems.append(f"mutation {op} refusedWhen: {problem}")
+            if "disabledReason" not in m:
+                problems.append(f"mutation {op} declares refusedWhen without disabledReason: a refusal must say why")
+        if "expectedDuration" in m and not isinstance(m["expectedDuration"], str):
+            problems.append(f"mutation {op} expectedDuration must be a short human phrase")
         for key in ("grade", "selfProtection"):
             for rule in m.get(key, []):
-                problem = predicate(rule.get("when"), {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind", "params"})
+                problem = predicate(rule.get("when"), {"current", "proposed", "isSystem", "isFlightDeck", "isOwnSession", "facts", "request", "kind", "params"})
                 if problem:
                     problems.append(f"mutation {op} {key}: {problem}")
     if problems:

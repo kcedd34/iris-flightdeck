@@ -39,7 +39,16 @@ const LABELS: Record<string, string> = {
  * Any descriptor-backed entity in the inspector: official fields, server markers, links and the
  * domain's actions. Linked entities from other domains open here read-only (spec FR-006).
  */
-export function EntityInspector({ entity, actions }: { entity: EntityRef; actions?: (detail: EntityDetailResponse) => ReactNode }) {
+export function EntityInspector({
+  entity,
+  actions,
+  extra,
+}: {
+  entity: EntityRef;
+  actions?: (detail: EntityDetailResponse) => ReactNode;
+  /** One panel the domain contributes beside the links — a task's runs, and nothing structural. */
+  extra?: (detail: EntityDetailResponse) => ReactNode;
+}) {
   const { open, back, close, canGoBack } = useInspectTarget();
   const item = useEntityItem(entity);
   const key = `${entity.domain}/${entity.entityType}`;
@@ -67,6 +76,7 @@ export function EntityInspector({ entity, actions }: { entity: EntityRef; action
         detail && (
           <>
             <LinksPanel entity={entity} onOpen={onOpen} />
+            {extra?.(detail)}
             {actions?.(detail)}
           </>
         )

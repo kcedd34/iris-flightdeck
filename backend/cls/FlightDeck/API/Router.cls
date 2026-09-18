@@ -32,6 +32,8 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 <Route Url="/v1/session/capabilities" Method="GET" Call="FlightDeck.API.Capabilities:List"/>
 <Route Url="/v1/vitals" Method="GET" Call="FlightDeck.API.Vitals:Get"/>
 <Route Url="/v1/attention" Method="GET" Call="FlightDeck.API.Attention:Get"/>
+<Route Url="/v1/telemetry" Method="GET" Call="FlightDeck.API.Telemetry:Get"/>
+<Route Url="/v1/async/:handle" Method="GET" Call="FlightDeck.API.Telemetry:Async"/>
 <Route Url="/v1/palette/entities" Method="GET" Call="FlightDeck.API.Palette:Search"/>
 <Route Url="/v1/openapi.json" Method="GET" Call="FlightDeck.API.OpenAPI:Get"/>
 <Route Url="/v1/domains/:domain/:entityType" Method="GET" Call="FlightDeck.API.Entities:List"/>

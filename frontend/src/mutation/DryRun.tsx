@@ -181,6 +181,14 @@ export function DryRun(props: Props) {
                     {preview.consequence}
                   </span>
                 )}
+                {/* How long the platform is expected to take, stated before anything is sent: an
+                    operation of minutes shown as a synchronous request reads as a frozen
+                    application (feature 004 spec FR-037b). */}
+                {ready && preview?.expectedDuration && (
+                  <span className="dack" data-testid="dry-run-duration">
+                    {`The instance usually takes ${preview.expectedDuration}. FlightDeck follows it and reports what the platform says.`}
+                  </span>
+                )}
                 <span className="dsp">
                   <button className="btn" type="button" onClick={props.onCancel}>
                     Cancel

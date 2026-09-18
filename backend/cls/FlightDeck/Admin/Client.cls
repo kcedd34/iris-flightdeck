@@ -46,6 +46,25 @@ ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "
 	quit $$$OK
 }
 
+/// The handle of an asynchronous operation the platform accepted (202).
+/// <p>The platform returns it in the LOCATION header, and that header names
+/// <em>/api/admin/v1/async-result</em> even on an instance whose dialect is v2 (probed 2026-09-18,
+/// verification/README.md). Both dialects answer for the same id, so the path in the header is a
+/// quirk of the platform, not an instruction: FlightDeck takes the id and keeps polling through the
+/// dialect this session already selected. This method is the only place that string is read, which
+/// is why it lives in the dialect layer.
+ClassMethod AsyncHandle(ByRef headers, result As %DynamicAbstractObject = "") As %String
+{
+	set location = $get(headers("location"))
+	if location [ "id=" quit $piece($piece(location, "id=", 2), "&", 1)
+	// A future version may answer with the handle in the body instead; read it rather than fail.
+	if $isobject(result) {
+		quit:result.%IsDefined("GUID") result.GUID
+		quit:result.%IsDefined("Id") result.Id
+	}
+	quit ""
+}
+
 /// The dialect selected for this session: "v2", "v1" (limited mode) or "none".
 ClassMethod Dialect() As %String
 {

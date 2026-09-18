@@ -48,8 +48,8 @@ test("section tabs appear only for domains with more than one entity type, and t
       await expect(page.getByTestId("section-tabs").locator('[aria-current="page"]')).toHaveAttribute("href", href!);
     }
     // Implemented domains: web applications (feature 002), permissions and security (feature 003).
-    // The rest keep the empty state from feature 001.
-    if (id !== "web-apps" && id !== "permissions" && id !== "security") {
+    // Logs keep the empty state from feature 001; every other domain is built (features 002 to 004).
+    if (id === "logs") {
       await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toBeVisible();
     }
   }

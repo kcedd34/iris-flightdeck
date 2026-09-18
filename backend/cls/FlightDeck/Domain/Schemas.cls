@@ -2162,6 +2162,2453 @@ XData Schemas [ MimeType = application/json ]
     "description": "Event enabled."
    }
   ]
+ },
+ "Task": {
+  "source": "Task",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": "Name of the task. Must be 50 characters or less, first character must be a letter. Note that Names longer than 50 characters will be truncated."
+   },
+   {
+    "name": "RunAsUser",
+    "type": "string",
+    "description": "Username of user to run as.\nA user must have the %Admin_Secure:Use privilege to define a task to run as another user."
+   },
+   {
+    "name": "EmailOnCompletion",
+    "type": "array<string>",
+    "description": "A list of email addresses to send a completion notification to."
+   },
+   {
+    "name": "EmailOnError",
+    "type": "array<string>",
+    "description": "A list of email addresses to send an error notification to."
+   },
+   {
+    "name": "EmailOnExpiration",
+    "type": "array<string>",
+    "description": "A list of email addresses to send notification if the task expires."
+   },
+   {
+    "name": "EmailOutput",
+    "type": "boolean",
+    "description": "If an output directory and output file are chosen, and EmailOutput is set to true the output from the entry will be emailed to the email addresses in the EmailOnCompletion property."
+   },
+   {
+    "name": "Expires",
+    "type": "boolean",
+    "description": "Whether this entry expires. Expiration is only checked if this flag is set to true. Expiration is determined by whichever is first: 1) The current time passed the next submit time. 2) Expiration Offsets (Days, Hours, Minutes)."
+   },
+   {
+    "name": "ExpiresDays",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "ExpiresHours",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "ExpiresMinutes",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "OpenOutputFile",
+    "type": "boolean",
+    "description": "If the output from the executed code is to be directed to an outputfile, open the output file.  If the executed code handles the open and close this value should be 0."
+   },
+   {
+    "name": "OutputDirectory",
+    "type": "string",
+    "description": "If an output directory and output file are chosen, the output from the entry will be directed there."
+   },
+   {
+    "name": "OutputFilename",
+    "type": "string",
+    "description": "If an output directory and output file are chosen, the output from the entry will be directed there. Note that if OutputDirectory is blank, this may contain the full file name."
+   },
+   {
+    "name": "OutputFileIsBinary",
+    "type": "boolean",
+    "description": "When emailing the output file this flag will indicate if the file should be sent as binary"
+   },
+   {
+    "name": "SuspendOnError",
+    "type": "boolean",
+    "description": "Option to suspend a Task if it encounters an error during a run. By default the Task is just rescheduled for its next run.\n\n Note that this only applies to errors returned by the OnTask method. Errors encountered in Task Manager code will suspend the Task."
+   },
+   {
+    "name": "SuspendTerminated",
+    "type": "boolean",
+    "description": "Option to suspend a Task if it has been terminated by a system shutdown. By default the Task is just rescheduled for its next run at startup.\n\nNote that this only applies to Tasks that are found 'terminated' at startup."
+   },
+   {
+    "name": "Priority",
+    "type": "string",
+    "description": "Background Job priority",
+    "enum": [
+     "Normal",
+     "Low",
+     "High"
+    ]
+   },
+   {
+    "name": "TaskClass",
+    "type": "string",
+    "description": "A class in the specified 'NameSpace' which inherits from %SYS.Task.Definition"
+   },
+   {
+    "name": "IsBatch",
+    "type": "boolean",
+    "description": "Batch mode restricts the job to a small section of the buffer pool.\nfalse - Don't run in batch mode (default)\nTrue - Run in batch mode"
+   },
+   {
+    "name": "NameSpace",
+    "type": "string",
+    "description": "Namespace to run the task in (default=\"%SYS\")"
+   },
+   {
+    "name": "TimePeriod",
+    "type": "string",
+    "description": "Time period to run the task.\nThis property governs how the properties TimePeriodEvery and TimePeriodDay are interpreted\n\nValid parameters For TimePeriod are\n\n0 - DAILY\nTimePeriodEvery - Run every x Days, where Days are 1-7\nTimePeriodDay - Set to \"\", ignored\n\n1 - WEEKLY\nTimePeriodEvery - Run every x Weeks, where weeks are 1-5\nTimePeriodDay - Run on days xxxx, where Sunday=Day 1,Saturday=Day 7\n(where 23456 would be Monday thru Friday)\n\n2 - MONTHLY\nTimePeriodEvery - Run every x Months, where months are 1-12\nTimePeriodDay - Run on day x, where day=1-31, where 31=last day of month\n\n3 - MONTHLYSPECIAL\nTimePeriodEvery - Run every x Months, where months are 1-12\nTimePeriodDay - week^day, where week is 1-5, 5 being last, day is 1-7, sunday is day 1\n\n4 - RUNAFTER - Run this task after another task completes\nTimePeriodEvery - (not used)\nTimePeriodDay - 0\nRunAfterGUID - JobGUID of Task to follow\n\n5 - ONDEMAND - The task is set up. It can be run On Demand by calling the RunOnce method\nTimePeriodEvery - \"\",ignored\nTimePeriodDay - \"\", ignored\nThe user calls the RunOnce Class method to schedule the task after it is set up\n\nIf the Time period fields are not set when a task is created, the task is set by default to be run every day.\n\nExamples:\n\nRun every day\nTimePeriod=0,TimePeriodEvery=1,TimePeriodDay=\"\"\n\nRun every other day\nTimePeriod=0,TimePeriodEvery=2,TimePeriodDay=\"\"\n\nRun every Sunday\nTimePeriod=1,TimePeriodEvery=1,TimePeriodDay=1\n\nRun every Monday through Friday\nTimePeriod=1,TimePeriodEvery=1,TimePeriodDay=23456\n\nRun every other Saturday\nTimePeriod=1,TimePeriodEvery=2,TimePeriodDay=7\n\nRun the first day of every month\nTimePeriod=2,TimePeriodEvery=1,TimePeriodDay=1\n\nRun the last day of every month\nTimePeriod=2,TimePeriodEvery=1,TimePeriodDay=31\n\nRun the last day of every other month\nTimePeriod=2,TimePeriodEvery=2,TimePeriodDay=31\n\nRun the second Saturday of every month\nTimePeriod=3,TimePeriodEvery=1,TimePeriodDay=2^7\n\nRun the first Sunday of every month\nTimePeriod=3,TimePeriodEvery=1,TimePeriodDay=1^1\n\nRun after task BACKUP completes\nTimePeriod=4,RunAfterGUID=BackupJobGUID,TimePeriodDay=0\n\nTask is not scheduled to run. Task is scheduled to run by calling the RunOnce method.\nTimePeriod=5,TimePeriodEvery=\"\",TimePeriodDay=\"\"",
+    "enum": [
+     "Daily",
+     "Weekly",
+     "Monthly",
+     "Monthly Special",
+     "Run After",
+     "On Demand"
+    ]
+   },
+   {
+    "name": "TimePeriodEvery",
+    "type": "string",
+    "description": "See TimePeriod property for legal values"
+   },
+   {
+    "name": "TimePeriodDay",
+    "type": "string",
+    "description": "See TimePeriod property for legal values"
+   },
+   {
+    "name": "DailyFrequency",
+    "type": "string",
+    "description": "How often each day to run the task.\nThis property governs how the properties DailyFrequencyTime, DailyIncrement, DailyStartTime, and DailyEndTime are interpreted.\n\nValid parameters for DailyFrequency are:\n\n0 - ONCE - Run once on the day scheduled\nDailyFrequencyTime - \"\", ignored\nDailyIncrement - \"\", ignored\nDailyStartTime - Time for task to run\nDailyEndTime - \"\",ignored\n\n1 - SEVERAL - Run Several times in a day\nDailyFrequencyTime - 0 - Run every x minutes\nDailyFrequencyTime - 1 - Run every x hours\nDailyIncrement - # of minutes between runs or # of hours between runs\nDailyStartTime - Time for tasks to start running\nDailyEndTime - Time for task to stop running",
+    "enum": [
+     "Once",
+     "Several"
+    ]
+   },
+   {
+    "name": "DailyFrequencyTime",
+    "type": "string",
+    "description": "See DailyFrequency property for legal values",
+    "enum": [
+     "Hourly",
+     "Minutes"
+    ]
+   },
+   {
+    "name": "DailyIncrement",
+    "type": "string",
+    "description": "See DailyFrequency property for legal values"
+   },
+   {
+    "name": "DailyStartTime",
+    "type": "string",
+    "description": "See DailyFrequency property for legal values"
+   },
+   {
+    "name": "DailyEndTime",
+    "type": "string",
+    "description": "See DailyFrequency property for legal values"
+   },
+   {
+    "name": "RunAfterGUID",
+    "type": "string",
+    "description": "Execute this job when specified job completes"
+   },
+   {
+    "name": "StartDate",
+    "type": "string",
+    "description": "When to schedule the task first\nDefault is to start tomorrow"
+   },
+   {
+    "name": "EndDate",
+    "type": "string",
+    "description": "When to stop scheduling the task\nDefault is to never stop scheduling"
+   },
+   {
+    "name": "MirrorStatus",
+    "type": "string",
+    "description": "Used to control the execution of tasks when the system is part of a Mirror. Tasks may be scheduled to run on each Mirror Member, but will only be executed if the current status matches what is indicated by this property. This property is ignored by the Task Manager if the system is not a Mirror member.\nStatus = 1 - run only on Primary Mirror member (default)\nStatus = 2 - run only on a Non-Primary Mirror member\nStatus = 3 - run on Any Mirror member regardless of status",
+    "enum": [
+     "Primary",
+     "Non-Primary",
+     "Any"
+    ]
+   },
+   {
+    "name": "RescheduleOnStart",
+    "type": "boolean",
+    "description": "If true, when the CheckSchedule class method is called with SystemStart=1 any jobs pending in the task queue will be removed, and rescheduled for their next time. For example, the journal switch is scheduled for midnight. If the system goes down at 11 pm, and then restarts at 1 am, the journal switch would normally run. But since we just started, we don't really want it to switch, so we reschedule it for the next time.\nDefault=0"
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of task"
+   },
+   {
+    "name": "Settings",
+    "type": "object",
+    "description": "The settings associated with the TaskClass. This is an arbitrary object and the relevant keys depend on the TaskClass."
+   }
+  ]
+ },
+ "TaskListItem": {
+  "source": "TaskList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "System",
+     "Cache",
+     "User"
+    ]
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Id",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Suspended",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "LastFinished",
+    "type": "string",
+    "description": "Example is \"2026-02-23 00:00\" or \"2026-02-23 00:00:00\""
+   },
+   {
+    "name": "NextScheduled",
+    "type": "string",
+    "description": "Example is \"2026-02-23 00:00\" or \"2026-02-23 00:00:00\""
+   }
+  ]
+ },
+ "TaskHistoryItem": {
+  "source": "TaskHistory",
+  "fields": [
+   {
+    "name": "LastStart",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Completed",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Result",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TaskId",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Routine",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Pid",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ErrDate",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ErrNumber",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Username",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "LogDatetime",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "TaskExtraInfo": {
+  "source": "TaskExtraInfo",
+  "fields": [
+   {
+    "name": "LastSchedule",
+    "type": "string",
+    "description": "When the task was last scheduled to run. \"\" - Never run"
+   },
+   {
+    "name": "LastStarted",
+    "type": "string",
+    "description": "When the task was last started. \"\" - Never started"
+   },
+   {
+    "name": "LastFinished",
+    "type": "string",
+    "description": "When the task was last finished. \"\" - did not finish"
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": "Return value of the method %OnTask.\n\nIf not defined by the task default success will be 1 \nIf the job is currently running (JobRunning) Status will be -1 \nIf there was an untrapped error (JobUntrappedError) Status will be -2 \nIf there was an error before execution (JobSetupError) Status will be -3 \nIf the task timed out trying to job (JobTimeout) Status will be -4 \nIf there was an error after execution (JobPostProcessError) Status will be -5 \nThe text of the status code will be in the property Error."
+   },
+   {
+    "name": "Error",
+    "type": "string",
+    "description": "Untrapped error from User task, or \"Success\""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "Type 'System' and 'Maintenance' are reserved for System Tasks. This gets assigned by the system when a task is specified.",
+    "enum": [
+     "System",
+     "Maintenance",
+     "User"
+    ]
+   },
+   {
+    "name": "NextScheduled",
+    "type": "string",
+    "description": "When the task is next scheduled to run."
+   },
+   {
+    "name": "Suspended",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "UpcomingTaskItem": {
+  "source": "UpcomingTasks",
+  "fields": [
+   {
+    "name": "Id",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Datetime",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Suspended",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "WQMCategory": {
+  "source": "WQMCategory",
+  "fields": [
+   {
+    "name": "DefaultWorkers",
+    "type": "integer",
+    "description": "When a work group in this category is created and no worker job count is specified this is the default number of worker jobs we will assign to the group. 0 = Dynamic. Required on creation, optional on updates."
+   },
+   {
+    "name": "MaxActiveWorkers",
+    "type": "integer",
+    "description": "Maximum number of active worker jobs we will keep in the pool of jobs servicing requests in this category. Idle jobs are detected and new jobs are started automatically to keep the maximum active job number around this limit. 0 = Dynamic, -1 = unlimited. Required on creation, optional on updates."
+   },
+   {
+    "name": "MaxWorkers",
+    "type": "integer",
+    "description": "When a work group in this category is created specifying the number of worker jobs wanted and the number requested is greater than this limit then we will use this limit value instead. 0 = Dynamic"
+   },
+   {
+    "name": "MaxTotalWorkers",
+    "type": "integer",
+    "description": "If non-zero, specifies the maximum number of workers we will start in this category. Even if all existing workers are blocked, we will not start more workers once we reach this limit. This is useful for IO intensive workloads where we expect workers to be blocked and are not trying to control the amount of CPU a worker uses. Required on creation, optional on updates."
+   },
+   {
+    "name": "AlwaysQueue",
+    "type": "boolean",
+    "description": "If true makes this a true queue where you need to wait for the work group request to get to the head of the queue in order to get a worker assigned. When AlwaysQueue=0 for a category when a new WQM group is created we allocated at least one worker immediately to make progress on the work even if the rest of the work unit are in a queue waiting for additional workers to free up."
+   }
+  ]
+ },
+ "WQMCategoryListItem": {
+  "source": "WQMCategoryList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "MaxActiveWorkers",
+    "type": "string",
+    "description": "Could be a string like \"Dynamic (32)\", or a simple int like \"8\""
+   },
+   {
+    "name": "DefaultWorkers",
+    "type": "string",
+    "description": "Could be a string like \"Dynamic (32)\", or a simple int like \"8\""
+   },
+   {
+    "name": "MaxWorkers",
+    "type": "string",
+    "description": "Could be a string like \"Dynamic (32)\", or a simple int like \"8\""
+   },
+   {
+    "name": "MaxTotalWorkers",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "AlwaysQueue",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "AsyncTask": {
+  "source": "AsyncTask",
+  "fields": [
+   {
+    "name": "GUID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TaskName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "State",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Queued",
+     "Running",
+     "Finished",
+     "Failed",
+     "Canceled",
+     "Paused"
+    ]
+   },
+   {
+    "name": "FailureReason",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TimeQueued",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TimeStarted",
+    "type": "string",
+    "description": "Will be blank if the task has not yet started."
+   },
+   {
+    "name": "TimeFinished",
+    "type": "string",
+    "description": "Will be blank if the task has not yet finished."
+   },
+   {
+    "name": "Console",
+    "type": "array<string>",
+    "description": "Messages from the task"
+   },
+   {
+    "name": "Result",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "AsyncTaskListItem": {
+  "source": "AsyncTaskList",
+  "fields": [
+   {
+    "name": "GUID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TaskName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "State",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Queued",
+     "Running",
+     "Finished",
+     "Failed",
+     "Canceled",
+     "Paused"
+    ]
+   },
+   {
+    "name": "FailureReason",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TimeQueued",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TimeStarted",
+    "type": "string",
+    "description": "Will be blank if the task has not yet started."
+   },
+   {
+    "name": "TimeFinished",
+    "type": "string",
+    "description": "Will be blank if the task has not yet finished."
+   }
+  ]
+ },
+ "Process": {
+  "source": "Process",
+  "fields": [
+   {
+    "name": "CanBeSuspended",
+    "type": "boolean",
+    "description": "Process can be suspended. Flag checked by JOBEXAM and Management Portal to see if a process can be suspended."
+   },
+   {
+    "name": "CanBeTerminated",
+    "type": "boolean",
+    "description": "Process can be terminated. Flag checked by JOBEXAM and Management Portal to see if a process can be terminated."
+   },
+   {
+    "name": "CanReceiveBroadcast",
+    "type": "boolean",
+    "description": "Process can receive broadcast. Flag checked by JOBEXAM and Management Portal to see if a process can receive a broadcast. Usually this means they are attached to a terminal."
+   },
+   {
+    "name": "ClientExecutableName",
+    "type": "string",
+    "description": "Executable name of the process on the client. The name of the Executable or DLL on the client which initiated the connection. It is passed down to the process as part of the initial connection message. This property may be set by the end-user if they are managing their own connections."
+   },
+   {
+    "name": "ClientIPAddress",
+    "type": "string",
+    "description": "IP Address of client connected to the process. IP address of the client which initiated the connection. It is passed down to the process as part of the initial connection message. This property may be set by the end-user if they are managing their own connections."
+   },
+   {
+    "name": "ClientNodeName",
+    "type": "string",
+    "description": "Node Name of the client connected to the process. Node name of the client which initiated the connection. It is passed down to the process as part of the initial connection message. This property may be set by the end-user if they are managing their own connections."
+   },
+   {
+    "name": "CommandsExecuted",
+    "type": "integer",
+    "description": "Number of Commands Executed. Total number of commands which the process has executed."
+   },
+   {
+    "name": "CSPSessionID",
+    "type": "string",
+    "description": "CSP Session ID of client connected to process.\nCSP session ID of the client which initiated the connection. It is passed down to the process as part of the initial connection message, and used to manage the CSP session."
+   },
+   {
+    "name": "CurrentDevice",
+    "type": "string",
+    "description": "Current device that the process has open and is USEing via the USE command."
+   },
+   {
+    "name": "CurrentLineAndRoutine",
+    "type": "string",
+    "description": "Current Line and Routine. Current line and routine that the process is executing. Returned in +number^routine format. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "CurrentSrcLine",
+    "type": "string",
+    "description": "Current Source Line being executed. Current line of source code which is being executed by the process. If \"\", then the source code line is unavailable. This property requires a mailbox message to be sent to the process being examined. If the routine has been modified compared to the pcode being run then this will point to the current routine source rather than the actual source of the code being executed."
+   },
+   {
+    "name": "EscalatedRoles",
+    "type": "array<string>",
+    "description": "Additional roles granted to the set of login roles"
+   },
+   {
+    "name": "GlobalReferences",
+    "type": "integer",
+    "description": "Number of Global References. Total number of global references the process has made."
+   },
+   {
+    "name": "GlobalUpdates",
+    "type": "integer",
+    "description": "Number of Global Updates. Total number of global updates (sets and kills) the process has made."
+   },
+   {
+    "name": "GlobalDiskReads",
+    "type": "integer",
+    "description": "Number of Physical Database Reads. Total number of times the process has fetched data from disk."
+   },
+   {
+    "name": "GlobalBlocks",
+    "type": "integer",
+    "description": "Number of Database Block Allocations. Total number of new database blocks the process has allocated. An indication of database growth."
+   },
+   {
+    "name": "DataBlockWrites",
+    "type": "integer",
+    "description": "Total number of database blocks queued for writing by this process."
+   },
+   {
+    "name": "InTransaction",
+    "type": "integer",
+    "description": "In a transaction. If 0, the process is not in a transaction. If >0, the process has executed a tstart command, is in a transaction, and the value is the offset in the journal file where the transaction has started."
+   },
+   {
+    "name": "IsGhost",
+    "type": "integer",
+    "description": "Is a Ghost process. The process has been killed at the O/S level, and has not yet been cleaned up by the CLNDMN process. Until the process is cleaned, there may be outstanding locks or resources which may be unavailable to other processes. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "JobNumber",
+    "type": "integer",
+    "description": "Job number in process table. Used as an index into the job table."
+   },
+   {
+    "name": "JobType",
+    "type": "integer",
+    "description": "Job type. Number which tells what type of process it is."
+   },
+   {
+    "name": "JournalEntries",
+    "type": "integer",
+    "description": "Number of Journal Entries. Total number of journaled global updates the process has recorded. An indication of journal file growth."
+   },
+   {
+    "name": "LastGlobalReference",
+    "type": "string",
+    "description": "Last Global Reference. Last global reference that the process made. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "LicenseUserId",
+    "type": "string",
+    "description": "User Id used for license. The User ID which took out the license for the process."
+   },
+   {
+    "name": "Location",
+    "type": "string",
+    "description": "Location.\nIf a system process, will be the system processes name.\nIf a user process, will be the value of $g(^%IS(0,Job.CurrentDevice),\"\")"
+   },
+   {
+    "name": "LoginRoles",
+    "type": "array<string>",
+    "description": "Login roles. Roles a process has when it initially logs in"
+   },
+   {
+    "name": "MemoryAllocated",
+    "type": "integer",
+    "description": "Maximum memory able to be used in KB ($ZS). Maximum amount of memory in KB that the process is allowed to use. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "MemoryUsed",
+    "type": "integer",
+    "description": "Memory used in KB ($ZS - ($S/1024)). Current amount of memory the process has used in KB. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "MemoryPeak",
+    "type": "integer",
+    "description": "Peak memory allocated in KB. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "NameSpace",
+    "type": "string",
+    "description": "Namespace process is executing in."
+   },
+   {
+    "name": "OpenDevices",
+    "type": "array<string>",
+    "description": "List of open devices. List of devices which the process has opened. This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "OSUserName",
+    "type": "string",
+    "description": "Operating system username of process. Username given to the process by the operating system when the process is created. When displayed, it is truncated to 16 characters. Note that the real O/S username is only returned when connecting to UNIX or VMS systems; For Windows, it will return the O/S username for a console process, but for telnet it will return the $USERNAME of the process. For client connections, it contains the O/S username of the client. This field is truncated at 16 characters."
+   },
+   {
+    "name": "CPUTime",
+    "type": "integer",
+    "description": "Sum of system and user CPU Time in ms for process (no mailbox message)"
+   },
+   {
+    "name": "ParentPid",
+    "type": "integer",
+    "description": "Process ID of the parent job. Set to 0 if the process has no parent or if the parent exists outside of IRIS."
+   },
+   {
+    "name": "Pid",
+    "type": "integer",
+    "description": "Process ID. Process ID ($J) given to the process by the O/S, decimal form on all platforms."
+   },
+   {
+    "name": "PrivateGlobalBlockCount",
+    "type": "integer",
+    "description": "Number of private global database blocks. This property contains the # of database blocks currently allocated to store process private globals."
+   },
+   {
+    "name": "PrivateGlobalReferences",
+    "type": "integer",
+    "description": "Number of Process Private Global References. Total number of private global references the process has made."
+   },
+   {
+    "name": "PrivateGlobalUpdates",
+    "type": "integer",
+    "description": "Number of Process Private Global Updates. Total number of private global updates (sets and kills) the process has made."
+   },
+   {
+    "name": "PidExternal",
+    "type": "number",
+    "description": "External Process PID. Decimal value for Windows, Unix and Mac, hex for VMS."
+   },
+   {
+    "name": "PrincipalDevice",
+    "type": "string",
+    "description": "Principal Device ($P). This property requires a mailbox message to be sent to the process being examined."
+   },
+   {
+    "name": "Priority",
+    "type": "integer",
+    "description": "Priority. Priority of the process at the O/S level."
+   },
+   {
+    "name": "Roles",
+    "type": "array<string>",
+    "description": "$Roles. Roles a process currently has"
+   },
+   {
+    "name": "Routine",
+    "type": "string",
+    "description": "Routine currently executing. Name of the routine which the process is currently executing."
+   },
+   {
+    "name": "StartTimeUTC",
+    "type": "string",
+    "description": "Process start time in UTC."
+   },
+   {
+    "name": "StartupClientIPAddress",
+    "type": "string",
+    "description": "Startup IP Address of client. IP address of the client as detected on the TCP channel by the server process."
+   },
+   {
+    "name": "StartupClientNodeName",
+    "type": "string",
+    "description": "Startup Node Name of client. IP Node name of the client as detected on the TCP channel by the server process."
+   },
+   {
+    "name": "State",
+    "type": "string",
+    "description": "Current state of the process as determined by the processes state bits. The following are all the different states a process can be in. The process may also have a number of different flags within these states which are appended to the end of the state name:\nLOCK - Executing a Lock command\nOPEN - Opening a device\nCLOS - Closing a device\nUSE  - Using a device\nREAD - Read command\nWRT  - Write command\nGET  - Executing a $Get on a global\nGSET - Setting a global\nGKLL - Killing a global\nGORD - $Order on a global\nGQRY - $Query on a global\nGDEF - $Data on a global\nZF   - Executing a $ZF command\nHANG - Executing a Hang command\nJOB  - Executing a Job command\nEXAM - Executing a variable exam\nBRD  - Executing a broadcast\nSUSP - Process is suspended\nINCR - Executing a $Increment\nBSET - Global Set $Bit\nBGET - Global $Bit\nEVT  - Waiting on event\nSLCT - $System.Socket wait\nSEM  - $System.Semaphore wait\nIPQ  - Inter-process queue wait\nDEQ  - Dequeue wait (currently unused)\nVSET - Global Set vector element\nVKLL - Global Kill vector element\nRUN  - Process is running in none of the aforementioned states\nThe following flags can be appended to the state:\n\nNL - Net lock waiting\nDT - The dead job has open transaction\nS  - Suspension requested\nGW - Global Wait\nNR - Net Read\nD  - Dead\nH  - Halting\nNH - Netharden\nN  - Remote network\nW  - Hibernating"
+   },
+   {
+    "name": "UserInfo",
+    "type": "string",
+    "description": "User defined information.\nThis is a user-defined property where the process can set any value into it up to 64 bytes long. The data in it is viewable in JOBEXAM. Note that the information can only be set into one's own process, not into another user's process."
+   },
+   {
+    "name": "UserName",
+    "type": "string",
+    "description": "$Username of process.\n$Username of the process as set by the authentication method."
+   },
+   {
+    "name": "Variables",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "Name",
+      "type": "string"
+     },
+     {
+      "name": "Value",
+      "type": "string"
+     }
+    ]
+   }
+  ]
+ },
+ "ProcessListItem": {
+  "source": "ProcessList",
+  "fields": [
+   {
+    "name": "Job",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Pid",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Username",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Device",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Nspace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Routine",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Commands",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Globals",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "State",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EXEName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "IPAddress",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CanBeExamined",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "CanBeSuspended",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "CanBeTerminated",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "CanReceiveBroadcast",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "PrvGblBlkCnt",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "OSUserName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CPUTime",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "ParentPid",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "ElapsedTime",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "ConfigDatabase": {
+  "source": "ConfigDatabase",
+  "fields": [
+   {
+    "name": "MountRequired",
+    "type": "boolean",
+    "description": "Specifies that the database MUST be successfully mounted at startup.\n0 - Successful mount not required for startup to succeed.\n1 - Successful mount required for startup to succeed."
+   },
+   {
+    "name": "MountAtStartup",
+    "type": "boolean",
+    "description": "On a clustered system, specifies whether the database should be mounted at startup.\nThis property is valid for cluster systems only, and is ignored for non-cluster systems.\nFalse - Don't mount at startup\nTrue - Mount at startup"
+   },
+   {
+    "name": "ClusterMountMode",
+    "type": "boolean",
+    "description": "Database is configured to be mounted in cluster mode\nIf this property is set then this database has to be mounted explicitly."
+   },
+   {
+    "name": "Directory",
+    "type": "string",
+    "description": "Directory where the database resides. On ECP Clients of a mirror this contains logical references to the databases on the failover mirror members as the path may be different on the various nodes."
+   },
+   {
+    "name": "Server",
+    "type": "string",
+    "description": "Name of the remote server where the DB resides.\nIf empty, the database is local.\nRemote server must already be configured to be entered here."
+   },
+   {
+    "name": "StreamLocation",
+    "type": "string",
+    "description": "Directory where the streams associated with this database go.\nBy default (value=\"\"), the location is in the subdirectory \"stream\", underneath the database directory, e.g. for a database located in c:\\abc, the default would be c:\\abc\\stream. InterSystems recommends leaving this parameter as \"\"."
+   }
+  ]
+ },
+ "ConfigDatabaseListItem": {
+  "source": "ConfigDatabaseList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Directory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Server",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClusterMountMode",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "MountRequired",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "MountAtStartup",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "StreamLocation",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "LocalDatabase": {
+  "source": "LocalDatabase",
+  "fields": [
+   {
+    "name": "ClusterMountMode",
+    "type": "boolean",
+    "description": "Database is configured to be mounted in cluster mode.\nIf this property is set then this database has to be mounted explicitly."
+   },
+   {
+    "name": "ExpansionSize",
+    "type": "integer",
+    "description": "Size in MB to Expand by. \n0 - Use system defaults (recommended)"
+   },
+   {
+    "name": "MaxSize",
+    "type": "integer",
+    "description": "Maximum size in MB, 0=unlimited (recommended)."
+   },
+   {
+    "name": "NewGlobalCollation",
+    "type": "integer",
+    "description": "Default collation for new globals."
+   },
+   {
+    "name": "NewGlobalIsKeep",
+    "type": "boolean",
+    "description": "Default Keep value for New globals."
+   },
+   {
+    "name": "NewVolumeDirectory",
+    "type": "string",
+    "description": "If expansion creates a new volume as described in NewVolumeThreshold, it will be created in this directory. Defaults to Directory (the same directory as IRIS.DAT) and if this property is null on creation, it will be set toDirectory.  If set to a different directory and that directory is not already in the VolumeDirectoryList,it will be added on save."
+   },
+   {
+    "name": "NewVolumeThreshold",
+    "type": "integer",
+    "description": "If 0, expansion of this database will never create a new volume. If non-zero, when the current last volume expands past this size in MB, a new database volume will be created instead."
+   },
+   {
+    "name": "GlobalJournalState",
+    "type": "boolean",
+    "description": "Journal setting for database,"
+   },
+   {
+    "name": "ReadOnly",
+    "type": "boolean",
+    "description": "Database attribute in label says Read Only."
+   },
+   {
+    "name": "ResourceName",
+    "type": "string",
+    "description": "Resource name for the database."
+   }
+  ]
+ },
+ "LocalDatabaseListItem": {
+  "source": "LocalDatabaseList",
+  "fields": [
+   {
+    "name": "Directory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "MaxSize",
+    "type": "string",
+    "description": "Max size in MB. Could be \"Unlimited\""
+   },
+   {
+    "name": "Size",
+    "type": "integer",
+    "description": "Size in MB"
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Encrypted",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Mirrored",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "SFN",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "EncryptionKeyID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EncryptionVersion",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "VolumeFilesItem": {
+  "source": "VolumeFiles",
+  "fields": [
+   {
+    "name": "VolumeNumber",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "VolumeDirectory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "File",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Size",
+    "type": "integer",
+    "description": "Size in MB"
+   },
+   {
+    "name": "VolumeDirectoryTotalSize",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "DiskFree",
+    "type": "integer",
+    "description": "Disk Free Space in MB"
+   }
+  ]
+ },
+ "Namespace": {
+  "source": "Namespace",
+  "fields": [
+   {
+    "name": "Globals",
+    "type": "string",
+    "description": "Default database for globals. Required on creation, optional on updates."
+   },
+   {
+    "name": "Routines",
+    "type": "string",
+    "description": "Default database for routines. Required on creation, optional on updates."
+   },
+   {
+    "name": "TempGlobals",
+    "type": "string",
+    "description": "Default database for temporary globals."
+   }
+  ]
+ },
+ "NamespaceListItem": {
+  "source": "NamespaceList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Globals",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Routines",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SysGlobals",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SysRoutines",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Library",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TempGlobals",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "MapGlobal": {
+  "source": "MapGlobal",
+  "fields": [
+   {
+    "name": "Collation",
+    "type": "integer",
+    "description": "Default collation of the global"
+   },
+   {
+    "name": "Database",
+    "type": "string",
+    "description": "Database to map global to. Required on creation, optional on updates."
+   },
+   {
+    "name": "LockDatabase",
+    "type": "string",
+    "description": "Database to map global lock to"
+   }
+  ]
+ },
+ "MapPackage": {
+  "source": "MapPackage",
+  "fields": [
+   {
+    "name": "Database",
+    "type": "string",
+    "description": "Database to map Package to. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "MapRoutine": {
+  "source": "MapRoutine",
+  "fields": [
+   {
+    "name": "Database",
+    "type": "string",
+    "description": "Database to map routine to. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "GlobalMappingListItem": {
+  "source": "GlobalMappingList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Subscript",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Database",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Collation",
+    "type": "string",
+    "description": "Could be a blank string for globals including subscripts, or a string like \"5\""
+   },
+   {
+    "name": "LockDatabase",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "PackageMappingListItem": {
+  "source": "PackageMappingList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Database",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "RoutineMappingListItem": {
+  "source": "RoutineMappingList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "",
+     "MAC",
+     "INT",
+     "INC",
+     "OBJ"
+    ]
+   },
+   {
+    "name": "Database",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "Device": {
+  "source": "Device",
+  "fields": [
+   {
+    "name": "Alias",
+    "type": "integer",
+    "description": "Alternate device ID (number) for this device. \nAll aliases must be unique. You can use this value to specify a device in an OPEN command, e.g 0PEN 210"
+   },
+   {
+    "name": "AlternateDevice",
+    "type": "string",
+    "description": "Device ID of an alternate device.\nThis allows a user using %IS to specify A as the device. The alternate device must be a defined mnemonic."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Enter a description of where the device is located. This field is for your\nown reference to help you identify what machine you're configuring."
+   },
+   {
+    "name": "OpenParameters",
+    "type": "string",
+    "description": "Values that will be sent as the second argument for an OPEN command.\nThis value allows you to specify more specific terminal information."
+   },
+   {
+    "name": "PhysicalDevice",
+    "type": "string",
+    "description": "Physical device name used to refer to the device. Required on creation, optional on updates."
+   },
+   {
+    "name": "Prompt",
+    "type": "integer",
+    "description": "Number of the prompt option desired.\nOptions:\nNULL (blank) = user sees the device selection prompt with the default device defined\n1 = automatically uses this device, if it is the current device\n2 = automatically uses this device with predefined Right Margin and Parameter settings."
+   },
+   {
+    "name": "SubType",
+    "type": "string",
+    "description": "Options to refine the definition of your device SubTypes.\nSubTypes specify terminal characteristics. They are used to create the appropriate OPEN command for the device. There should be SubType information for every terminal type. Required on creation, optional on updates."
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "Enter the type of device.\nOptions:\nTRM = Terminal\nSPL = Spooling device\nMT = Magnetic Tape drive\nBT = Cartridge tape drive\nIPC = Interprocess communication\nOTH = any other device including printers and sequential files.\nDefault depends on the device type. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "DeviceListItem": {
+  "source": "DeviceList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "PhysicalDevice",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SubType",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Prompt",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "OpenParameters",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "AlternateDevice",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Alias",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "DeviceSubType": {
+  "source": "DeviceSubType",
+  "fields": [
+   {
+    "name": "Backspace",
+    "type": "string",
+    "description": "Enter the ASCII code that represents the backspace character on the selected\ndevice in this form: $C(code1). Default depends on the device type."
+   },
+   {
+    "name": "CursorControl",
+    "type": "string",
+    "description": "Enter the cursor control keys for the selected device.\nDefault depends on the device type."
+   },
+   {
+    "name": "EraseEOF",
+    "type": "string",
+    "description": "Enter the ASCII code that represents erasing to the end of file on the\nselected device in this form: $C(code1,code2...).\nDefault depends on the device type."
+   },
+   {
+    "name": "EraseEOL",
+    "type": "string",
+    "description": "Enter the ASCII code that represents erasing to the end of line on this device\nin the form $C(code1,code2).\nDefault depends on the device type."
+   },
+   {
+    "name": "FormFeed",
+    "type": "string",
+    "description": "Enter the ASCII code that represents a form feed on the selected device in this form:\n#,$C(code1,code2...).\nDefault depends on the device type."
+   },
+   {
+    "name": "RightMargin",
+    "type": "integer",
+    "description": "Enter the number that represents the location of the right margin.\nDevice output will wrap at that number of characters.\nDefault depends on the device type. Required on creation, optional on updates."
+   },
+   {
+    "name": "ScreenLength",
+    "type": "integer",
+    "description": "Enter the number of lines that comprise one screen or page for the device. Required on creation, optional on updates."
+   },
+   {
+    "name": "ZU22Backspace",
+    "type": "string",
+    "description": "Enter the ASCII code that represents a backspace on the selected device in the form $C(code).\nDefault depends on the device type."
+   },
+   {
+    "name": "ZU22FormFeed",
+    "type": "string",
+    "description": "Enter the ASCII code that represents a form feed on the selected device in the form $C(code1,code2).\nDefault depends on the device type."
+   }
+  ]
+ },
+ "DeviceSubTypeListItem": {
+  "source": "DeviceSubTypeList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RightMargin",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "FormFeed",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ScreenLength",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Backspace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CursorControl",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EraseEOL",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EraseEOF",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ZU22FormFeed",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ZU22Backspace",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "DeviceSettings": {
+  "source": "DeviceSettings",
+  "fields": [
+   {
+    "name": "IOSettings",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "TelnetSettings",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "LicenseServer": {
+  "source": "LicenseServer",
+  "fields": [
+   {
+    "name": "Address",
+    "type": "string",
+    "description": "IP Address of the license server. Required on creation, optional on updates."
+   },
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": "Port of the license server. Required on creation, optional on updates."
+   },
+   {
+    "name": "KeyDirectory",
+    "type": "string",
+    "description": "Directory used to load license keys for distribution. At startup of a local License Server, the system will attempt to load license keys from all *.key files in this directory. These keys can then be requested by other Instances using this License Server."
+   }
+  ]
+ },
+ "LicenseServerListItem": {
+  "source": "LicenseServerList",
+  "fields": [
+   {
+    "name": "Address",
+    "type": "string",
+    "description": "IP Address of the license server. Required on creation, optional on updates."
+   },
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": "Port of the license server. Required on creation, optional on updates."
+   },
+   {
+    "name": "KeyDirectory",
+    "type": "string",
+    "description": "Directory used to load license keys for distribution. At startup of a local License Server, the system will attempt to load license keys from all *.key files in this directory. These keys can then be requested by other Instances using this License Server."
+   },
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "LockListItem": {
+  "source": "LockList",
+  "fields": [
+   {
+    "name": "Pid",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ModeCount",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Reference",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Directory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "System",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Removable",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "DeleteID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CanBeExamined",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "RemoteOwner",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "RoutineInfo",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "OSUserName",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "WebSessionListItem": {
+  "source": "WebSessionList",
+  "fields": [
+   {
+    "name": "ID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Username",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Preserve",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Application",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Timeout",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "LicenseId",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SesProcessId",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "AllowEndSession",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "ECPDataServer": {
+  "source": "ECPDataServer",
+  "fields": [
+   {
+    "name": "Address",
+    "type": "string",
+    "description": "IP Address to connect to. Required on creation, optional on updates."
+   },
+   {
+    "name": "BatchMode",
+    "type": "boolean",
+    "description": "ECP Server runs in batch mode."
+   },
+   {
+    "name": "MirrorConnection",
+    "type": "integer",
+    "description": "Specifies the behavior of this connection with regard to mirrored database servers. Value:\n0: Non-mirrored connection. Access databases on non-mirror members. Also used to connect to async members to access mirror databases, configured by their database paths.\n1: Mirrored connection. ECP will automatically find the primary mirror member and will only connect to the primary. Access to mirrored databases is configured by mirror database name.\n-1: Mirrored connection restricted to the configured mirror member only. The configured member is the one specified by Address andPort. Like value '1', a connection will be established if the configured member is primary and access to mirrored databases is configured by mirror database name. Unlike '1', if the configured member is a Disaster Recovery member, the connection will be established, allowing read-only access to mirrored databases. If the DR member is promoted, the connection will be dropped and will be re-established when it becomes primary.\nWarning: This setting is not appropriate in typical configurations where mirroring will automatically fail over, as the new primary won't be found. This is for use in specialized DR configurations, or other long-distance configurations, to prevent the application server from being automatically redirected to a primary in a different data center while allowing local read-only access. There is no system utility to set the value of '-1', but it can be specified via this class interface."
+   },
+   {
+    "name": "SSLConfig",
+    "type": "boolean",
+    "description": "Use SSL configuration (%ECPClient) for the ECP connection."
+   },
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": "Port to connect to. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "ECPDataServerListItem": {
+  "source": "ECPDataServerList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RemoteAddress",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RemotePort",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Invalid",
+     "Init",
+     "Not Connected",
+     "Connection in Progress",
+     "Connection Failed",
+     "Disabled",
+     "Normal",
+     "Trouble",
+     "Unknown"
+    ]
+   },
+   {
+    "name": "MirrorConnection",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "SSLConfig",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "BatchMode",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "ECPClientListItem": {
+  "source": "ECPClientList",
+  "fields": [
+   {
+    "name": "ClientName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Normal",
+     "Trouble",
+     "Recovering",
+     "Restart",
+     "DeadCleanup",
+     "Invalid"
+    ]
+   },
+   {
+    "name": "IPAddress",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "IPPort",
+    "type": "integer",
+    "description": ""
+   }
+  ]
+ },
+ "ECPSSLConnectionListItem": {
+  "source": "ECPSSLConnectionList",
+  "fields": [
+   {
+    "name": "SSLComputerName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientIP",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Pending",
+     "Authorized"
+    ]
+   }
+  ]
+ },
+ "ECPSettings": {
+  "source": "ECPSettings",
+  "fields": [
+   {
+    "name": "AppServerSettings",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "DataServerSettings",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "LanguageServer": {
+  "source": "LanguageServer",
+  "fields": [
+   {
+    "name": "BindToIPAddress",
+    "type": "string",
+    "description": "Which IP address, among the several IP addresses that the machine has, that allows incoming connections. The default is 127.0.0.1. Specify 0.0.0.0 to listen on all IP addresses local to the machine (127.0.0.1, VPN address, etc.). You can also specify a single existing local IP address to restrict the listener to that IP address."
+   },
+   {
+    "name": "ConnectionTimeout",
+    "type": "integer",
+    "description": "Number of seconds to wait for a connection to be established with the Gateway Server."
+   },
+   {
+    "name": "InitializationTimeout",
+    "type": "integer",
+    "description": "Number of seconds to wait for a response during initialization of the Gateway Server."
+   },
+   {
+    "name": "LogFile",
+    "type": "string",
+    "description": "Fully qualified name of a file to log all communication between InterSystems IRIS and the Gateway Server. Usually this setting should be left blank, and used only for trouble-shooting."
+   },
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": "TCP port number for communication between the Gateway Server and the proxy classes in InterSystems IRIS. Required on creation, optional on updates."
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": "The Resource name that controls access to this gateway.\nIf no resource is defined, then it is a public gateway which anyone can use."
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "Type of the Object Gateway.  It can have one of the following values:\nType = \"Remote\" for remote connections\nType = \"Java\" for Gateway for Java\nType = \"XSLT\" for Gateway for XSLT\nType = \"JDBC\" for Gateway for JDBC\nType = \"ODBC\" for Gateway for ODBC\nType = \"ML\" for Gateway for Integrated ML\nType = \".NET\" for Gateway for .NET\nType = \"Python\" for Gateway for Python\nType = \"R\" for Gateway for R\nNote: JDBC, Java, IntegratedML, XSLT, and R gateways are all Java-based. Required.",
+    "enum": [
+     "Java",
+     "XSLT",
+     "JDBC",
+     "ODBC",
+     "ML",
+     "R",
+     ".NET",
+     "Python",
+     "Remote"
+    ]
+   },
+   {
+    "name": "UseSharedMemory",
+    "type": "boolean",
+    "description": "Use shared memory for connection if available."
+   },
+   {
+    "name": "SSLConfigurationServer",
+    "type": "string",
+    "description": "Name of entry in Security.SSLConfigs class to be used for Server TLS/SSL"
+   },
+   {
+    "name": "SSLConfigurationClient",
+    "type": "string",
+    "description": "Name of entry in Security.SSLConfigs class to be used for Client TLS/SSL"
+   },
+   {
+    "name": "VerifySSLHostName",
+    "type": "boolean",
+    "description": "Should TLS/SSL client do Host Name Verification"
+   },
+   {
+    "name": "Custom",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "LanguageServerListItem": {
+  "source": "LanguageServerList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Java",
+     "XSLT",
+     "JDBC",
+     "ODBC",
+     "ML",
+     "R",
+     ".NET",
+     "Python",
+     "Remote"
+    ]
+   }
+  ]
+ },
+ "LanguageServerActivityListItem": {
+  "source": "LanguageServerActivityList",
+  "fields": [
+   {
+    "name": "ID",
+    "type": "number",
+    "description": ""
+   },
+   {
+    "name": "DateTime",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RecordType",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Debug",
+     "Info",
+     "Warning",
+     "Error"
+    ]
+   },
+   {
+    "name": "Job",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Text",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "DocDBApplication": {
+  "source": "DocDBApplication",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the Doc DB."
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Doc DB enabled."
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "DocDBApplicationListItem": {
+  "source": "DocDBApplicationList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "FSAccessPurpose": {
+  "source": "FSAccessPurpose",
+  "fields": [
+   {
+    "name": "Restricted",
+    "type": "boolean",
+    "description": "Whether or not the purpose-level restriction flag is enabled for the given purpose in the security database"
+   }
+  ]
+ },
+ "FSAccessPurposeListItem": {
+  "source": "FSAccessPurposeList",
+  "fields": [
+   {
+    "name": "Purpose",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Restricted",
+    "type": "boolean",
+    "description": "Whether or not the purpose-level restriction flag is enabled for the given purpose in the security database"
+   }
+  ]
+ },
+ "FSAccessPathListItem": {
+  "source": "FSAccessPathList",
+  "fields": [
+   {
+    "name": "Purpose",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RootPath",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "SystemUsageStats": {
+  "source": "SystemUsageStats",
+  "fields": [
+   {
+    "name": "AllGlobalReferences",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "GlobalUpdateReferences",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "RoutineCalls",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "RoutineBufferLoadsAndSaves",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "LogicalBlockRequests",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "BlockReads",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "BlockWrites",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "WIJwrites",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "JournalEntries",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "JournalBlockWrites",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "RoutineLines",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "LastUpdate",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "SharedMemoryUsageItem": {
+  "source": "SharedMemoryUsage",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SMHAllocated",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "SMHAvailable",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "SMHUsed",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "SMTUsed",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "GSTUsed",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "AllUsed",
+    "type": "integer",
+    "description": ""
+   }
+  ]
+ },
+ "SystemResourcesStatsItem": {
+  "source": "SystemResourcesStats",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Seize",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Nseize",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Aseize",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Bseize",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "BusySet",
+    "type": "integer",
+    "description": ""
+   }
+  ]
+ },
+ "MainDashboardStats": {
+  "source": "MainDashboardStats",
+  "fields": [
+   {
+    "name": "Performance",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "ECP",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "Status",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "SystemUsage",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "Alerts",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "Licensing",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "UpcomingTasks",
+    "type": "array<object>",
+    "description": ""
+   }
+  ]
+ },
+ "GlobalsAndRoutinesStats": {
+  "source": "GlobalsAndRoutinesStats",
+  "fields": [
+   {
+    "name": "Globals",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "Routines",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "ECPStats": {
+  "source": "ECPStats",
+  "fields": [
+   {
+    "name": "AppServer",
+    "type": "object",
+    "description": ""
+   },
+   {
+    "name": "DataServer",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "LicenseUsage": {
+  "source": "LicenseUsage",
+  "fields": [
+   {
+    "name": "UsageByProcess",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "PID",
+      "type": "integer"
+     },
+     {
+      "name": "Process",
+      "type": "string"
+     },
+     {
+      "name": "LID",
+      "type": "string"
+     },
+     {
+      "name": "Type",
+      "type": "string"
+     },
+     {
+      "name": "Con",
+      "type": "integer"
+     },
+     {
+      "name": "MaxCon",
+      "type": "integer"
+     },
+     {
+      "name": "CSPCon",
+      "type": "integer"
+     },
+     {
+      "name": "LU",
+      "type": "integer"
+     },
+     {
+      "name": "Active",
+      "type": "integer"
+     },
+     {
+      "name": "Grace",
+      "type": "integer"
+     }
+    ]
+   },
+   {
+    "name": "UsageByUser",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "UserId",
+      "type": "string"
+     },
+     {
+      "name": "Type",
+      "type": "string"
+     },
+     {
+      "name": "Connects",
+      "type": "integer"
+     },
+     {
+      "name": "MaxCon",
+      "type": "integer"
+     },
+     {
+      "name": "CSPCon",
+      "type": "integer"
+     },
+     {
+      "name": "LU",
+      "type": "integer"
+     },
+     {
+      "name": "Active",
+      "type": "integer"
+     },
+     {
+      "name": "Grace",
+      "type": "integer"
+     }
+    ]
+   },
+   {
+    "name": "Summary",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "LicenseUnitUse",
+      "type": "string"
+     },
+     {
+      "name": "Local",
+      "type": "string"
+     },
+     {
+      "name": "Distributed",
+      "type": "string"
+     }
+    ]
+   },
+   {
+    "name": "ConnectionList",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "UserId",
+      "type": "string"
+     },
+     {
+      "name": "LicenseUnits",
+      "type": "string"
+     },
+     {
+      "name": "Connections",
+      "type": "string"
+     },
+     {
+      "name": "ServerIP",
+      "type": "string"
+     },
+     {
+      "name": "Instance",
+      "type": "string"
+     }
+    ]
+   }
+  ]
  }
 }
 }

@@ -22,6 +22,23 @@ Parameter VALIDATIONCODES = "1498,5802,7207,5659,7201,7202,7203,7204,7205,7206,7
 
 /// Builds the evaluation context. Returns "" and sets failure {status, code, message, raw} when the
 /// preview cannot be computed.
+/// Why this operation is refused for this object, or "" when it is not.
+/// <p>Two sources, both declared as data: the descriptor's self-protection rules, and the capability
+/// the official schema states about the object itself (<var>refusedWhen</var>). The rule is written
+/// as a refusal rather than as a permission on purpose: a fact FlightDeck could not read is not a
+/// refusal, so an unknown capability lets the platform answer for itself instead of being denied by
+/// the portal on a guess. The second is the
+/// rule of RN-FD-34 enforced where it must be — on the server. A screen that hid the control is not
+/// a guard; a request that arrives anyway is refused here (feature 004 spec FR-029).
+ClassMethod Refusal(descriptor As %DynamicObject, ctx As %DynamicObject) As %String
+{
+	set message = ##class(FlightDeck.Mutation.SelfProtection).Evaluate(descriptor, ctx)
+	quit:message'="" message
+	quit:'descriptor.%IsDefined("refusedWhen") ""
+	quit:'##class(FlightDeck.Domain.Predicate).Eval(descriptor.refusedWhen, ctx) ""
+	quit $select(descriptor.%IsDefined("disabledReason"):descriptor.disabledReason, 1:"The instance does not allow this operation on this object.")
+}
+
 ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObject, Output failure As %DynamicObject) As %DynamicObject
 {
 	set failure = ""
@@ -76,6 +93,14 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 	// The signed-in user's own account: a change to it takes effect in this session immediately
 	// (feature 003 FR-011), so a rule can grade it without any screen deciding that.
 	do facts.%Set("selfTarget", (typeId = "permissions/user") && (keys.name = $username), "boolean")
+	// The process serving this request. The detail read does not carry the identifier, so it is taken
+	// from the key the caller named: the comparison stays exact, which is what lets the block be
+	// affirmative rather than a suspicion (feature 004 FR-031, research R15).
+	if typeId = "system/process" {
+		set session = $select($isobject(current) && current.%IsDefined("CSPSessionID"):current.CSPSessionID, 1:"")
+		set own = ##class(FlightDeck.Domain.Facts).OwnSessionId()
+		do facts.%Set("isOwnSession", ((session '= "") && (own '= "") && (session = own)) || (keys.id = ##class(FlightDeck.Domain.Facts).OwnProcessId()), "boolean")
+	}
 	set record = ##class(FlightDeck.Domain.Facts).FlightDeckApplication(keys.name)
 	if $isobject(record) {
 		do facts.%Set("requiredAuthBits", +record.requiredAuthBits, "number")
@@ -87,7 +112,10 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 		if (kind = "create") || '$isobject(current) || '..Same(current, proposed, field) do changed.%Push(field)
 	}
 	set ctx = {"operationId":(operationId), "kind":(kind), "keys":(keys), "current":($select($isobject(current):current, 1:{})), "proposed":(proposed), "changedFields":(changed), "facts":(facts)}
-	do ctx.%Set("isSystem", ''facts.system || ''basis.System, "boolean")
+	do ctx.%Set("isSystem", ''facts.system || ''facts.isSystem || ''basis.System, "boolean")
+	// The process serving this request (feature 004 FR-031): compared exactly, so the block that
+	// follows is affirmative rather than a suspicion.
+	do ctx.%Set("isOwnSession", ''facts.isOwnSession, "boolean")
 	do ctx.%Set("isFlightDeck", ##class(FlightDeck.Domain.Facts).IsFlightDeckApplication(keys.name), "boolean")
 	set ctx.fingerprint = ##class(FlightDeck.Mutation.Fingerprint).Of(current, descriptor.secretFields)
 	quit ctx
@@ -130,7 +158,7 @@ ClassMethod Preview(descriptor As %DynamicObject, ctx As %DynamicObject) As %Dyn
 	do response.%Set("confirmText", resolved.confirmText, $select(resolved.confirmText="":"null", 1:"string"))
 	do response.%Set("consequence", resolved.consequence, $select(resolved.consequence="":"null", 1:"string"))
 	do response.%Set("noChange", (ctx.kind = "edit") && (ctx.changedFields.%Size() = 0), "boolean")
-	set blocked = ##class(FlightDeck.Mutation.SelfProtection).Evaluate(descriptor, ctx)
+	set blocked = ..Refusal(descriptor, ctx)
 	if blocked = "" { do response.%Set("blocked", "", "null") } else { set response.blocked = {"message":(blocked)} }
 	do response.%Set("requestMode", "", "null")
 	// A server note about this preview: today, a last-administrator check that could not assert.
@@ -138,6 +166,11 @@ ClassMethod Preview(descriptor As %DynamicObject, ctx As %DynamicObject) As %Dyn
 	do response.%Set("notice", notice, $select(notice="":"null", 1:"string"))
 	set applyNotice = $select(descriptor.%IsDefined("applyNotice"):descriptor.applyNotice, 1:"")
 	do response.%Set("applyNotice", applyNotice, $select(applyNotice="":"null", 1:"string"))
+	// How long the platform is expected to take. An operation of minutes presented as a synchronous
+	// request reads as a frozen application, so the duration is stated before anything is sent
+	// (feature 004 spec FR-037b).
+	set expected = $select(descriptor.%IsDefined("expectedDuration"):descriptor.expectedDuration, 1:"")
+	do response.%Set("expectedDuration", expected, $select(expected="":"null", 1:"string"))
 	set response.impact = {"state":"none"}
 	if descriptor.%IsDefined("impact") && (ctx.kind '= "create") {
 		set when = $select(descriptor.%IsDefined("impactWhen"):descriptor.impactWhen, 1:{"op":"true"})

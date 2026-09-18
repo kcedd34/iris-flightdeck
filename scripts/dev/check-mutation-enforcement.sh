@@ -111,6 +111,29 @@ else
   printf '  FAIL  %-62s -> HTTP %s %s\n' "preview of a role deletion" "$got" "$detail"; fail=1
 fi
 
+# Feature 004: the process serving this very request. The screen hides the control; the server is
+# what refuses, and this check calls the server directly (RN-FD-12, spec FR-031).
+echo "Disarmed tab, the session's own process:"
+own=$(curl -s -b "$jar" -H 'X-FlightDeck-Tab: mutation-check' "$base/domains/system/process?maxRows=500" | python3 -c '
+import json, sys
+try:
+    items = json.load(sys.stdin).get("items", [])
+except Exception:
+    items = []
+own = [i for i in items if i.get("facts", {}).get("isOwnSession")]
+print(own[0]["keys"]["id"] if own else "")
+')
+if [ -z "$own" ]; then
+  printf '  FAIL  %-62s -> the process list marks no process as this session\n' "own-session refusal"; fail=1
+else
+  post /mutations/preview NONE "{\"operationId\":\"POST /v2/process/terminate\",\"keys\":{\"id\":\"$own\"},\"params\":{\"id\":\"$own\"}}"
+  if grep -q "your own session" <<<"$body"; then
+    printf '  ok    %-62s -> refused, explained\n' "terminate the session's own process (pid $own)"
+  else
+    printf '  FAIL  %-62s -> HTTP %s %s\n' "terminate the session's own process (pid $own)" "$got" "$(head -c 160 <<<"$body")"; fail=1
+  fi
+fi
+
 echo "Nothing changed in IRIS (official API):"
 # The same object reads on either dialect: these paths are the same under /v1 and /v2, so only the
 # version segment changes. Asking a v1 instance for /v2 answers 404 and would report, wrongly, that

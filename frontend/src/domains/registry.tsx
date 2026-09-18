@@ -6,6 +6,11 @@ import { Roles } from "./permissions/Roles";
 import { Services } from "./permissions/Services";
 import { Users } from "./permissions/Users";
 import { Services as RestServices } from "./rest-apis/Services";
+import { Instruments } from "./system/Instruments";
+import { Processes } from "./system/Processes";
+import { Databases, Devices, DocDb, Ecp, FileAccess, LanguageServers, License, Locks, Namespaces, Directories, WebSessions } from "./system/sections";
+import { Tasks } from "./tasks/Tasks";
+import { AsyncResults, TaskManager, WorkQueueCategories } from "./tasks/sections";
 import { PercentClassAccess } from "./web-apps/PercentClassAccess";
 import { WebApplications } from "./web-apps/WebApplications";
 
@@ -29,4 +34,21 @@ export const SECTIONS: Record<string, ComponentType> = {
   "security/auditing": Auditing,
   "security/web-authentication": WebAuthentication,
   "security/superservers": Superservers,
+  "system/instruments": Instruments,
+  "system/processes": Processes,
+  "system/databases": Databases,
+  "system/directories": Directories,
+  "system/namespaces": Namespaces,
+  "system/devices": Devices,
+  "system/license": License,
+  "system/locks": Locks,
+  "system/web-sessions": WebSessions,
+  "system/ecp": Ecp,
+  "system/external-language-servers": LanguageServers,
+  "system/docdb": DocDb,
+  "system/file-system-access": FileAccess,
+  "tasks/tasks": Tasks,
+  "tasks/manager": TaskManager,
+  "tasks/work-queue-categories": WorkQueueCategories,
+  "tasks/async-results": AsyncResults,
 };

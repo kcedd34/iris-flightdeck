@@ -11,8 +11,11 @@ import { ListInspector } from "../pattern/ListInspector";
 import { changedFields, ObjectForm, SecretEditor } from "../pattern/ObjectForm";
 import { useDomainMutation } from "../pattern/useDomainMutation";
 import { useAddressFilters, useEntityList, useInspectTarget } from "../pattern/useEntityType";
+import { Cluster } from "../pattern/instruments/Cluster";
+import type { InstrumentReading } from "../pattern/instruments/Instrument";
 import { WorkHeader } from "../shell/WorkHeader";
 import "../pattern/pattern.css";
+import "../pattern/instruments/instruments.css";
 
 // Pattern catalog fixture (feature 002 User Story 4, research R13). Compiled only in fixtures mode.
 // It composes the shipped pattern modules on the backend's synthetic catalog entities, which go
@@ -26,6 +29,62 @@ const FIELDS: readonly SchemaField[] = [
   { name: "Enabled", type: "boolean", description: "Disabling asks for the name." },
   { name: "Secret", type: "string", description: "Secret material: never displayed." },
 ];
+
+/**
+ * The two pattern additions of feature 004, exercised on states a live instance cannot be made to
+ * produce on demand: an instrument that crosses a threshold, one the instance does not offer, and an
+ * asynchronous value moving through running, stale and failed.
+ *
+ * The catalog exists for exactly this (feature 002 research R13): behaviour the shipped domains
+ * cannot force is proven here, not on a one-off screen.
+ */
+function InstrumentCases() {
+  const [step, setStep] = useState(0);
+  const cases: InstrumentReading[][] = [
+    [
+      { id: "normal", label: "Normal", unit: "%", value: 34, band: "normal", available: true, detail: "below every threshold" },
+      { id: "caution", label: "Caution", unit: "%", value: 82, band: "caution", available: true, detail: "crossed the caution threshold" },
+      { id: "warning", label: "Warning", unit: "%", value: 96, band: "warning", available: true, detail: "crossed the warning threshold" },
+      { id: "absent", label: "Unavailable", unit: "%", value: null, band: "normal", available: false, reason: "Not available on this IRIS version or edition. Requires IRIS 2026.2." },
+      {
+        id: "async",
+        label: "Async",
+        unit: "%",
+        value: 72,
+        band: "normal",
+        available: true,
+        detail: "IRISAPP 72%",
+        async: { state: "Running", lastValueAt: "2026-09-18 02:00:00", stale: true, message: null },
+      },
+    ],
+    [
+      { id: "normal", label: "Normal", unit: "%", value: 36, band: "normal", available: true, detail: "below every threshold" },
+      { id: "caution", label: "Caution", unit: "%", value: 84, band: "caution", available: true, detail: "crossed the caution threshold" },
+      { id: "warning", label: "Warning", unit: "%", value: 94, band: "warning", available: true, detail: "crossed the warning threshold" },
+      { id: "absent", label: "Unavailable", unit: "%", value: null, band: "normal", available: false, reason: "Not available on this IRIS version or edition. Requires IRIS 2026.2." },
+      {
+        id: "async",
+        label: "Async",
+        unit: "%",
+        // The value the platform last gave, kept while the refresh failed: the number stays, and the
+        // platform's message sits beside it (RN-FD-32, spec FR-023, FR-025).
+        value: 72,
+        band: "normal",
+        available: true,
+        detail: "IRISAPP 72%",
+        async: { state: "Failed", lastValueAt: "2026-09-18 02:00:00", stale: true, message: "The instance cancelled the task that reads database metrics." },
+      },
+    ],
+  ];
+  return (
+    <section data-testid="catalog-instruments">
+      <Cluster readings={cases[step % cases.length]!} mode="polling" intervalSeconds={1} onIntervalChange={() => undefined} windowSeconds={60} paused={false} />
+      <button className="btn" type="button" onClick={() => setStep((value) => value + 1)} data-testid="catalog-instrument-step">
+        Next asynchronous state
+      </button>
+    </section>
+  );
+}
 
 export default function PatternCatalog() {
   const list = useEntityList(DOMAIN, TYPE);
@@ -45,6 +104,7 @@ export default function PatternCatalog() {
   return (
     <>
       <WorkHeader title="Pattern catalog" />
+      <InstrumentCases />
       <ListInspector
         onClose={() => {
           setEditing(null);

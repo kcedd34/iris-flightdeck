@@ -67,7 +67,7 @@ ClassMethod Disk() As %DynamicObject
 
 	// Collect a finished refresh, if one is running.
 	if tasks '= "" {
-		set result = ..CollectDisk(tasks, .done, .error)
+		set result = ..CollectDisk(tasks, .done, .error, .fullest)
 		if error = 403 {
 			if haveSession kill %session.Data("fd.vitals.disk.tasks")
 			quit ..Unavailable(vital, "The SysAdmin API refused the database metrics for this user.")
@@ -75,9 +75,9 @@ ClassMethod Disk() As %DynamicObject
 		if done {
 			if haveSession {
 				kill %session.Data("fd.vitals.disk.tasks")
-				if result '= "" set %session.Data("fd.vitals.disk") = $listbuild(result, ..Now())
+				if result '= "" set %session.Data("fd.vitals.disk") = $listbuild(result, ..Now(), fullest)
 			}
-			if result '= "" set last = $listbuild(result, ..Now())
+			if result '= "" set last = $listbuild(result, ..Now(), fullest)
 			set tasks = ""
 		}
 	}
@@ -93,11 +93,11 @@ ClassMethod Disk() As %DynamicObject
 		// The API usually finishes within tens of milliseconds (probe 4): try once right away.
 		if started '= "" {
 			hang 0.1
-			set result = ..CollectDisk(started, .done, .error)
+			set result = ..CollectDisk(started, .done, .error, .fullest)
 			if done {
 				if haveSession kill %session.Data("fd.vitals.disk.tasks")
 				if result '= "" {
-					set last = $listbuild(result, ..Now())
+					set last = $listbuild(result, ..Now(), fullest)
 					if haveSession set %session.Data("fd.vitals.disk") = last
 				}
 				set tasks = ""
@@ -113,7 +113,19 @@ ClassMethod Disk() As %DynamicObject
 	}
 	set vital = ..Value(vital, $list(last, 1), $list(last, 2))
 	do vital.%Set("pending", tasks '= "", "boolean")
+	// Which database that percentage belongs to. The instrument shows it under the number, as
+	// docs/design.md §5 does ("IRISAPP 72%"); a percentage with no owner says less than it seems.
+	set directory = $listget(last, 3)
+	do:directory'="" vital.%Set("detail", ..DatabaseName(directory) _ " " _ $normalize($list(last, 1), 0) _ "%", "string")
 	quit vital
+}
+
+/// The database name a directory belongs to, or the directory itself when the instance does not name
+/// one. Nothing is invented: an unnamed directory is shown as the directory.
+ClassMethod DatabaseName(directory As %String) As %String
+{
+	set name = $piece($zstrip(directory, ">", "/"), "/", *)
+	quit $select(name="":directory, 1:$zconvert(name, "U"))
 }
 
 /// Native disk vital: same privilege as POST /v2/database-dir/info, synchronous (no async task).
@@ -144,19 +156,22 @@ ClassMethod StartDisk(Output error As %Integer) As %List
 		set sc = ##class(FlightDeck.Admin.Client).Call("POST", "/v2/database-dir/info", {"dir":(dir.Directory)}, , .st, .json, .raw, .headers)
 		if st = 403 set error = 403 quit
 		continue:st'=202
-		set location = $get(headers("location"))
-		set id = $piece($piece(location, "id=", 2), "&", 1)
-		set:id'="" ids = ids _ $listbuild(id)
+		// The handle arrives in a header that names /v1 even on v2; only the dialect layer reads it
+		// (feature 004 research R6). The directory travels with it so the fullest database can be
+		// named on the instrument, as docs/design.md §5 shows it.
+		set id = ##class(FlightDeck.Admin.Client).AsyncHandle(.headers, json)
+		set:id'="" ids = ids _ $listbuild(id _ "|" _ dir.Directory)
 	}
 	quit ids
 }
 
 /// Returns the max percent used when every task has a result; done=0 while any is still running.
-ClassMethod CollectDisk(tasks As %List, Output done As %Boolean, Output error As %Integer) As %Numeric
+ClassMethod CollectDisk(tasks As %List, Output done As %Boolean, Output error As %Integer, Output fullest As %String) As %Numeric
 {
-	set done = 1, error = "", max = ""
+	set done = 1, error = "", max = "", fullest = ""
 	set ptr = 0
-	while $listnext(tasks, ptr, id) {
+	while $listnext(tasks, ptr, entry) {
+		set id = $piece(entry, "|", 1), directory = $piece(entry, "|", 2, *)
 		set sc = ##class(FlightDeck.Admin.Client).Call("GET", "/v2/async-result", {"id":(id)}, , .status, .json, .raw)
 		if status = 403 set error = 403 quit
 		if (status '= 200) || '$isobject(json) continue
@@ -169,7 +184,9 @@ ClassMethod CollectDisk(tasks As %List, Output done As %Boolean, Output error As
 		set capacity = $select(+metrics.MaxSize>0:+metrics.MaxSize, 1:metrics.Size + ..ToMB(metrics.DiskFree))
 		continue:capacity<=0
 		set percent = 100 * used / capacity
-		set:(max="")||(percent>max) max = percent
+		if (max = "") || (percent > max) {
+			set max = percent, fullest = directory
+		}
 	}
 	quit max
 }

@@ -62,13 +62,45 @@ ClassMethod Context(request As %DynamicObject, descriptor As %DynamicObject, Out
 			if options.%IsDefined(name) do out.%Set(name, options.%Get(name))
 		}
 	}
-	set ctx = {"operationId":(operationId), "kind":"action", "keys":(params), "params":(params), "options":(out), "current":{}, "proposed":{}, "changedFields":[], "facts":{}}
-	do ctx.%Set("isSystem", 0, "boolean")
+	set ctx = {"operationId":(operationId), "kind":"action", "keys":(params), "params":(params), "options":(out), "current":{}, "proposed":{}, "changedFields":[], "facts":(..Facts(descriptor, params))}
+	do ctx.%Set("isSystem", ''ctx.facts.isSystem, "boolean")
 	do ctx.%Set("isFlightDeck", 0, "boolean")
+	do ctx.%Set("isOwnSession", ''ctx.facts.isOwnSession, "boolean")
 	set ctx.affected = ..Affected(descriptor, ctx, .readFailure)
 	if $isobject(readFailure) set failure = readFailure quit ""
 	set ctx.fingerprint = ..Fingerprint(descriptor, ctx)
 	quit ctx
+}
+
+/// The target's facts, when the action names an entity type whose keys the parameters carry.
+/// <p>An action used to run with no facts at all, so a rule about the object could not be evaluated
+/// for it — which is how a capability field would have been read as "absent, therefore refused".
+/// The facts come from the same list item the screen read (feature 004).
+ClassMethod Facts(descriptor As %DynamicObject, params As %DynamicObject) As %DynamicObject
+{
+	quit:'descriptor.%IsDefined("entityType") {}
+	set typeId = descriptor.entityType
+	set type = ##class(FlightDeck.Domain.Descriptor).EntityType($piece(typeId, "/", 1), $piece(typeId, "/", 2, *))
+	quit:'$isobject(type) {}
+	quit:'type.%IsDefined("keys") {}
+	set keys = {}, iter = type.keys.%GetIterator()
+	while iter.%GetNext(, .key) {
+		quit:'params.%IsDefined(key.param)
+		do keys.%Set(key.param, params.%Get(key.param))
+	}
+	quit:keys.%Size()'=type.keys.%Size() {}
+	set item = ##class(FlightDeck.Domain.Entity).ListItemFor(type, keys)
+	set facts = ##class(FlightDeck.Domain.Facts).For(type.facts, $select($isobject(item):item, 1:{}))
+	// The identifier the caller named decides whether this is the session's own process, exactly as
+	// it does for an object mutation (feature 004 FR-031).
+	if typeId = "system/process" {
+		// The action re-reads the object itself: the list does not carry the session a process serves.
+		set detail = ##class(FlightDeck.Admin.Client).Get("/v2/process", {"id":(params.%Get("id"))}, .detailStatus)
+		set session = $select((detailStatus = 200) && $isobject(detail) && detail.%IsDefined("CSPSessionID"):detail.CSPSessionID, 1:"")
+		set own = ##class(FlightDeck.Domain.Facts).OwnSessionId()
+		do facts.%Set("isOwnSession", ((session '= "") && (own '= "") && (session = own)) || (params.%Get("id") = ##class(FlightDeck.Domain.Facts).OwnProcessId()), "boolean")
+	}
+	quit facts
 }
 
 /// The rows of the descriptor's readOperation that the action affects, or "" when it declares none.
@@ -143,6 +175,14 @@ ClassMethod Fill(template As %DynamicObject, ctx As %DynamicObject) As %DynamicO
 			do:nested.%Size()>0 out.%Set(key, nested)
 			continue
 		}
+		// A literal the descriptor states keeps its declared type: the official body for an on-demand
+		// run wants RunNow as a boolean, and sending it as the string "1" would be FlightDeck
+		// rewriting the platform's own contract (feature 004).
+		set type = template.%GetTypeOf(key)
+		if (type = "boolean") || (type = "number") {
+			do out.%Set(key, value, type)
+			continue
+		}
 		set filled = ..Template(value, ctx)
 		continue:filled=""
 		continue:(($extract(filled) = "{") && ($extract(filled, *) = "}"))
@@ -192,7 +232,9 @@ ClassMethod Preview(descriptor As %DynamicObject, ctx As %DynamicObject) As %Dyn
 	do response.%Set("confirmText", $select(resolved.confirmText="":"", 1:target), $select(resolved.confirmText="":"null", 1:"string"))
 	do response.%Set("consequence", resolved.consequence, $select(resolved.consequence="":"null", 1:"string"))
 	do response.%Set("noChange", noChange, "boolean")
-	set blocked = ##class(FlightDeck.Mutation.SelfProtection).Evaluate(descriptor, ctx)
+	set expected = $select(descriptor.%IsDefined("expectedDuration"):descriptor.expectedDuration, 1:"")
+	do response.%Set("expectedDuration", expected, $select(expected="":"null", 1:"string"))
+	set blocked = ##class(FlightDeck.Mutation.Service).Refusal(descriptor, ctx)
 	if blocked = "" { do response.%Set("blocked", "", "null") } else { set response.blocked = {"message":(blocked)} }
 	// Without a listing the user reviews exactly what will be sent, as in request mode.
 	if 'descriptor.%IsDefined("readOperation") {

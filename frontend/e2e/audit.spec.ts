@@ -11,6 +11,8 @@ const AUDIT = { user: "fd_e2e_audit", password: "Audit-Pass-7Q2x-2026" };
 // Feature 003 secrets written during the audited session, none of which may appear anywhere after.
 const WALLET_SECRET = "audit-wallet-secret-2026";
 const NEW_PASSWORD = "Audit-New-Pass-5R3y-2026";
+/** Feature 004: the licence key is masked by the mutation layer and must reach no log or error body. */
+const LICENSE_KEY = "Audit-License-Key-8Q2w-2026";
 const COLLECTION = "FD_E2E_AuditVault";
 const SUBJECT = "fd_e2e_audit_subject";
 const APP = "/csp/fd-e2e-audit";
@@ -95,6 +97,20 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   await dryRun.getByTestId("dry-run-apply").click();
   await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
 
+  // Feature 004: a licence key typed into a write. The platform returns the key on a read, so what is
+  // masked is what the mutation layer carries — the dry-run, the trail and its export — and it must
+  // reach no backend log and no error body either (spec FR-036, FR-036a).
+  const licenseRefused = await page.evaluate(async (key) => {
+    const response = await fetch("/api/flightdeck/v1/mutations/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-FlightDeck-Tab": "e2e", "X-FlightDeck-Safe-Mode": "disarmed" },
+      body: JSON.stringify({ operationId: "PUT /v2/license/key", keys: {}, proposed: { AuthorizationKey: key } }),
+    });
+    return { status: response.status, body: await response.text() };
+  }, LICENSE_KEY);
+  // Whatever the platform answers, the key is not in what comes back.
+  expect(licenseRefused.body).not.toContain(LICENSE_KEY);
+
   // Export the trail.
   await dryRun.getByRole("button", { name: "Open session trail" }).click();
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByTestId("trail-export").click()]);
@@ -103,7 +119,7 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   const exported = Buffer.concat(chunks).toString("utf8");
 
   const basic = Buffer.from(`${AUDIT.user}:${AUDIT.password}`).toString("base64");
-  const needles = [AUDIT.password, basic, "Authorization", WALLET_SECRET, NEW_PASSWORD];
+  const needles = [AUDIT.password, basic, "Authorization", WALLET_SECRET, NEW_PASSWORD, LICENSE_KEY];
   const storage = await page.evaluate(() => JSON.stringify({ session: { ...window.sessionStorage }, local: { ...window.localStorage } }));
   const cookies = JSON.stringify(await context.cookies());
   for (const [where, text] of Object.entries({ exported, curl, storage, cookies })) {

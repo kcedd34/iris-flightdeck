@@ -198,3 +198,39 @@ for (const theme of ["dark", "light"] as const) {
     await check("maximum dry-run");
   });
 }
+
+// Feature 004: the two pattern additions, on states a live instance cannot be asked for.
+
+test("7. An instrument crosses a threshold by changing colour and adding a glyph, and never blinks", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  const cluster = page.getByTestId("catalog-instruments");
+  await expect(cluster).toBeVisible();
+  await expect(page.getByTestId("instrument-normal")).toHaveAttribute("data-band", "normal");
+  await expect(page.getByTestId("instrument-caution")).toHaveAttribute("data-band", "caution");
+  await expect(page.getByTestId("instrument-warning")).toHaveAttribute("data-band", "warning");
+  // No animation carries the alarm: it is perceived, not performed (docs/design.md §5).
+  const animation = await page.getByTestId("instrument-warning").evaluate((node) => getComputedStyle(node).animationName);
+  expect(animation).toBe("none");
+});
+
+test("8. An instrument the instance does not offer keeps its place, with its reason", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  const absent = page.getByTestId("instrument-absent");
+  await expect(absent).toBeVisible();
+  await expect(absent).toHaveAttribute("data-available", "false");
+  await expect(page.getByTestId("instrument-reason-absent")).toContainText("Requires IRIS");
+  // The others keep their numbers while it is out.
+  await expect(page.getByTestId("instrument-value-normal")).toContainText("34");
+});
+
+test("9. An asynchronous value keeps its number while refreshing and when the platform refuses", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  const value = page.getByTestId("instrument-value-async");
+  await expect(value).toContainText("72");
+  await expect(page.getByTestId("instrument-stale-async")).toBeVisible();
+  await page.getByTestId("catalog-instrument-step").click();
+  // Failed: the number is still there, and the platform's message is beside it, not instead of it.
+  await expect(page.getByTestId("instrument-value-async")).toContainText("72");
+  await expect(page.getByTestId("instrument-message-async")).toContainText("cancelled the task");
+  await expect(page.getByTestId("instrument-async").locator(".skeleton")).toHaveCount(0);
+});

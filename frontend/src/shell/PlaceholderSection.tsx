@@ -9,7 +9,28 @@ import { ListInspector, useInspect } from "../pattern/ListInspector";
  */
 export function PlaceholderSection({ domain, section }: { domain: Domain; section: Section }) {
   const [inspect, close] = useInspect();
-  const list = (
+  // A correlation carried in the address is shown even before the screen that will use it exists, so
+  // the jump from a failed task run is verifiable end to end today, and feature 005 consumes a
+  // contract that is already written and tested (feature 004 spec FR-041b).
+  const address = new URLSearchParams(window.location.search);
+  const taskId = address.get("taskId");
+  const list = taskId ? (
+    <EmptyState
+      title="Not available in this build yet"
+      cause={`Log reading ships with the ${domain.label} screens. This address already carries what to look for: task ${address.get("taskName") || taskId} (id ${taskId}), between ${address.get("from") ?? ""} and ${address.get("to") ?? ""}.`}
+      nextAction="Open the command palette (Ctrl+K) to find entities across the instance."
+      action={
+        <span
+          data-testid="logs-correlation"
+          data-task-id={taskId}
+          data-from={address.get("from") ?? ""}
+          data-to={address.get("to") ?? ""}
+        >
+          {`Correlation received: task ${taskId}, ${address.get("from") ?? ""} to ${address.get("to") ?? ""}`}
+        </span>
+      }
+    />
+  ) : (
     <EmptyState
       title="Not available in this build yet"
       cause={`The ${section.label} section ships with the ${domain.label} screens.`}

@@ -38,6 +38,7 @@ const DECLARED_EXCEPTIONS = [
   ["frontend/src/session/SessionProvider.tsx", "the one place that separates limited mode (what the instance lacks) from a declined operation (what FlightDeck does not offer)"],
   ["frontend/e2e/limited.spec.ts", "asserts that limited mode and declined operations are counted apart, which is its object"],
   ["frontend/e2e/setup/helpers.ts", "test infrastructure: reads the capability map so tests follow it instead of the version"],
+  ["backend/test/FlightDeck/Test/Coverage.cls", "asserts that a declined operation is declined rather than merely absent, which is its object"],
 ];
 
 const NAMES = /^(dialect|Dialect|limited|Limited|apiVersion|declined|Declined)$/;

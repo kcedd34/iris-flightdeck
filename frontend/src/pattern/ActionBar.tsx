@@ -35,6 +35,9 @@ function Action({ action, capability, armed }: { action: ActionDef; capability: 
   let reason: string | null = null;
   if (capability && !capability.available) reason = capability.reason;
   else if (capability && !capability.allowed) reason = capability.reason;
+  // The object's own answer travels with the capability, so every domain gets the rule from the
+  // pattern instead of wiring it per screen (RN-FD-34, feature 004).
+  else if (capability && capability.objectEnabled === false) reason = capability.objectReason ?? "The instance does not allow this operation on this object.";
   else if (action.refusedByObject) reason = action.refusedByObject;
   else if (action.blockedMessage) reason = action.blockedMessage;
   const disabled = reason !== null;

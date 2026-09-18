@@ -20,6 +20,12 @@ ClassMethod List(domain As %String, entityType As %String) As %Status
 	}
 	set items = ##class(FlightDeck.Domain.Entity).List(type, query, .status, .json, .raw)
 	if '$isobject(items) quit ##class(FlightDeck.Domain.Entity).WriteFailure(type.listOperation, status, json, raw)
+	// A type may declare that its list is composed from more than one official read. Tasks are the
+	// case this feature meets: the recent-history band comes from one read of the whole instance's
+	// history, grouped by task, because the platform ignores that operation's id parameter
+	// (feature 004 research R7). The composition is named in the descriptor and done here, so no
+	// screen assembles reads of its own.
+	set composed = ##class(FlightDeck.Domain.Compose).Apply(type, items, .composeNote)
 	set out = []
 	set iter = items.%GetIterator()
 	while iter.%GetNext(, .item) {
@@ -27,14 +33,24 @@ ClassMethod List(domain As %String, entityType As %String) As %Status
 		set facts = ##class(FlightDeck.Domain.Facts).For(type.facts, item)
 		set markers = ##class(FlightDeck.Domain.Entity).Markers(type, item, facts)
 		do ##class(FlightDeck.Domain.Entity).RemoveSecrets(type, item)
+		set refusals = {}
+		if type.%IsDefined("mutations") {
+			set mit = type.mutations.%GetIterator()
+			while mit.%GetNext(, .operationId) {
+				set objectReason = ..ObjectRefusal(operationId, facts)
+				do:objectReason'="" refusals.%Set(operationId, objectReason)
+			}
+		}
 		do out.%Push({
 			"object":(item), "keys":(keys), "facts":(facts),
-			"displayName":(##class(FlightDeck.Domain.Entity).DisplayName(type, keys)),
-			"markers":(markers)
+			"displayName":(##class(FlightDeck.Domain.Entity).DisplayName(type, keys, item)),
+			"markers":(markers), "objectRefusals":(refusals)
 		})
 	}
 	set response = {"entityType":(type.entityType), "operationId":(type.listOperation), "items":(out), "total":(out.%Size())}
 	do response.%Set("capped", out.%Size() >= maxRows, "boolean")
+	// What the composition could not read is stated, never left to look like an absence of history.
+	do response.%Set("note", composeNote, $select($get(composeNote)="":"null", 1:"string"))
 	quit ##class(FlightDeck.API.Response).WriteJSON(response)
 }
 
@@ -54,6 +70,11 @@ ClassMethod Item(domain As %String, entityType As %String) As %Status
 			set capability = {"operationId":(operationId), "reason":(entry.reason)}
 			do capability.%Set("allowed", ''entry.allowed, "boolean")
 			do capability.%Set("available", ''entry.available, "boolean")
+			// The object's own answer (RN-FD-34): where an official schema states what may be done to
+			// this object, that field decides the control, and the request is never issued.
+			set objectReason = ..ObjectRefusal(operationId, entity.facts)
+			do capability.%Set("objectEnabled", objectReason = "", "boolean")
+			do capability.%Set("objectReason", objectReason, $select(objectReason="":"null", 1:"string"))
 			do mutations.%Push(capability)
 		}
 	}
@@ -64,6 +85,21 @@ ClassMethod Item(domain As %String, entityType As %String) As %Status
 	do response.%Set("isSystem", entity.isSystem, "boolean")
 	do response.%Set("isFlightDeck", entity.isFlightDeck, "boolean")
 	quit ##class(FlightDeck.API.Response).WriteJSON(response)
+}
+
+/// Why this object refuses an operation, or "" when it does not.
+/// <p>The rule is about schemas, not about endpoints: wherever the official specification states a
+/// capability over an object, the descriptor names that fact in <var>enabledWhen</var> and the
+/// answer comes from the object the API already returned. Processes and locks are the instances
+/// this feature meets; a capability field in any other schema is treated the same way, with no new
+/// decision (feature 004 plan, "A standing rule this feature establishes").
+ClassMethod ObjectRefusal(operationId As %String, facts As %DynamicObject) As %String
+{
+	set descriptor = ##class(FlightDeck.Domain.Descriptor).Mutation(operationId)
+	quit:'$isobject(descriptor) ""
+	quit:'descriptor.%IsDefined("refusedWhen") ""
+	quit:'##class(FlightDeck.Domain.Predicate).Eval(descriptor.refusedWhen, {"facts":(facts)}) ""
+	quit $select(descriptor.%IsDefined("disabledReason"):descriptor.disabledReason, 1:"The instance does not allow this operation on this object.")
 }
 
 ClassMethod Links(domain As %String, entityType As %String) As %Status

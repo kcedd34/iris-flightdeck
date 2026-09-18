@@ -24,6 +24,14 @@ ClassMethod Class(provider As %String) As %String
 		"tls-consumers":"FlightDeck.Domain.Links.TlsConsumers",
 		"certificate":"FlightDeck.Domain.Links.Certificate",
 		"oauth2-clients":"FlightDeck.Domain.Links.OAuth2Clients",
+		"global-mappings":"FlightDeck.Domain.Links.GlobalMappings",
+		"package-mappings":"FlightDeck.Domain.Links.PackageMappings",
+		"routine-mappings":"FlightDeck.Domain.Links.RoutineMappings",
+		"database-volumes":"FlightDeck.Domain.Links.DatabaseVolumes",
+		"ecp-databases":"FlightDeck.Domain.Links.EcpDatabases",
+		"language-server-activity":"FlightDeck.Domain.Links.LanguageServerActivity",
+		"fs-access-paths":"FlightDeck.Domain.Links.FsAccessPaths",
+		"task-upcoming":"FlightDeck.Domain.Links.TaskUpcoming",
 		:"")
 }
 

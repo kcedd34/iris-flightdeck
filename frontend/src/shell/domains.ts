@@ -62,6 +62,7 @@ export const DOMAINS: Domain[] = [
     icon: '<circle cx="9" cy="9" r="6.5"/><path d="M9 5v4l2.5 1.6"/>',
     sections: [
       { id: "tasks", label: "Tasks" },
+      { id: "manager", label: "Task manager" },
       { id: "work-queue-categories", label: "Work queue categories" },
       { id: "async-results", label: "Async results" },
     ],
@@ -74,6 +75,7 @@ export const DOMAINS: Domain[] = [
       { id: "instruments", label: "Instruments" },
       { id: "processes", label: "Processes" },
       { id: "databases", label: "Databases" },
+      { id: "directories", label: "Directories" },
       { id: "namespaces", label: "Namespaces" },
       { id: "devices", label: "Devices" },
       { id: "license", label: "License" },

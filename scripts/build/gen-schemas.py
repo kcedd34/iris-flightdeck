@@ -70,6 +70,65 @@ SCHEMAS = {
     "EncryptionSettings": "EncryptionSettings",
     "AuditingEnabled": "AuditingEnabled",
     "AuditEvent": "AuditEvent",
+    # Feature 004: tasks. Names are the ones the official operations reference, not guesses:
+    # every entry below was read back from docs/sysadmin-api-v2.json responses.
+    "Task": "Task",
+    "TaskList": "TaskListItem",
+    "TaskHistory": "TaskHistoryItem",
+    "TaskExtraInfo": "TaskExtraInfo",
+    "UpcomingTasks": "UpcomingTaskItem",
+    "WQMCategory": "WQMCategory",
+    "WQMCategoryList": "WQMCategoryListItem",
+    "AsyncTask": "AsyncTask",
+    "AsyncTaskList": "AsyncTaskListItem",
+    # Feature 004: operating system
+    "Process": "Process",
+    "ProcessList": "ProcessListItem",
+    "ConfigDatabase": "ConfigDatabase",
+    "ConfigDatabaseList": "ConfigDatabaseListItem",
+    "LocalDatabase": "LocalDatabase",
+    "LocalDatabaseList": "LocalDatabaseListItem",
+    "VolumeFiles": "VolumeFilesItem",
+    "Namespace": "Namespace",
+    "NamespaceList": "NamespaceListItem",
+    "MapGlobal": "MapGlobal",
+    "MapPackage": "MapPackage",
+    "MapRoutine": "MapRoutine",
+    "GlobalMappingList": "GlobalMappingListItem",
+    "PackageMappingList": "PackageMappingListItem",
+    "RoutineMappingList": "RoutineMappingListItem",
+    "Device": "Device",
+    "DeviceList": "DeviceListItem",
+    "DeviceSubType": "DeviceSubType",
+    "DeviceSubTypeList": "DeviceSubTypeListItem",
+    "DeviceSettings": "DeviceSettings",
+    "LicenseServer": "LicenseServer",
+    "LicenseServerList": "LicenseServerListItem",
+    "LockList": "LockListItem",
+    "WebSessionList": "WebSessionListItem",
+    "ECPDataServer": "ECPDataServer",
+    "ECPDataServerList": "ECPDataServerListItem",
+    "ECPClientList": "ECPClientListItem",
+    "ECPSSLConnectionList": "ECPSSLConnectionListItem",
+    "ECPSettings": "ECPSettings",
+    "LanguageServer": "LanguageServer",
+    "LanguageServerList": "LanguageServerListItem",
+    "LanguageServerActivityList": "LanguageServerActivityListItem",
+    "DocDBApplication": "DocDBApplication",
+    "DocDBApplicationList": "DocDBApplicationListItem",
+    "FSAccessPurpose": "FSAccessPurpose",
+    "FSAccessPurposeList": "FSAccessPurposeListItem",
+    "FSAccessPathList": "FSAccessPathListItem",
+    # Feature 004: the instrument cluster's sources. docs/prd.md says SystemResourcesStats and
+    # SharedMemoryUsage declare no shape; in the specification as shipped both are fully declared,
+    # and the probe of 2026-09-18 confirmed them field for field (verification/README.md).
+    "SystemUsageStats": "SystemUsageStats",
+    "SharedMemoryUsage": "SharedMemoryUsageItem",
+    "SystemResourcesStats": "SystemResourcesStatsItem",
+    "MainDashboardStats": "MainDashboardStats",
+    "GlobalsAndRoutinesStats": "GlobalsAndRoutinesStats",
+    "ECPStats": "ECPStats",
+    "LicenseUsage": "LicenseUsage",
 }
 
 
@@ -95,6 +154,37 @@ def field_type(prop, components):
     return t
 
 
+def flatten(schema, components, seen=None):
+    """Properties of a schema, following allOf and $ref once each.
+
+    The official specification composes several objects out of a base plus an extension (AsyncTask is
+    AsyncTaskBase plus its own fields). Reading only "properties" would silently drop the base's
+    fields, which is the kind of quiet loss FlightDeck must not ship.
+    """
+    seen = seen or set()
+    ref = schema.get("$ref")
+    if ref:
+        target = ref.rsplit("/", 1)[-1]
+        if target in seen:
+            return {}
+        seen.add(target)
+        return flatten(components.get(target, {}), components, seen)
+    if schema.get("type") == "array":
+        return flatten(schema.get("items", {}), components, seen)
+    props = dict(schema.get("properties") or {})
+    for part in schema.get("allOf", []):
+        ref = part.get("$ref")
+        if ref:
+            target = ref.rsplit("/", 1)[-1]
+            if target in seen:
+                continue
+            seen.add(target)
+            props.update(flatten(components.get(target, {}), components, seen))
+        else:
+            props.update(flatten(part, components, seen))
+    return props
+
+
 def build():
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     components = spec["components"]["schemas"]
@@ -105,7 +195,7 @@ def build():
         schema = components[name]
         if schema.get("type") == "array":
             schema = schema.get("items", {})
-        props = schema.get("properties")
+        props = flatten(schema, components)
         if not props:
             fail(f"schema {name} has no properties")
         fields = []

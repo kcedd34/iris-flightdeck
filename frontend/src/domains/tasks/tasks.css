@@ -1,0 +1,77 @@
+/* The compact history band (RN-FD-17): one mark per run, most recent last, so an intermittent
+   failure is visible in the list without opening anything. */
+.band {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.band-run {
+  width: 4px;
+  height: 12px;
+  border-radius: var(--r-control);
+  background: var(--state-actual);
+}
+
+.band-run[data-result="error"] {
+  background: var(--state-warning);
+}
+
+/* "no runs recorded" is a fact about the task, not a placeholder, so it is readable text. */
+.band-empty {
+  margin-left: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.task-meta {
+  color: var(--text-secondary);
+}
+
+.runs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.run {
+  display: grid;
+  grid-template-columns: 150px 72px 56px 1fr;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-hairline);
+  font-size: 12px;
+}
+
+.run-at {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.run[data-result="error"] .run-result {
+  color: var(--state-warning);
+}
+
+.run-duration {
+  color: var(--text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-message {
+  grid-column: 1 / -1;
+  color: var(--state-warning);
+}
+
+.btn-link {
+  grid-column: 1 / -1;
+  justify-self: start;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--state-selected);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}

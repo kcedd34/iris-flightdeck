@@ -34,11 +34,17 @@ ClassMethod KeysFromRequest(type As %DynamicObject, Output missing As %String) A
 	quit keys
 }
 
-ClassMethod DisplayName(type As %DynamicObject, keys As %DynamicObject) As %String
+ClassMethod DisplayName(type As %DynamicObject, keys As %DynamicObject, object As %DynamicObject = "") As %String
 {
 	set text = type.displayName
 	set iter = keys.%GetIterator()
 	while iter.%GetNext(.param, .value) { set text = $replace(text, "{"_param_"}", value) }
+	// A type may name an official field instead of a key: a task is identified by a number and
+	// called by its name, and the name is what an administrator looks for (feature 004).
+	if $isobject(object), text [ "{object." {
+		set fields = object.%GetIterator()
+		while fields.%GetNext(.field, .value) { set text = $replace(text, "{object."_field_"}", value) }
+	}
 	quit text
 }
 
@@ -122,12 +128,15 @@ ClassMethod Read(type As %DynamicObject, keys As %DynamicObject, Output status A
 	quit:status'=200 ""
 	set object = $select($isobject(json) && $isobject(json.result):json.result, 1:{})
 	do ..RemoveSecrets(type, object)
+	// The detail carries what the composed list carries; otherwise the inspector would know less
+	// about an object than the row the user clicked (feature 004).
+	do ##class(FlightDeck.Domain.Compose).ApplyOne(type, object, keys)
 	set listItem = $select(type.facts'="":..ListItemFor(type, keys), type.markers.%Size()>0:..ListItemFor(type, keys), 1:"")
 	// Facts see the detail plus whatever only the list carries (IsSystemApp and Type for a web
 	// application, for example). The detail wins: it is the object the user is looking at.
 	set basis = ..Merge(object, listItem)
 	set facts = ##class(FlightDeck.Domain.Facts).For(type.facts, basis)
-	set entity = {"entityType":(type.entityType), "keys":(keys), "displayName":(..DisplayName(type, keys)), "object":(object), "facts":(facts)}
+	set entity = {"entityType":(type.entityType), "keys":(keys), "displayName":(..DisplayName(type, keys, object)), "object":(object), "facts":(facts)}
 	set entity.listItem = $select($isobject(listItem):listItem, 1:{})
 	do entity.%Set("isSystem", ''facts.system || ''basis.System, "boolean")
 	do entity.%Set("isFlightDeck", ''facts.flightDeck, "boolean")

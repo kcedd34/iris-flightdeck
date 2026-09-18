@@ -15,7 +15,158 @@ ClassMethod For(kind As %String, listItem As %DynamicObject) As %DynamicObject
 	if kind = "user" quit ..User(listItem)
 	if kind = "x509-credential" quit ..Credential(listItem)
 	if kind = "wallet-collection" quit ..WalletCollection(listItem)
+	if kind = "process" quit ..Process(listItem)
+	if kind = "lock" quit ..Lock(listItem)
+	if kind = "database-dir" quit ..DatabaseDir(listItem)
+	if kind = "task" quit ..Task(listItem)
+	if kind = "task-manager" quit ..TaskManager(listItem)
+	if kind = "async-result" quit ..AsyncResult(listItem)
 	quit {}
+}
+
+/// Occupancy bands for a database directory, in percent of its size limit. The home panel uses the
+/// same numbers, so the two screens cannot disagree about what counts as a warning (feature 004
+/// spec FR-034).
+Parameter DISKCAUTION = 80;
+
+Parameter DISKWARNING = 90;
+
+/// Facts of a process. The four capability fields are copied from what the API answered and are
+/// never derived: where a schema states what may be done to an object, that field decides the
+/// control (RN-FD-34, feature 004 plan). The session's own process is the one this request runs in.
+ClassMethod Process(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	do facts.%Set("canBeExamined", ''item.CanBeExamined, "boolean")
+	do facts.%Set("canBeSuspended", ''item.CanBeSuspended, "boolean")
+	do facts.%Set("canBeTerminated", ''item.CanBeTerminated, "boolean")
+	do facts.%Set("canReceiveBroadcast", ''item.CanReceiveBroadcast, "boolean")
+	// Whose session this process serves. The CSP session identifier is what belongs to the signed-in
+	// administrator; the process id does not, because IRIS serves consecutive requests from different
+	// processes, so "the process serving this request" names a different process each time and would
+	// block an arbitrary one (found on IRIS 2026.1, feature 004).
+	set session = $select(item.%IsDefined("CSPSessionID"):item.CSPSessionID, 1:"")
+	set pid = $select(item.%IsDefined("Pid"):item.Pid, 1:"")
+	do facts.%Set("cspSession", session, "string")
+	// Two different truths, from two different sources. The listing carries no session identifier, so
+	// there it can only say which process is serving this very request; the detail carries the CSP
+	// session, which is what actually belongs to the signed-in administrator. The block uses either.
+	do facts.%Set("isThisRequest", (pid '= "") && (pid = ..OwnProcessId()), "boolean")
+	// Two signals, and the platform gives only one of them at a time. A process reports a CSP session
+	// only while it is serving one, so in practice "the process serving this request" and "a process
+	// serving my session" are the same process (probed on IRIS 2026.2 and 2026.1). Either identifies
+	// it; neither is inferred. IRIS takes the next request from another process, so which process
+	// this is changes between requests — the block is therefore re-evaluated on the object the
+	// mutation re-reads, never carried over from the listing.
+	do facts.%Set("isOwnSession", ((session '= "") && (session = ..OwnSessionId())) || ((pid '= "") && (pid = ..OwnProcessId())), "boolean")
+	do facts.%Set("state", $select(item.%IsDefined("State"):item.State, 1:""), "string")
+	do facts.%Set("namespace", $select(item.%IsDefined("Nspace"):item.Nspace, 1:$select(item.%IsDefined("NameSpace"):item.NameSpace, 1:"")), "string")
+	do facts.%Set("username", $select(item.%IsDefined("Username"):item.Username, 1:""), "string")
+	quit facts
+}
+
+/// The CSP session this request belongs to: what the administrator is actually signed in as.
+/// <p>The self-protection rule compares it with the session a process serves, and blocking is
+/// affirmative only because that comparison is exact. It is not the process id: IRIS serves
+/// consecutive requests from different processes, so a process-id comparison would name a different
+/// process on every request (feature 004 research R15, corrected on IRIS 2026.1).
+ClassMethod OwnSessionId() As %String
+{
+	quit:'($data(%session)#2) ""
+	quit:'$isobject($get(%session)) ""
+	quit %session.SessionId
+}
+
+/// The process serving this request. Used only where a session identifier is not available.
+ClassMethod OwnProcessId() As %String
+{
+	quit $job
+}
+
+/// Facts of a lock. Removable is the same kind of field as a process's CanBeTerminated: the schema
+/// states what may be done, so the control follows it.
+ClassMethod Lock(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	do facts.%Set("removable", ''item.Removable, "boolean")
+	do facts.%Set("canBeExamined", ''item.CanBeExamined, "boolean")
+	do facts.%Set("isSystem", ''item.System, "boolean")
+	quit facts
+}
+
+/// Facts of a database directory: what it is, and how full it is against its own limit.
+ClassMethod DatabaseDir(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	set status = $select(item.%IsDefined("Status"):item.Status, 1:"")
+	do facts.%Set("mounted", status [ "Mounted", "boolean")
+	do facts.%Set("readOnly", status [ "/R" && '(status [ "/RW"), "boolean")
+	do facts.%Set("encrypted", ''item.Encrypted, "boolean")
+	do facts.%Set("mirrored", ''item.Mirrored, "boolean")
+	set size = +$select(item.%IsDefined("Size"):item.Size, 1:0)
+	set max = $select(item.%IsDefined("MaxSize"):item.MaxSize, 1:"")
+	do facts.%Set("sizeMB", size, "number")
+	do facts.%Set("maxSize", max, "string")
+	// "Unlimited" or 0 means the platform states no limit: there is no percentage to report, and
+	// inventing one would be inventing a fact.
+	if (max = "") || (max = "Unlimited") || (+max = 0) {
+		do facts.%Set("occupancyBand", "unknown", "string")
+		do facts.%Set("occupancyText", "", "string")
+		quit facts
+	}
+	set percent = $normalize(size * 100 / +max, 0)
+	do facts.%Set("occupancyPercent", percent, "number")
+	do facts.%Set("occupancyBand", $select(percent>=..#DISKWARNING:"warning", percent>=..#DISKCAUTION:"caution", 1:"normal"), "string")
+	do facts.%Set("occupancyText", percent_"% of its limit", "string")
+	quit facts
+}
+
+/// Facts of a task. The result, the duration and the band come from the history, which the domain
+/// read joins in once for the whole list (feature 004 research R7); a list item that carries none
+/// reports what it has and says nothing it does not know.
+ClassMethod Task(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	do facts.%Set("isSystem", $select(item.%IsDefined("Type"):item.Type, 1:"") = "System", "boolean")
+	do facts.%Set("suspended", ''item.Suspended, "boolean")
+	do facts.%Set("nextScheduled", $select(item.%IsDefined("NextScheduled"):item.NextScheduled, 1:""), "string")
+	set history = $select(item.%IsDefined("FDHistory") && $isobject(item.FDHistory):item.FDHistory, 1:[])
+	do facts.%Set("hasHistory", history.%Size() > 0, "boolean")
+	set last = $select(history.%Size() > 0:history.%Get(0), 1:"")
+	if $isobject(last) {
+		do facts.%Set("lastResult", last.result, "string")
+		do facts.%Set("lastStart", last.at, "string")
+		do facts.%Set("lastDuration", last.durationSeconds, "number")
+		do facts.%Set("running", last.running, "boolean")
+	} else {
+		do facts.%Set("lastResult", "", "string")
+		do facts.%Set("running", 0, "boolean")
+	}
+	set (errors, successes) = 0, iter = history.%GetIterator()
+	while iter.%GetNext(, .run) {
+		if run.result = "Error" { set errors = errors + 1 } else { set successes = successes + 1 }
+	}
+	do facts.%Set("intermittent", (errors > 0) && (successes > 0), "boolean")
+	quit facts
+}
+
+ClassMethod TaskManager(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	set status = $select(item.%IsDefined("Status"):item.Status, 1:"")
+	do facts.%Set("running", status = "Running", "boolean")
+	do facts.%Set("suspended", status = "Suspended", "boolean")
+	quit facts
+}
+
+ClassMethod AsyncResult(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	set state = $select(item.%IsDefined("State"):item.State, 1:"")
+	do facts.%Set("state", state, "string")
+	do facts.%Set("inFlight", (state = "Queued") || (state = "Running") || (state = "Paused"), "boolean")
+	do facts.%Set("failed", state = "Failed", "boolean")
+	quit facts
 }
 
 /// Bits of the official AutheEnabled field that mean the account is authenticated elsewhere:

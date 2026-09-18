@@ -48,10 +48,11 @@ Method TestCapabilityMapAvailability()
 	set iter = entries.%GetIterator()
 	while iter.%GetNext(, .e) { do byId.%Set(e.operationId, e) }
 	if ##class(FlightDeck.Admin.Client).Limited() {
-		// 273 v2 operations: 172 same shape + 28 translated + 8 native namespace reads = 208;
-		// 65 unavailable, one of them the wallet secret write, whose v1 route exists but whose body
-		// this version shapes differently, so FlightDeck withholds it with the platform's message.
-		do $$$AssertEquals(summary.unavailable, 65)
+		// 273 v2 operations. 62 are unavailable on this version and 11 are declined by policy on every
+		// version: three of the storage writes that were merely absent here are now declined, which is
+		// a different reason for the same disabled control and is counted apart (feature 004).
+		do $$$AssertEquals(summary.unavailable, 62)
+		do $$$AssertEquals(summary.declined, 11)
 		set dbs = byId.%Get("GET /v2/databases")
 		do $$$AssertNotTrue(dbs.available, "databases have no v1 route")
 		do $$$AssertEquals(dbs.reason, ##class(FlightDeck.API.Response).#MSGVERSION)

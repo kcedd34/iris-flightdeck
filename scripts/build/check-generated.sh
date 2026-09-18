@@ -18,4 +18,5 @@ python3 "$root/scripts/build/check-descriptors.py"
 # declared secret in a descriptor or exempted with a reason. Feature 003 T003 wrote this gate and
 # left it out of the build while the descriptors did not exist; T050 turned it on.
 python3 "$root/scripts/build/check-secrets.py"
+python3 "$root/scripts/build/check-coverage.py"
 echo "check-generated: up to date"

@@ -98,7 +98,14 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 				set value = mutation.%Get(list)
 				if $isobject(value), value.%Size() > 0 set declared = 1
 			}
-			if 'declared do problems.%Push("action "_op_" declares no parameters at all")
+			// A singleton has no keys by design, so an action on it takes no parameters: the object it
+			// acts on is the instance itself (feature 004: the task manager, the device settings).
+			set onSingleton = 0
+			if mutation.%IsDefined("entityType") {
+				set target = entityTypes.%Get(mutation.entityType)
+				set onSingleton = $isobject(target) && ''target.singleton
+			}
+			if 'declared, 'onSingleton do problems.%Push("action "_op_" declares no parameters at all")
 			if mutation.%IsDefined("readOperation") {
 				do ..KnownOperation(mutation.readOperation, "mutation "_op_" readOperation", problems)
 				if '$isobject(mutation.rowKey) || (mutation.rowKey.%ClassName(1) '= "%Library.DynamicArray") {
@@ -114,11 +121,16 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 			set problem = ##class(FlightDeck.Domain.Predicate).Problem(mutation.impactWhen, "current,proposed,isSystem,isFlightDeck,facts,request,kind")
 			if problem '= "" do problems.%Push("mutation "_op_" impactWhen: "_problem)
 		}
+		if mutation.%IsDefined("refusedWhen") {
+			set problem = ##class(FlightDeck.Domain.Predicate).Problem(mutation.refusedWhen, "current,proposed,isSystem,isFlightDeck,isOwnSession,facts,request,kind,params")
+			if problem '= "" do problems.%Push("mutation "_op_" refusedWhen: "_problem)
+			if 'mutation.%IsDefined("disabledReason") do problems.%Push("mutation "_op_" declares refusedWhen without disabledReason: a refusal must say why")
+		}
 		for list = "grade", "selfProtection" {
 			continue:'mutation.%IsDefined(list)
 			set rules = mutation.%Get(list).%GetIterator()
 			while rules.%GetNext(, .rule) {
-				set problem = ##class(FlightDeck.Domain.Predicate).Problem(rule.when, "current,proposed,isSystem,isFlightDeck,facts,request,kind,params")
+				set problem = ##class(FlightDeck.Domain.Predicate).Problem(rule.when, "current,proposed,isSystem,isFlightDeck,isOwnSession,facts,request,kind,params")
 				if problem '= "" do problems.%Push("mutation "_op_" "_list_": "_problem)
 			}
 		}

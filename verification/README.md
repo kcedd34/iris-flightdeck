@@ -309,3 +309,27 @@ FlightDeck does not guess the shape of a secret: the operation is withheld on th
 (`scripts/build/v1-translations.json`, reason key `walletSecretWrite`), so the screen disables it
 with the reason and the native path, and the demo installer skips the demo secret with the same
 message. Reading and deleting wallet secrets stay available on that version.
+
+## Tasks and system, probed for feature 004 (IRIS CE 2026.2, 2026-09-18)
+
+Two platform behaviours that FlightDeck works around and does not mask, plus the two shapes the
+specification does not declare. Full probe record and decisions: `specs/004-tasks-system/research.md`.
+
+- **`GET /v2/task/history` ignores its `id` parameter.** `?id=1` and `?id=2` both return the whole
+  instance history (42 rows here), each row carrying its own `TaskId`. FlightDeck reads it **once**
+  per list and groups by `TaskId`, which is also what makes the per-task history band affordable: one
+  request for a list of forty tasks instead of forty.
+- **The asynchronous handle arrives in a header that names v1.** `POST /v2/database-dir/info` answers
+  **202** with an empty `result` and `LOCATION: /api/admin/v1/async-result?id=<id>`, even on a v2
+  instance. Both `/v1/async-result` and `/v2/async-result` answer for that id, so the path in the
+  header is a quirk, not a dialect instruction. FlightDeck reads the id from the header and polls
+  through the dialect layer; nothing outside `FlightDeck.Admin` sees that string.
+- **`SharedMemoryUsage`** (undeclared in the spec) is a list of
+  `{Description, SMHAllocated, SMHAvailable, SMHUsed, SMTUsed, GSTUsed, AllUsed}`.
+- **`SystemResourcesStats`** (undeclared in the spec) is the seize table:
+  `{Name, Seize, Nseize, Aseize, Bseize, BusySet}` per resource.
+- `GET /v2/process` takes **`id`**, not `pid` (`?pid=` answers 400), and the four capability fields
+  (`CanBeExamined`, `CanBeSuspended`, `CanBeTerminated`, `CanReceiveBroadcast`) already arrive on
+  `GET /v2/processes`. Locks carry the same idea in `Removable`.
+- `GET /v2/monitor/dashboard/main` pads `BusyProcesses` with empty entries (`{"Process": "",
+  "Commands": 0}`); they are dropped on read.
