@@ -34,24 +34,19 @@ test("section tabs appear only for domains with more than one entity type, and t
   for (const [id, label] of DOMAINS) {
     await page.getByTestId("rail").getByRole("link", { name: label }).click();
     await expect(page).toHaveURL(new RegExp(`/flightdeck/${id}/[a-z0-9-]+$`));
-    if (id === "logs") {
-      await expect(page.getByTestId("section-tabs")).toHaveCount(0);
-    } else {
-      const tabs = page.getByTestId("section-tabs").getByRole("link");
-      expect(await tabs.count()).toBeGreaterThan(1);
-      await tabs.nth(1).click();
-      const active = page.getByTestId("section-tabs").locator('[aria-current="page"]');
-      await expect(active).toHaveCount(1);
-      const href = await active.getAttribute("href");
-      await expect(page).toHaveURL(new RegExp(`${href}$`));
-      await page.reload();
-      await expect(page.getByTestId("section-tabs").locator('[aria-current="page"]')).toHaveAttribute("href", href!);
-    }
-    // Implemented domains: web applications (feature 002), permissions and security (feature 003).
-    // Logs keep the empty state from feature 001; every other domain is built (features 002 to 004).
-    if (id === "logs") {
-      await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toBeVisible();
-    }
+    // Every shipped domain now carries more than one section: logs gained its three in feature 005.
+    const tabs = page.getByTestId("section-tabs").getByRole("link");
+    expect(await tabs.count()).toBeGreaterThan(1);
+    await tabs.nth(1).click();
+    const active = page.getByTestId("section-tabs").locator('[aria-current="page"]');
+    await expect(active).toHaveCount(1);
+    const href = await active.getAttribute("href");
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await page.reload();
+    await expect(page.getByTestId("section-tabs").locator('[aria-current="page"]')).toHaveAttribute("href", href!);
+    // Every domain of the rail is now built: web applications (002), permissions and security (003),
+    // tasks and system (004), logs (005). No section carries the feature 001 placeholder any more.
+    await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toHaveCount(0);
   }
 });
 

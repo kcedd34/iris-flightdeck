@@ -91,7 +91,11 @@ export const DOMAINS: Domain[] = [
     id: "logs",
     label: "Logs",
     icon: '<path d="M3 4h12M3 8h12M3 12h7"/>',
-    sections: [{ id: "stream", label: "Log stream" }],
+    sections: [
+      { id: "stream", label: "Log stream" },
+      { id: "journal", label: "Journal" },
+      { id: "audit-events", label: "Audit events" },
+    ],
   },
 ];
 

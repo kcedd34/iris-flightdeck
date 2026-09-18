@@ -257,3 +257,26 @@ test("10. An object whose schema refuses an operation disables that control with
   await page.getByTestId("list-row").filter({ hasText: "plain-item" }).click();
   await expect(page.getByTestId("entity-inspector").getByTestId("action-PUT-fixture-catalog-item-edit")).not.toHaveAttribute("aria-disabled", "true");
 });
+
+// Feature 005: the two honest-gap states, on events a live instance cannot be asked for.
+
+test("11. An event whose original record is gone says so where the record would be, and keeps its normalised fields", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  await page.getByTestId("catalog-log-gone").click();
+  const inspector = page.getByTestId("log-event");
+  await expect(inspector.getByTestId("log-raw-gone")).toContainText("may have been purged");
+  // The gap replaces the record, not the event: what was read before it went is still on screen.
+  await expect(inspector.getByTestId("log-raw")).toHaveCount(0);
+  await expect(inspector).toContainText("4812");
+  await expect(inspector).toContainText("unknown");
+});
+
+test("12. A line that did not parse is shown whole, marked as unparsed, with nothing discarded", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  await page.getByTestId("catalog-log-unparsed").click();
+  const inspector = page.getByTestId("log-event");
+  await expect(inspector.getByTestId("log-unparsed")).toContainText("nothing was discarded");
+  await expect(inspector.getByTestId("log-raw")).toContainText("a line this source does not usually write");
+  // A field the line never carried is absent, never defaulted.
+  await expect(inspector).toContainText("not provided by this source");
+});

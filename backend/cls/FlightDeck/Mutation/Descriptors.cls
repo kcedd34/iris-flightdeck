@@ -3105,6 +3105,114 @@ XData Mutations [ MimeType = application/json ]
     "consequence": "Every access and refresh token this instance holds for that user stops working at once, here and at the authorization server. They sign in again to get new ones."
    }
   ]
+ },
+ "PUT /v2/journal/settings": {
+  "kind": "upsert",
+  "entityType": "logs/journal-settings",
+  "readOperation": "GET /v2/journal/settings",
+  "schema": "JournalSettings",
+  "target": "the journal settings",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "These settings decide how this instance journals, which is what a restore reads back."
+   }
+  ]
+ },
+ "POST /v2/journal/switch-file": {
+  "kind": "action",
+  "entityType": "logs/journal-settings",
+  "params": [],
+  "target": "the journal file",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The instance closes the current journal file and starts a new one. Everything journalling from now on writes to the new file, across the whole instance."
+   }
+  ]
+ },
+ "POST /v2/journal/switch-dir": {
+  "kind": "action",
+  "entityType": "logs/journal-settings",
+  "params": [],
+  "localParams": [
+   "directory"
+  ],
+  "body": {
+   "Directory": "{directory}"
+  },
+  "target": "the journal directory",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The instance writes its journal somewhere else from now on. A restore needs both directories, and this affects the whole instance."
+   }
+  ]
+ },
+ "POST /v2/journal/file/integrity-check": {
+  "kind": "action",
+  "entityType": "logs/journal-file",
+  "params": [
+   "file"
+  ],
+  "target": "an integrity check of {file}",
+  "secretFields": [],
+  "applyNotice": "The instance runs this as a background task. FlightDeck follows it and reports what the platform says.",
+  "expectedDuration": "minutes on a large journal file",
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The instance reads the whole journal file to check it. It changes nothing, and it takes as long as the file is big."
+   }
+  ]
+ },
+ "PUT /v2/security/audit/event": {
+  "kind": "upsert",
+  "entityType": "logs/audit-event",
+  "readOperation": "GET /v2/security/audit/event",
+  "schema": "AuditEvent",
+  "target": "{source}/{type}/{name}",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "simple"
+   }
+  ]
+ },
+ "DELETE /v2/security/audit/event": {
+  "kind": "delete",
+  "entityType": "logs/audit-event",
+  "readOperation": "GET /v2/security/audit/event",
+  "schema": "AuditEvent",
+  "target": "{source}/{type}/{name}",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "This event stops being recorded. What it would have captured from now on is not recoverable."
+   }
+  ]
  }
 }
 }

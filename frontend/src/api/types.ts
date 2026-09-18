@@ -340,3 +340,44 @@ export interface TelemetryReading {
   instruments: TelemetryInstrument[];
   resources: { Name: string; Seize: number; Nseize: number; Aseize: number; Bseize: number; BusySet: number }[];
 }
+
+/** Feature 005: one normalised event of the unified stream (contracts/flightdeck-api-005). */
+export interface LogEvent {
+  id: string;
+  timestamp: string;
+  source: "audit" | "journal" | "messages" | "alerts" | "interop";
+  /** unknown is the fifth value, outside the ordering: what a source that states no level gets. */
+  severity: "info" | "warning" | "error" | "fatal" | "unknown";
+  namespace?: string;
+  process?: string;
+  user?: string;
+  message: string;
+  raw: unknown;
+  rawAvailable: boolean;
+  rawReason: string | null;
+  rawKey?: Record<string, string>;
+  parsed: boolean;
+  correlate: Record<string, string>;
+}
+
+export interface LogSourceState {
+  id: string;
+  label: string;
+  available: boolean;
+  selected: boolean;
+  reason: string | null;
+  read: number;
+  suppressed: number;
+  namespaces?: string[];
+  unread?: string[];
+}
+
+export interface LogPage {
+  events: LogEvent[];
+  sources: LogSourceState[];
+  cursor: string | null;
+  fileChanged: string | null;
+  truncated: { reason: string; suppressed: number } | null;
+  share?: number;
+  timeZone: string;
+}

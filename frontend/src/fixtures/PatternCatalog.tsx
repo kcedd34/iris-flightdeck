@@ -1,8 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { request } from "../api/client";
-import type { EntityDetailResponse } from "../api/types";
+import type { EntityDetailResponse, LogEvent } from "../api/types";
 import type { SchemaField } from "../domains/generated/schemas";
+import { EventInspector } from "../domains/logs/EventInspector";
 import { useMutation } from "../mutation/useMutation";
 import { ActionBar } from "../pattern/ActionBar";
 import { DomainList } from "../pattern/DomainList";
@@ -16,6 +17,7 @@ import type { InstrumentReading } from "../pattern/instruments/Instrument";
 import { WorkHeader } from "../shell/WorkHeader";
 import "../pattern/pattern.css";
 import "../pattern/instruments/instruments.css";
+import "../domains/logs/logs.css";
 
 // Pattern catalog fixture (feature 002 User Story 4, research R13). Compiled only in fixtures mode.
 // It composes the shipped pattern modules on the backend's synthetic catalog entities, which go
@@ -86,6 +88,56 @@ function InstrumentCases() {
   );
 }
 
+/**
+ * The two honest-gap states of feature 005, on events a live instance cannot be made to produce on
+ * demand: an event whose original record is gone, and a line that did not parse.
+ *
+ * Both are the same rule from two directions — normalisation never destroys information, and where
+ * the original cannot be recovered the gap is stated rather than filled (spec FR-005, FR-006).
+ */
+function LogCases() {
+  const [shown, setShown] = useState<"gone" | "unparsed" | null>(null);
+  const base = {
+    source: "messages" as const,
+    severity: "unknown" as const,
+    raw: null,
+    correlate: {},
+  };
+  const events: Record<"gone" | "unparsed", LogEvent> = {
+    gone: {
+      ...base,
+      id: "catalog-raw-gone",
+      timestamp: "2026-09-18T02:00:00Z",
+      message: "Journal record 12345 referenced by this event",
+      rawAvailable: false,
+      rawReason: "The instance no longer holds this journal record: the file may have been purged.",
+      parsed: true,
+      process: "4812",
+    },
+    unparsed: {
+      ...base,
+      id: "catalog-unparsed",
+      timestamp: "2026-09-18T02:00:01Z",
+      message: "*** a line this source does not usually write ***",
+      raw: "*** a line this source does not usually write ***",
+      rawAvailable: true,
+      rawReason: null,
+      parsed: false,
+    },
+  };
+  return (
+    <section data-testid="catalog-log-cases">
+      <button className="btn" type="button" onClick={() => setShown("gone")} data-testid="catalog-log-gone">
+        Event whose original record is gone
+      </button>
+      <button className="btn" type="button" onClick={() => setShown("unparsed")} data-testid="catalog-log-unparsed">
+        Line that did not parse
+      </button>
+      {shown && <EventInspector event={events[shown]} onClose={() => setShown(null)} />}
+    </section>
+  );
+}
+
 export default function PatternCatalog() {
   const list = useEntityList(DOMAIN, TYPE);
   const [filters, setFilter] = useAddressFilters(FILTER_IDS);
@@ -105,6 +157,7 @@ export default function PatternCatalog() {
     <>
       <WorkHeader title="Pattern catalog" />
       <InstrumentCases />
+      <LogCases />
       <ListInspector
         onClose={() => {
           setEditing(null);

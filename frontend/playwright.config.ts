@@ -29,6 +29,7 @@ export default defineConfig({
     { name: "processes", testMatch: /processes\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "tasks", testMatch: /tasks\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "system", testMatch: /system\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "logs", testMatch: /logs\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "audit", testMatch: /audit\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "fixtures", testMatch: /(fixtures|pattern)\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
     // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.

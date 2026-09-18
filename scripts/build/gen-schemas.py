@@ -129,6 +129,13 @@ SCHEMAS = {
     "GlobalsAndRoutinesStats": "GlobalsAndRoutinesStats",
     "ECPStats": "ECPStats",
     "LicenseUsage": "LicenseUsage",
+    # Feature 005: the logs domain. Names read back from the operations' own responses.
+    "JournalFile": "JournalFile",
+    "JournalFileList": "JournalFileListItem",
+    "JournalRecord": "JournalRecord",
+    "JournalSettings": "JournalSettings",
+    "AuditEventList": "AuditEventListItem",
+    "AuditRecord": "AuditRecord",
 }
 
 

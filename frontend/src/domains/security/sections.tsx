@@ -352,6 +352,10 @@ export function Auditing() {
               {error}
             </div>
           )}
+          <p className="logs-note" data-testid="audit-split-note">
+            This is whether auditing runs, and what it recorded. <a href="/flightdeck/logs/audit-events">Logs, Audit events</a>{" "}
+            holds the definitions of what gets captured, beside the stream where they are read.
+          </p>
           <ActionBar
             capabilities={detail.availableMutations}
             actions={[

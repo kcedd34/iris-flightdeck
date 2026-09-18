@@ -276,3 +276,32 @@ test("feature 004: a system write on the limited instance follows the capability
     await expect(list).toContainText(/No |not available/i);
   }
 });
+
+test("feature 005: the journal source states the reason on the limited instance, and the other four keep streaming", async ({ page }) => {
+  // Feature 001 recorded the reason: on the v1 dialect every journal operation is withheld. The
+  // source says so; nothing about it is inferred from a version number on this side.
+  const files = await capability(page, "GET /v2/journal/files");
+  expect(files?.available).toBe(false);
+  await page.goto("logs/stream");
+  await expect(page.getByTestId("logs-sources")).toBeVisible();
+  const journal = page.getByTestId("logs-source-journal");
+  await expect(journal).toHaveAttribute("data-available", "false");
+  await expect(page.getByTestId("logs-reason-journal")).not.toBeEmpty();
+  // The defining behaviour of the feature: one source out does not take the stream with it.
+  await expect(page.getByTestId("logs-all-unavailable")).toHaveCount(0);
+  const available = await page
+    .getByTestId("logs-sources")
+    .locator('li[data-available="true"]')
+    .count();
+  expect(available, "the other sources keep answering").toBeGreaterThan(0);
+  await expect(page.getByTestId("log-list").getByRole("listitem").first()).toBeVisible();
+});
+
+test("feature 005: the journal section on the limited instance states the reason instead of an empty list", async ({ page }) => {
+  await page.goto("logs/journal");
+  // Withheld, not empty: an empty list would read as "this instance has no journal files".
+  const alert = page.getByRole("alert").first();
+  await expect(alert).toBeVisible();
+  await expect(alert).not.toBeEmpty();
+  await expect(page.getByTestId("list-row")).toHaveCount(0);
+});

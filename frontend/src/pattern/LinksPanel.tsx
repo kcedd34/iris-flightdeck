@@ -80,8 +80,11 @@ function Group({ group, requested, entity, values, onParameter, onOpen }: GroupP
           about what this answer does not cover (an account whose roles may come from LDAP). */}
       {shownGroup.reason && <div className="lgroup-reason">{shownGroup.reason}</div>}
       {shownGroup.truncated && <div className="lgroup-reason">Part of this answer was not expanded; what was left out is named above.</div>}
-      {shown.map((item) => (
-        <button key={`${item.entityType}:${item.displayName}`} type="button" className="link" onClick={() => onOpen(item)}>
+      {/* Keyed by position: the same entity legitimately appears twice in one group with different
+          details (the same vault reached through two grants), and a key built from the name alone
+          made React drop one of them. The order is the server's and the rows hold no state. */}
+      {shown.map((item, index) => (
+        <button key={`${index}:${item.entityType}:${item.displayName}`} type="button" className="link" onClick={() => onOpen(item)}>
           <span className="mono">{item.displayName}</span>
           {item.detail && <span className="link-detail">{item.detail}</span>}
         </button>

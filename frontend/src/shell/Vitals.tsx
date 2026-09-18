@@ -46,8 +46,10 @@ export function Vitals() {
           let valueNode;
           let tip = names.accessible + scope;
           if (!vital) {
-            valueNode = isError ? "—" : <span className="vital-skeleton" aria-label="Loading" />;
-            if (isError) tip = `${names.accessible}: not available right now`;
+            // The skeleton is decoration: a bare span may not carry aria-label (axe aria-prohibited-attr),
+            // and the reading it stands in for is named on the .vital element around it.
+            valueNode = isError ? "—" : <span className="vital-skeleton" aria-hidden="true" />;
+            tip = isError ? `${names.accessible}: not available right now` : `${names.accessible}${scope}: reading it now`;
           } else if (vital.state === "unavailable" || vital.value === null) {
             valueNode = "—";
             tip = `${names.accessible}: ${vital.reason ?? "not available"}${vital.requires ? ` Requires ${vital.requires}.` : ""}`;
@@ -62,7 +64,7 @@ export function Vitals() {
           return (
             <Tooltip.Root key={id}>
               <Tooltip.Trigger asChild>
-                <span className="vital" tabIndex={0} aria-label={`${names.accessible}${scope}`} data-testid={`vital-${id}`}>
+                <span className="vital" tabIndex={0} aria-label={tip} data-testid={`vital-${id}`}>
                   <span className="vital-k">{names.label}</span>
                   <span className="vital-v num" data-state={vital?.state ?? "pending"} data-pending={vital?.pending ?? false}>
                     {valueNode}

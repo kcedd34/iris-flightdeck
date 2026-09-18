@@ -1,0 +1,156 @@
+/* The unified stream. One row per event, the same shape whatever wrote it. */
+.logs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.logs-row {
+  display: grid;
+  grid-template-columns: 190px 96px 72px 1fr;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line-hairline);
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.logs-row:hover {
+  background: var(--surface-float);
+}
+
+.logs-row[aria-current="true"] {
+  background: var(--surface-float);
+}
+
+.logs-at {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.logs-src {
+  color: var(--text-secondary);
+}
+
+/* Severity takes the state tokens, and nothing animates: an alarm in an administration screen is
+   perceived, not performed (docs/design.md §5, §7). */
+.logs-sev[data-tone="warning"] {
+  color: var(--state-warning);
+}
+
+.logs-sev[data-tone="caution"] {
+  color: var(--state-caution);
+}
+
+.logs-sev[data-tone="actual"] {
+  color: var(--state-actual);
+}
+
+/* unknown: an absence of statement, so it must look neither like an alarm nor like "fine". It takes
+   the readable secondary token, not the muted one: the word is information about the event, and a
+   muted token is for placeholders and disabled controls (docs/design.md §3). */
+.logs-sev[data-tone="absent"] {
+  color: var(--text-secondary);
+}
+
+.logs-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logs-note,
+.logs-absent {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.logs-state,
+.logs-correlated {
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 4px 12px;
+}
+
+.logs-correlated {
+  color: var(--text-primary);
+}
+
+.dlist-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.dlist-filters select,
+.dlist-filters input[type="text"] {
+  background: var(--surface-canvas);
+  color: var(--text-primary);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 2px 4px;
+  font: inherit;
+  margin-left: 4px;
+}
+
+.logs-unknown {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 52ch;
+}
+
+.logs-sources {
+  border-bottom: 1px solid var(--line-hairline);
+  padding: 8px 12px;
+  font-size: 11px;
+}
+
+.logs-sources ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logs-source-state {
+  color: var(--text-secondary);
+}
+
+.logs-source-reason,
+.logs-source-unread {
+  color: var(--text-secondary);
+}
+
+.logs-sources li[data-available="false"] {
+  color: var(--text-secondary);
+}
+
+.logs-allout {
+  color: var(--state-caution);
+  margin: 0 0 8px;
+  max-width: 72ch;
+}
+
+.logs-raw {
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--r-control);
+  padding: 8px;
+  font-size: 11px;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+}

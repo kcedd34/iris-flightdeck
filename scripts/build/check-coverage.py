@@ -33,6 +33,7 @@ SHIPPED = {
     "3. Segurança e segredos": "003",
     "4. Tarefas": "004",
     "5. Sistema operacional": "004",
+    "6. Logs": "005",
 }
 
 ROW = re.compile(r"^\|\s*(GET|PUT|POST|DELETE|PATCH)\s*\|\s*`([^`]+)`")

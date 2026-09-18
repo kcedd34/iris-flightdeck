@@ -111,6 +111,18 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   // Whatever the platform answers, the key is not in what comes back.
   expect(licenseRefused.body).not.toContain(LICENSE_KEY);
 
+  // Feature 005: the log stream reads what the instance wrote, and the instance writes a great deal.
+  // Nothing in an event, in a raw record or in an exported file may carry a credential this session
+  // used (spec FR-037).
+  const streamText = await page.evaluate(async () => {
+    const response = await fetch("/api/flightdeck/v1/logs/events?limit=200", { headers: { "X-FlightDeck-Tab": "e2e" } });
+    return response.text();
+  });
+  const streamExport = await page.evaluate(async () => {
+    const response = await fetch("/api/flightdeck/v1/logs/export?limit=200", { headers: { "X-FlightDeck-Tab": "e2e" } });
+    return response.text();
+  });
+
   // Export the trail.
   await dryRun.getByRole("button", { name: "Open session trail" }).click();
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByTestId("trail-export").click()]);
@@ -122,7 +134,7 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   const needles = [AUDIT.password, basic, "Authorization", WALLET_SECRET, NEW_PASSWORD, LICENSE_KEY];
   const storage = await page.evaluate(() => JSON.stringify({ session: { ...window.sessionStorage }, local: { ...window.localStorage } }));
   const cookies = JSON.stringify(await context.cookies());
-  for (const [where, text] of Object.entries({ exported, curl, storage, cookies })) {
+  for (const [where, text] of Object.entries({ exported, curl, storage, cookies, streamText, streamExport })) {
     for (const needle of needles) expect(text.includes(needle), `${needle.slice(0, 6)}… in ${where}`).toBe(false);
   }
   expect(curl).toContain("-u '<user>:<password>'");

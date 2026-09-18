@@ -23,10 +23,15 @@ official **SysAdmin API** (`/api/admin/v2`).
   one (FlightDeck's own API included), and can be tried from the browser.
 - **Real host telemetry.** CPU and memory come from the host; IRIS shared memory and database usage
   come from the SysAdmin API.
+- **One log stream from five sources.** The messages log, alerts, the interoperability event log, the
+  audit trail and the journal, normalised into one line — timestamp, source, severity, namespace,
+  process, user, message — with every event's original record one click away, live follow, and a jump
+  from an event to the process, namespace or user it names.
 
-> This release adds **permissions and security** to the foundation and to web applications and the
-> REST explorer. The remaining domain screens (tasks, system, logs) are built on the same pattern;
-> their routes already exist and explain what is coming.
+> This release completes the six domains: the foundation, web applications and the REST explorer,
+> permissions and security, tasks and the operating system, and the **unified log stream** — the one
+> axis of the brief the official API does not cover, where five sources are normalised into one line
+> that keeps every original record.
 
 Related idea on the InterSystems Ideas Portal: _link pending publication by the author_
 
@@ -197,6 +202,28 @@ SysAdmin API, and re-running creates no duplicates.
   — copying records to another namespace, and purging them. A purge asks for the maximum
   confirmation and states that it erases the instance's own audit trail. Reading audit records
   belongs to the logs screens.
+
+## What the log stream reads, and what it does not
+
+- **Five sources, one schema.** Two come from the official API (the audit trail and the journal, both
+  read asynchronously); three have no API and are read natively, which is the exception the project's
+  constitution names: the instance's messages log, its alerts log, and the interoperability event log.
+- **The original record is always kept.** Normalisation never discards anything: every event carries
+  the record it came from. Where the original can no longer be recovered — a purged journal file, a
+  rotated log — the event says so where the record would be and keeps the fields FlightDeck read
+  before it went. There is no third case, and nothing is invented to fill the gap.
+- **Severity is mapped, never guessed.** Each source states its own level and FlightDeck maps it. A
+  source that states no level gets `unknown`, a fifth value outside the ordering — not `info`, and
+  never a guess from the words in the message. The minimum-severity filter says how it treats it.
+- **Big files are read backwards, in pages.** A log is never read whole, at any size: each page seeks
+  to an offset near the end and reads one bounded window. A 100 MB file pages at the same cost as a
+  small one, wherever in it you are.
+- **A source that cannot be read says why, and the others keep streaming.** A stock instance writes no
+  alerts log, so that source is normally absent and explains what an alerts log is and where it comes
+  from. On IRIS 2026.1 the journal operations are withheld and the journal source says so. Neither
+  takes the stream with it.
+- **What it is not.** FlightDeck does not store, index or forward any event: nothing is persisted,
+  and the live window lives in the browser. It is a reader, not a log platform.
 
 ## REST API explorer: what a test request can and cannot do
 

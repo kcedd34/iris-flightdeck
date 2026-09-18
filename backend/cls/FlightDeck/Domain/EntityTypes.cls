@@ -1842,6 +1842,91 @@ XData EntityTypes [ MimeType = application/json ]
    "PUT /v2/security/oauth2/resource-server/mapping",
    "DELETE /v2/security/oauth2/resource-server/mapping"
   ]
+ },
+ "logs/journal-file": {
+  "domain": "logs",
+  "entityType": "journal-file",
+  "label": "Journal file",
+  "section": "journal",
+  "listOperation": "GET /v2/journal/files",
+  "detailOperation": "GET /v2/journal/file",
+  "keys": [
+   {
+    "param": "file",
+    "field": "Name"
+   }
+  ],
+  "displayName": "{file}",
+  "schema": "JournalFile",
+  "listSchema": "JournalFileListItem",
+  "facts": "",
+  "markers": [],
+  "links": [],
+  "mutations": [
+   "POST /v2/journal/file/integrity-check"
+  ]
+ },
+ "logs/journal-settings": {
+  "domain": "logs",
+  "entityType": "journal-settings",
+  "label": "Journal settings",
+  "section": "journal",
+  "detailOperation": "GET /v2/journal/settings",
+  "keys": [],
+  "displayName": "Journal settings",
+  "schema": "JournalSettings",
+  "facts": "",
+  "markers": [],
+  "links": [],
+  "singleton": true,
+  "mutations": [
+   "PUT /v2/journal/settings",
+   "POST /v2/journal/switch-file",
+   "POST /v2/journal/switch-dir"
+  ]
+ },
+ "logs/audit-event": {
+  "domain": "logs",
+  "entityType": "audit-event",
+  "label": "Audit event",
+  "section": "audit-events",
+  "listOperation": "GET /v2/security/audit/events",
+  "detailOperation": "GET /v2/security/audit/event",
+  "keys": [
+   {
+    "param": "source",
+    "field": "Source"
+   },
+   {
+    "param": "type",
+    "field": "Type"
+   },
+   {
+    "param": "name",
+    "field": "Name"
+   }
+  ],
+  "displayName": "{source}/{type}/{name}",
+  "schema": "AuditEvent",
+  "listSchema": "AuditEventListItem",
+  "facts": "",
+  "markers": [
+   {
+    "id": "audit-event-off",
+    "tone": "caution",
+    "text": "Not recorded",
+    "when": {
+     "op": "equals",
+     "path": "object.Enabled",
+     "value": false
+    }
+   }
+  ],
+  "links": [],
+  "mutations": [
+   "PUT /v2/security/audit/event",
+   "DELETE /v2/security/audit/event"
+  ]
  }
 }
 }

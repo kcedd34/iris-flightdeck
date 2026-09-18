@@ -6,6 +6,9 @@ import { Roles } from "./permissions/Roles";
 import { Services } from "./permissions/Services";
 import { Users } from "./permissions/Users";
 import { Services as RestServices } from "./rest-apis/Services";
+import { AuditEvents } from "./logs/AuditEvents";
+import { Journal } from "./logs/Journal";
+import { Stream } from "./logs/Stream";
 import { Instruments } from "./system/Instruments";
 import { Processes } from "./system/Processes";
 import { Databases, Devices, DocDb, Ecp, FileAccess, LanguageServers, License, Locks, Namespaces, Directories, WebSessions } from "./system/sections";
@@ -47,6 +50,9 @@ export const SECTIONS: Record<string, ComponentType> = {
   "system/external-language-servers": LanguageServers,
   "system/docdb": DocDb,
   "system/file-system-access": FileAccess,
+  "logs/stream": Stream,
+  "logs/journal": Journal,
+  "logs/audit-events": AuditEvents,
   "tasks/tasks": Tasks,
   "tasks/manager": TaskManager,
   "tasks/work-queue-categories": WorkQueueCategories,

@@ -14,7 +14,7 @@ export interface ObjectSchema {
   fields: readonly SchemaField[];
 }
 
-export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppPctAccess" | "PercentClassAccessListItem" | "User" | "UserListItem" | "Role" | "RoleListItem" | "Resource" | "ResourceListItem" | "Service" | "ServiceListItem" | "PrivilegedRoutineApplication" | "PrivilegedRoutineApplicationListItem" | "RoleOwnerListItem" | "SQLPrivilegeListItem" | "SQLAdminPrivilegeListItem" | "SQLColumnPrivilegeListItem" | "SSLConfig" | "SSLConfigurationListItem" | "X509Credential" | "X509CredentialsListItem" | "X509CredentialCertificate" | "WalletCollection" | "WalletCollectionListItem" | "WalletSecretListItem" | "OAuth2Client" | "OAuth2ClientsUsingServerItem" | "OAuth2ServerDefinition" | "OAuth2AuthorizationServerListItem" | "OAuth2ServerConfiguration" | "OAuth2ServerClient" | "OAuth2ServerClientListItem" | "OAuth2ResourceServer" | "OAuth2ResourceServerListItem" | "OAuth2ResourceServerMapping" | "LDAPConfig" | "LDAPConfigurationListItem" | "MFTConnection" | "MFTConnectionListItem" | "Superserver" | "SuperserverListItem" | "WebAuthenticationSettings" | "EncryptionSettings" | "AuditingEnabled" | "AuditEvent" | "Task" | "TaskListItem" | "TaskHistoryItem" | "TaskExtraInfo" | "UpcomingTaskItem" | "WQMCategory" | "WQMCategoryListItem" | "AsyncTask" | "AsyncTaskListItem" | "Process" | "ProcessListItem" | "ConfigDatabase" | "ConfigDatabaseListItem" | "LocalDatabase" | "LocalDatabaseListItem" | "VolumeFilesItem" | "Namespace" | "NamespaceListItem" | "MapGlobal" | "MapPackage" | "MapRoutine" | "GlobalMappingListItem" | "PackageMappingListItem" | "RoutineMappingListItem" | "Device" | "DeviceListItem" | "DeviceSubType" | "DeviceSubTypeListItem" | "DeviceSettings" | "LicenseServer" | "LicenseServerListItem" | "LockListItem" | "WebSessionListItem" | "ECPDataServer" | "ECPDataServerListItem" | "ECPClientListItem" | "ECPSSLConnectionListItem" | "ECPSettings" | "LanguageServer" | "LanguageServerListItem" | "LanguageServerActivityListItem" | "DocDBApplication" | "DocDBApplicationListItem" | "FSAccessPurpose" | "FSAccessPurposeListItem" | "FSAccessPathListItem" | "SystemUsageStats" | "SharedMemoryUsageItem" | "SystemResourcesStatsItem" | "MainDashboardStats" | "GlobalsAndRoutinesStats" | "ECPStats" | "LicenseUsage", ObjectSchema> = {
+export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppPctAccess" | "PercentClassAccessListItem" | "User" | "UserListItem" | "Role" | "RoleListItem" | "Resource" | "ResourceListItem" | "Service" | "ServiceListItem" | "PrivilegedRoutineApplication" | "PrivilegedRoutineApplicationListItem" | "RoleOwnerListItem" | "SQLPrivilegeListItem" | "SQLAdminPrivilegeListItem" | "SQLColumnPrivilegeListItem" | "SSLConfig" | "SSLConfigurationListItem" | "X509Credential" | "X509CredentialsListItem" | "X509CredentialCertificate" | "WalletCollection" | "WalletCollectionListItem" | "WalletSecretListItem" | "OAuth2Client" | "OAuth2ClientsUsingServerItem" | "OAuth2ServerDefinition" | "OAuth2AuthorizationServerListItem" | "OAuth2ServerConfiguration" | "OAuth2ServerClient" | "OAuth2ServerClientListItem" | "OAuth2ResourceServer" | "OAuth2ResourceServerListItem" | "OAuth2ResourceServerMapping" | "LDAPConfig" | "LDAPConfigurationListItem" | "MFTConnection" | "MFTConnectionListItem" | "Superserver" | "SuperserverListItem" | "WebAuthenticationSettings" | "EncryptionSettings" | "AuditingEnabled" | "AuditEvent" | "Task" | "TaskListItem" | "TaskHistoryItem" | "TaskExtraInfo" | "UpcomingTaskItem" | "WQMCategory" | "WQMCategoryListItem" | "AsyncTask" | "AsyncTaskListItem" | "Process" | "ProcessListItem" | "ConfigDatabase" | "ConfigDatabaseListItem" | "LocalDatabase" | "LocalDatabaseListItem" | "VolumeFilesItem" | "Namespace" | "NamespaceListItem" | "MapGlobal" | "MapPackage" | "MapRoutine" | "GlobalMappingListItem" | "PackageMappingListItem" | "RoutineMappingListItem" | "Device" | "DeviceListItem" | "DeviceSubType" | "DeviceSubTypeListItem" | "DeviceSettings" | "LicenseServer" | "LicenseServerListItem" | "LockListItem" | "WebSessionListItem" | "ECPDataServer" | "ECPDataServerListItem" | "ECPClientListItem" | "ECPSSLConnectionListItem" | "ECPSettings" | "LanguageServer" | "LanguageServerListItem" | "LanguageServerActivityListItem" | "DocDBApplication" | "DocDBApplicationListItem" | "FSAccessPurpose" | "FSAccessPurposeListItem" | "FSAccessPathListItem" | "SystemUsageStats" | "SharedMemoryUsageItem" | "SystemResourcesStatsItem" | "MainDashboardStats" | "GlobalsAndRoutinesStats" | "ECPStats" | "LicenseUsage" | "JournalFile" | "JournalFileListItem" | "JournalRecord" | "JournalSettings" | "AuditEventListItem" | "AuditRecord", ObjectSchema> = {
  "Application": {
   "source": "Application",
   "fields": [
@@ -4616,6 +4616,406 @@ export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppP
       "type": "string"
      }
     ]
+   }
+  ]
+ },
+ "JournalFile": {
+  "source": "JournalFile",
+  "fields": [
+   {
+    "name": "FirstRecordAddress",
+    "type": "string",
+    "description": "Address of first record in the journal file"
+   },
+   {
+    "name": "LastRecordAddress",
+    "type": "string",
+    "description": "Address of last record in the journal file"
+   },
+   {
+    "name": "Databases",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "SFN",
+      "type": "integer"
+     },
+     {
+      "name": "DatabasePathOrAlias",
+      "type": "string"
+     }
+    ]
+   },
+   {
+    "name": "ClusterStartTime",
+    "type": "string",
+    "description": "Blank if not a cluster journal file"
+   },
+   {
+    "name": "End",
+    "type": "integer",
+    "description": "The end of the last valid journal record in the file (applicable to open file only)"
+   },
+   {
+    "name": "FileCount",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "MaxSize",
+    "type": "integer",
+    "description": "Max allowable size of the journal file, in bytes"
+   },
+   {
+    "name": "MinTransFileCount",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "MinTransFileIndex",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "FileGUID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CreationTime",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EncryptionKeyID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "MirrorInfo ",
+    "type": "object",
+    "description": "All fields are only present if relevant"
+   },
+   {
+    "name": "PrevFile",
+    "type": "object",
+    "description": "All fields within are only present if there is a previous file"
+   },
+   {
+    "name": "NextFile",
+    "type": "object",
+    "description": "All fields are only present if there is a next file"
+   }
+  ]
+ },
+ "JournalFileListItem": {
+  "source": "JournalFileList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Size",
+    "type": "integer",
+    "description": "Actual size of the file on disk, in units of bytes"
+   },
+   {
+    "name": "CreationTime",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Reason",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "DataSize",
+    "type": "integer",
+    "description": "Amount of journal data in the file, in units of bytes. Will be larger than the 'Size' field when the file is compressed"
+   }
+  ]
+ },
+ "JournalRecord": {
+  "source": "JournalRecord",
+  "fields": [
+   {
+    "name": "TypeName",
+    "type": "string",
+    "description": "Type of the record in string form"
+   },
+   {
+    "name": "ExtTypeName",
+    "type": "string",
+    "description": "Extended type of the record in string form"
+   },
+   {
+    "name": "PrevAddress",
+    "type": "integer",
+    "description": "Location of previous record or 0 if this is the first record in the file"
+   },
+   {
+    "name": "NextAddress",
+    "type": "integer",
+    "description": "Location of next record or 0 if this is the last record in the file"
+   },
+   {
+    "name": "TimeStamp",
+    "type": "string",
+    "description": "Time stamp of the record (not necessarily the creation time of the record)"
+   },
+   {
+    "name": "InTransaction",
+    "type": "boolean",
+    "description": "Whether the record is part of a transaction"
+   },
+   {
+    "name": "ProcessID",
+    "type": "string",
+    "description": "Operating system process id for the process which created the journal record. This is calculated by taking the jobid stored in the journal record and looking up the corresponding process id in a translation table maintained by the system. If the process id cannot be calculated, the jobid with the string\"(jid\") appended is returned."
+   },
+   {
+    "name": "JobID",
+    "type": "integer",
+    "description": "Internal jobid stored with each journal record in the journal file"
+   },
+   {
+    "name": "RemoteSystemID",
+    "type": "integer",
+    "description": "Use RemoteSystemID if you're comparing records to ensure that two identical process IDs refer to the same real process/transaction."
+   },
+   {
+    "name": "ECPSystemID",
+    "type": "object",
+    "description": "ECPSystemID is RemoteSystemID with the topbits masked off. \nUse ECPSystemID if the only thing of interest is whether it came from an ECP client, etc."
+   },
+   {
+    "name": "SetKill",
+    "type": "object",
+    "description": "If the record is not a set/kill record, the fields in this object will not be present"
+   },
+   {
+    "name": "VectorSetKill",
+    "type": "object",
+    "description": "If the record is not a vector set/kill record, the fields in this object will not be present"
+   }
+  ]
+ },
+ "JournalSettings": {
+  "source": "JournalSettings",
+  "fields": [
+   {
+    "name": "AlternateDirectory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ArchiveName",
+    "type": "string",
+    "description": "The destination for archiving journal files, given as the name of an archive target defined in the [Archives] CPF section."
+   },
+   {
+    "name": "BackupsBeforePurge",
+    "type": "integer",
+    "description": "Number of backups before the journal files (or the archived copies) are automatically purged."
+   },
+   {
+    "name": "CurrentDirectory",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "DaysBeforePurge",
+    "type": "integer",
+    "description": "Number of days before the journal files are purged."
+   },
+   {
+    "name": "FileSizeLimit",
+    "type": "integer",
+    "description": "Maximum size of each journal file in MB."
+   },
+   {
+    "name": "FreezeOnError",
+    "type": "boolean",
+    "description": "Freeze the system if there is an error writing to the journal."
+   },
+   {
+    "name": "JournalFilePrefix",
+    "type": "string",
+    "description": "Prefixes journal file names with this string."
+   },
+   {
+    "name": "JournalcspSession",
+    "type": "boolean",
+    "description": "%cspSession global will be mapped to the TEMP database and not journaled."
+   },
+   {
+    "name": "PurgeArchived",
+    "type": "boolean",
+    "description": "Whether to purge journal files as soon as they are copied to archive."
+   },
+   {
+    "name": "CompressFiles",
+    "type": "boolean",
+    "description": "Journal files should be compressed after they are created."
+   },
+   {
+    "name": "wijdir",
+    "type": "string",
+    "description": "Directory for the Write Image Journal file."
+   },
+   {
+    "name": "targwijsz",
+    "type": "integer",
+    "description": "When targwijsz is non-zero it is the desired size of the WIJ file in MB"
+   }
+  ]
+ },
+ "AuditEventListItem": {
+  "source": "AuditEventList",
+  "fields": [
+   {
+    "name": "EventName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Total",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Written",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "Lost",
+    "type": "integer",
+    "description": ""
+   }
+  ]
+ },
+ "AuditRecord": {
+  "source": "AuditRecord",
+  "fields": [
+   {
+    "name": "AuditIndex",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Authentication",
+    "type": "string",
+    "description": "Authentication method process used."
+   },
+   {
+    "name": "ClientExecutableName",
+    "type": "string",
+    "description": "Executable name on the client machine."
+   },
+   {
+    "name": "ClientIPAddress",
+    "type": "string",
+    "description": "IP address of the client, as passed from client. This corresponds to the ClientIPAddress property in the class %SYS.ProcessQuery."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the audit event."
+   },
+   {
+    "name": "Event",
+    "type": "string",
+    "description": "Name of the audit event."
+   },
+   {
+    "name": "EventData",
+    "type": "string",
+    "description": "EventData -- arbitrary data associated with this event."
+   },
+   {
+    "name": "EventSource",
+    "type": "string",
+    "description": "Event Source (system events all have \"%System\" here)."
+   },
+   {
+    "name": "EventType",
+    "type": "string",
+    "description": "EventType."
+   },
+   {
+    "name": "JobId",
+    "type": "integer",
+    "description": "Job ID"
+   },
+   {
+    "name": "JobNumber",
+    "type": "integer",
+    "description": "Job Number"
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": "Namespace process was executing in."
+   },
+   {
+    "name": "OSUsername",
+    "type": "string",
+    "description": "Operating system username of process. Username given to the process by the operating system when the process is created. When displayed, it is truncated to 16 characters. Note that the real O/S username is only returned when connecting to UNIX or VMS systems; For Windows, it will return the O/S username for a console process, but for telnet it will return the $USERNAME of the process. For client connections, it contains the O/S username of the client."
+   },
+   {
+    "name": "Pid",
+    "type": "string",
+    "description": "Process ID. Note that on VMS system, the Hex pid is stored internally as a decimal value, i.e. $zh(pid)."
+   },
+   {
+    "name": "Roles",
+    "type": "string",
+    "description": "$ROLES value that was active when the audit event occurred."
+   },
+   {
+    "name": "RoutineSpec",
+    "type": "string",
+    "description": "Routine running including DB and System."
+   },
+   {
+    "name": "StartupClientIPAddress",
+    "type": "string",
+    "description": "IP address of the client, as detected on the TCP channel by the server process. This corresponds to the StartupClientIPAddress property in the class %SYS.ProcessQuery."
+   },
+   {
+    "name": "Status",
+    "type": "string",
+    "description": "Any %Status variable passed into the call."
+   },
+   {
+    "name": "SystemID",
+    "type": "string",
+    "description": "SystemName:ConfigurationName of where the event was generated. This is useful when merging separate audit streams from different systems."
+   },
+   {
+    "name": "UserInfo",
+    "type": "string",
+    "description": "User info field"
+   },
+   {
+    "name": "Username",
+    "type": "string",
+    "description": "Username from $Username that was active when audit event occurred."
+   },
+   {
+    "name": "UTCTimeStamp",
+    "type": "string",
+    "description": "UTC $ZTIMESTAMP value when the audit event occurred."
    }
   ]
  }

@@ -333,3 +333,29 @@ specification does not declare. Full probe record and decisions: `specs/004-task
   `GET /v2/processes`. Locks carry the same idea in `Removable`.
 - `GET /v2/monitor/dashboard/main` pads `BusyProcesses` with empty entries (`{"Process": "",
   "Commands": 0}`); they are dropped on read.
+
+## Log sources, probed for feature 005 (IRIS CE 2026.2, 2026-09-18)
+
+What the five sources actually answer. Full record and decisions: `specs/005-unified-logs/research.md`.
+
+- **`messages.log` states its own severity.** The line shape is
+  `MM/DD/YY-HH:MM:SS:mmm (pid) <level> [Category.Event] message`, and `<level>` is the platform's own
+  0–3. The normalised severity is therefore a mapping of a value the instance stated, not a judgement
+  FlightDeck made. The file is resolved from the instance (`$zutil(12)`), never a hard-coded path.
+- **Bounded backwards reading works.** `%Stream.FileCharacter.MoveTo(size − window)` followed by a
+  short `Read` returns only that slice, which is what makes RN-FD-25 implementable.
+- **A stock instance writes no `alerts.log`.** The manager directory holds `messages.log`,
+  `journal.log` and `SystemMonitor.log`. IRIS writes an alerts log only where the System Monitor's
+  alert handling is configured, so "absent, with the reason" is that source's normal state — not an
+  error, and not an empty list.
+- **The interoperability log is SQL, per namespace.** `Ens_Util.Log` exists in each
+  interoperability-enabled namespace (on this install, `USER` but not `%SYS`), with
+  `ID, ConfigName, Job, MessageId, SessionId, SourceClass, SourceMethod, Stack, StatusValue, Text,
+  TimeLogged, TraceCat, Type`. `Type` is the platform's own level.
+- **Journal records are asynchronous.** `POST /v2/journal/file/records` answers 202 with the same
+  `LOCATION` handle pattern as the disk metrics, and the finished result is a plain array of
+  `{Address, TypeName, TimeStamp, ProcessID, GlobalNode, DatabaseName}`. There is no user and no
+  severity, and `DatabaseName` is a database — not a namespace.
+- **An audit record's key travels with it.** `GET /v2/security/audit/record` requires
+  `utcTimeStamp`, `systemID` and `auditIndex`, and all three are present in every row of
+  `POST /v2/security/audit/records`, so the original record is always one read away.
