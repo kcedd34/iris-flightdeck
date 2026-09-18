@@ -349,6 +349,35 @@ SysAdmin API, and re-running creates no duplicates.
 - **What it is not.** FlightDeck does not store, index or forward any event: nothing is persisted, and
   the live window lives in the browser. It is a reader, not a log platform.
 
+## Where FlightDeck uses Embedded Python, and why
+
+One class: `FlightDeck.Native.HostMetrics`, the provider that reads host CPU and host memory. It is
+written in Embedded Python because **reading `/proc/stat` and `/proc/meminfo` is filesystem access
+and text parsing**, which is Python's natural work and not ObjectScript's.
+
+This is not a feature added to use a language. It is the same reading, moved to the language that
+suits it, and the move paid for itself in the only way that counts — code removed:
+
+| Before, in ObjectScript | After, in Embedded Python |
+|---|---|
+| A sequential device opened by hand, read line by line, with the device closed and `$io` restored in every path — because `%Stream.FileCharacter` reads nothing from procfs, where every file reports size 0 | `with open(path) as handle: …` |
+| `$piece`/`$zstrip` walking the text with whitespace collapsed by a `"<=>W"` strip | `str.split()` and `str.partition(":")` |
+| A whole `ReadFile` helper whose only reason to exist was that workaround | Deleted |
+
+**What stayed in ObjectScript**, deliberately: the `%Status` contract its callers expect, the previous
+CPU sample held in the session, and the arithmetic — because the published percentages are rounded
+with `$normalize`, and moving that would have changed values that are checked against `free` and
+`top`. Python reads and parses; ObjectScript keeps what is its own.
+
+**No version is tested anywhere in it.** Embedded Python needs IRIS 2021.2 or later, far below the
+2026.1 FlightDeck itself requires, so any instance that can run this portal has it. And if the Python
+runtime should fail regardless, every entry point degrades through the status the class already
+returned: the vital is marked unavailable with its reason, like any other capability that is absent,
+and the screen does not break.
+
+Everything else — the log readers, the REST executor, the whole domain layer — remains ObjectScript,
+because none of it is filesystem or text work.
+
 ## Day-1 platform verification
 
 `scripts/verify/verify_platform.py` checks, in order, the eight platform facts FlightDeck depends on:

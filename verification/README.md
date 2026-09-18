@@ -359,3 +359,89 @@ What the five sources actually answer. Full record and decisions: `specs/005-uni
 - **An audit record's key travels with it.** `GET /v2/security/audit/record` requires
   `utcTimeStamp`, `systemID` and `auditIndex`, and all three are present in every row of
   `POST /v2/security/audit/records`, so the original record is always one read away.
+
+
+---
+
+## Embedded Python in `FlightDeck.Native.HostMetrics`, probed 2026-09-18
+
+The host CPU and host memory provider was rewritten in Embedded Python. What was measured before and
+after, on all three supported installs.
+
+### Availability (requirement: IRIS 2021.2 or later)
+
+Confirmed on each image by importing `sys` through `%SYS.Python`:
+
+| Install | IRIS build | Embedded Python |
+|---|---|---|
+| IRIS CE 2026.2 | 2026.2 (Build 221U) | 3.12.3 |
+| IRIS CE 2026.1 | 2026.1 (Build 234U) | 3.12.3 |
+| IRIS for Health CE 2026.2 | 2026.2 (Build 221U) | 3.12.3 |
+
+All three are far above the 2021.2 floor, and above the 2026.1 FlightDeck itself requires — so no
+instance that can run this portal lacks Embedded Python. **No version is checked in the code**
+(Constitution III); availability is a runtime fact, and failure degrades.
+
+### Equivalence, before and after
+
+The two pure parsers were called with the same fixed input on every install, before and after:
+
+| Call | Before | After |
+|---|---|---|
+| `ParseCPULine("cpu  100 0 50 800 50 0 0 0 0 0")` | busy 150, total 1000 | busy 150, total 1000 |
+| `ParseMeminfo(MemTotal 1000 / MemAvailable 250)` | 75 | 75 |
+| `Scope()` in a container | `Docker host kernel` | `Docker host kernel` |
+
+Live memory, read against `/proc/meminfo` at the same moment:
+
+| Install | Provider | `awk` over /proc/meminfo |
+|---|---|---|
+| IRIS CE 2026.2 | 79.7 | 79.7 |
+| IRIS CE 2026.1 | 82.8 | 82.8 |
+| IRIS for Health CE 2026.2 | 83.1 | 83.0 |
+
+(The Health figure is one read a fraction of a second apart from the other; memory was moving. The
+same-instant comparison on 2026.2 matched to the digit.)
+
+`FlightDeck.Test.HostMetrics` passed 3/3 on all three installs before and after, **unchanged** — the
+equivalence tests were not edited.
+
+### Degradation when Python cannot be used (never breaks the screen)
+
+Every Python call goes through one guarded helper. Probed by asking it for a method that does not
+exist, which is the same failure shape as a Python runtime that will not start:
+
+```objectscript
+write $classmethod("FlightDeck.Native.HostMetrics", "Guarded", "NoSuchPythonMethod")   // answers ""
+do ##class(FlightDeck.Native.HostMetrics).ParseCPULine("not a cpu line", .b, .t)
+// ERROR #5001: Host metrics are not readable on this platform.
+```
+
+That is the status the class already returned, so `FlightDeck.Vitals.Service` marks the vital
+unavailable with its existing reason. No other class was touched.
+
+### One finding, and it is not an Embedded Python bug
+
+While writing the guard, this failed to compile:
+
+```objectscript
+ClassMethod G(name As %String) As %String
+{
+	try {
+		quit name
+	} catch {
+		quit ""
+	}
+}
+```
+
+with `#1043: QUIT argument not allowed`. Isolated with four probe classes: the same expression
+compiles outside a `try` block and fails inside one, with or without a comma in the argument, with or
+without `$select` or `$classmethod`. **This is documented ObjectScript semantics, not a defect**:
+inside a `TRY`, `QUIT` exits the block and cannot carry a return value. The idiom is to assign to a
+variable and quit after the `try`/`catch`, which is what the class does.
+
+Recorded here because it cost time and because it is the kind of thing that looks like an Embedded
+Python failure and is not — every Python call returned empty, exactly as an instance without Python
+would behave. **Nothing reportable to the contest's bug bounty was found**: the Embedded Python
+runtime itself behaved correctly in every respect on all three images.
