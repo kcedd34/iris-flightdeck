@@ -201,7 +201,53 @@ Formal:
   bônus, que ainda não saiu (§3). O que já está no projeto e costuma contar: IPM, Docker,
   InterSystems API oficial, e a implementação de uma ideia do Ideas Portal.
 
-### As três ações do autor, reunidas
+### Bônus de tecnologia
+
+Os bônus continuam não anunciados (§3). Estes são os itens que o projeto pode reivindicar quando
+saírem, cada um com o estado real hoje. Um bônus só entra aqui se o projeto já o cumpre por uma razão
+própria: forçar correspondência para pontuar prejudica Applicability, que é um dos cinco critérios.
+
+- [x] **Docker** — `docker compose up -d` como caminho de instalação principal, imagem construída
+  sobre `intersystemsdc/iris-community:2026.2-zpm`. Verificado limpo nas duas imagens Community
+  (`verification/install-runs.md`, feature 006).
+- [ ] **Pacote IPM/ZPM publicado** — o pacote **constrói e instala**, mas **não está publicado**.
+  Verificado: `zpm "iris-flightdeck package"` gera `iris-flightdeck-0.1.0.tgz` (532 KB, com o bundle
+  do frontend), e esse artefato instala numa instância limpa sem FlightDeck — duas web applications,
+  o papel de runtime, `demo=0`, portal 200, 262/0/11/273 capacidades, vitals lendo. O nome
+  `iris-flightdeck` está livre no registry (552 pacotes, nenhum `flight*`).
+  **Ação do autor:** publicar exige conta de publicador em `pm.community.intersystems.com`, que não
+  está neste ambiente. Ver "As ações do autor" abaixo.
+- [ ] **Vídeo no YouTube** — roteiro e driver prontos (`docs/demo-script.md`,
+  `frontend/e2e/demo.spec.ts`). **Ação do autor:** gravar e publicar.
+- [x] **Embedded Python** — `FlightDeck.Native.HostMetrics`, o provedor de CPU e memória do host,
+  é Embedded Python: ler `/proc/stat` e `/proc/meminfo` é acesso a arquivo e parsing de texto.
+  Justificativa técnica no README ("Where FlightDeck uses Embedded Python, and why"); equivalência
+  antes/depois e degradação registradas em `verification/README.md`. Matriz completa verde nas três
+  versões depois da reescrita.
+- [ ] **Artigo na Developer Community** — rascunho do primeiro em `docs/article-1.md`.
+  **Ação do autor:** revisar e publicar.
+- [ ] **Segundo artigo na Developer Community** — não rascunhado. Material sobra: o adaptador de
+  dialeto v1, a camada de mutação com análise de impacto, ou o gate de cobertura sem lista de
+  lacunas toleradas. **Ação do autor**, se os bônus premiarem o segundo artigo.
+- [ ] **Bug reproduzível no Embedded Python** — **nenhum encontrado**. A reescrita exercitou o
+  runtime nas três imagens e ele se comportou corretamente em tudo. O único achado da reescrita foi
+  semântica documentada de ObjectScript (`QUIT` com argumento dentro de `TRY`), registrado em
+  `verification/README.md` e explicitamente **não** reivindicável como bug do Embedded Python.
+
+**Não aplicáveis, e por quê.** Reivindicar qualquer um destes exigiria inventar acoplamento:
+
+- [ ] ~~**First Time Contribution**~~ — não é a primeira contribuição do autor.
+- [ ] ~~**Vector Search**~~ — o portal não armazena nem indexa nada. Não há corpus para vetorizar;
+  o stream de logs é explicitamente um leitor, não uma plataforma de logs (README).
+- [ ] ~~**Online Demo**~~ — uma demo pública exporia um portal de administração com credenciais
+  conhecidas na internet. O caminho de uma linha em Docker já dá ao avaliador uma instância própria
+  em minutos, que é melhor e mais honesto do que uma instância compartilhada e neutralizada.
+- [ ] ~~**Community Idea**~~ — **nenhuma ideia com status Community Opportunity corresponde ao escopo
+  do FlightDeck.** Forçar correspondência com uma ideia adjacente para capturar o bônus prejudicaria
+  Applicability, que vale mais do que o bônus. O README aponta para a ideia do próprio FlightDeck no
+  Ideas Portal (requisito do Open Exchange, §2.3), que é coisa diferente deste bônus.
+
+### As ações do autor, reunidas
 
 | Ação | O que falta | Prazo |
 |---|---|---|
@@ -209,6 +255,7 @@ Formal:
 | Vídeo | Gravar seguindo `docs/demo-script.md` e publicar | Antes da submissão |
 | Leitura fria humana | Um leitor que conhece IRIS e não conhece o FlightDeck, cronometrado | Antes da submissão |
 | URL de clone no README | O repositório ainda não tem remote configurado, então nada nele sabe o próprio endereço publicado. Hoje o README manda copiar a URL do botão **Code** do GitHub ou da listagem no Open Exchange, o que funciona para quem chega pela página; com a URL real, vira um comando copiável | Antes da submissão |
+| Publicar o pacote no registry | Conta de publicador em `pm.community.intersystems.com`. Com ela: `zpm "repo -n registry -r -url https://pm.community.intersystems.com/ -user <usuário> -pass <senha>"` e depois `zpm "iris-flightdeck publish"`. **Decidir antes o nome publicado**: o módulo hoje se chama `iris-flightdeck`, então o comando do avaliador é `zpm "install iris-flightdeck"`. Para que seja `zpm "install flightdeck"`, renomear `<Name>` em `module.xml` antes de publicar — depois de publicado o nome não se troca. Ambos estão livres no registry | Antes da submissão |
 
-Nenhuma delas bloqueia as demais linhas: todas as outras fecham sem elas. As quatro são de minutos
-cada, e três delas foram deixadas prontas para receber só o dado que falta.
+Nenhuma delas bloqueia as demais linhas: todas as outras fecham sem elas. São de minutos cada, e
+todas foram deixadas prontas para receber só o dado ou a credencial que falta.
