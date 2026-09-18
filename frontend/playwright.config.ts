@@ -32,6 +32,10 @@ export default defineConfig({
     { name: "logs", testMatch: /logs\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "audit", testMatch: /audit\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "fixtures", testMatch: /(fixtures|pattern)\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
+    // Feature 006. Artifact producers, not gates: both skip with a stated reason unless asked for,
+    // so a capture or demo failure is legible on its own rather than buried in the sweep.
+    { name: "docs", testMatch: /docs\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "demo", testMatch: /demo\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.
     { name: "limited", testMatch: /limited\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
   ],

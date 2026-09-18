@@ -36,6 +36,9 @@ test("section tabs appear only for domains with more than one entity type, and t
     await expect(page).toHaveURL(new RegExp(`/flightdeck/${id}/[a-z0-9-]+$`));
     // Every shipped domain now carries more than one section: logs gained its three in feature 005.
     const tabs = page.getByTestId("section-tabs").getByRole("link");
+    // count() does not wait, so it must not be the first thing asked of a section that has just
+    // begun rendering: on a cold instance the first domain answered 0 here and the run failed.
+    await expect(tabs.first()).toBeVisible();
     expect(await tabs.count()).toBeGreaterThan(1);
     await tabs.nth(1).click();
     const active = page.getByTestId("section-tabs").locator('[aria-current="page"]');

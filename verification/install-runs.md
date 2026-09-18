@@ -64,3 +64,84 @@ The container stays up, so no restart loop.
    (research R13).
 5. **Official handler output leaked into HTTP responses** (`/v2/journal/files`). Capture now uses
    I/O redirection, with the capture routine deployed to `%SYS` (research R4).
+
+
+---
+
+# Feature 006: clean-environment verification for the submission, 2026-09-18
+
+Run with **the README's own commands**, not with the scripts the repository uses internally — the
+README is the artifact under test. Version and capability counts are read from the running portal,
+never from the image tag: a tag is a claim about a version, the portal is the fact.
+
+Host: WSL2, Docker Engine 29.5.2. The base images were already pulled and the layer cache was warm,
+so the timings below exclude the first download and build, which the README says takes a few minutes.
+
+## Run 1 — IRIS Community Edition 2026.2
+
+| Field | Value |
+|---|---|
+| Commands | `docker compose down -v` then `docker compose up -d` (the README's one-command path, verbatim) |
+| Image | `intersystemsdc/iris-community:2026.2-zpm`, pinned in `docker-compose.yml` |
+| Reported by the portal | `product: iris`, `version: 2026.2`, `edition: Community`, `apiVersion: 2`, `dialect: v2`, `namespace: USER` |
+| Ready line after `up` | 12 s (16 s including `down -v`) |
+| Capability summary | `allowed 262, unavailable 0, declined 11, total 273` — matches the README's compatibility table |
+| Content on first access | web applications 5, users 5, TLS configurations 1, tasks 5, processes 5, and the log stream 20 events across 5 available sources. **Last screen checked: the logs stream**, because it is the one that depends on five separate readers |
+| Outcome | ok |
+
+The full Playwright suite was then run against this install: **128 passed, 22 skipped**, two failures
+that were not defects — one a test race fixed in this feature (`count()` called before the section
+tabs had rendered), one an artifact collision caused by running a second Playwright job against the
+same `test-results/` directory at the same time. Both re-run green in isolation.
+
+## Run 2 — IRIS for Health Community Edition 2026.2
+
+| Field | Value |
+|---|---|
+| Commands | `docker compose down -v` then `IRIS_IMAGE=intersystemsdc/irishealth-community:2026.2-zpm docker compose up -d --build` (the README's variant, verbatim) |
+| Reported by the portal | `product: irisforhealth`, `version: 2026.2`, `edition: Community`, `apiVersion: 2`, `dialect: v2`, `namespace: USER` |
+| Ready line after `up` | 18 s (21 s including `down -v`) |
+| Capability summary | `allowed 262, unavailable 0, declined 11, total 273` — **identical to IRIS 2026.2**, which is what the README claims and what a reader would otherwise have to spend 5 GB to check |
+| Content on first access | web applications 5, users 5, TLS configurations 2, tasks 5, processes 5, log stream 20 events across 5 available sources |
+| Outcome | ok |
+
+## Run 3 — the port-conflict path
+
+The port was occupied with `python3 -m http.server 52780`, then the README's instructions were
+followed verbatim.
+
+- `docker compose up -d` failed, naming the port, as the README says it would.
+- `FLIGHTDECK_PORT=52790 docker compose up -d` succeeded, ready after 5 s, and the ready line carried
+  the new URL.
+- **Defect found and fixed**: the README quoted an older Docker's wording (*"Bind for 0.0.0.0:52780
+  failed: port is already allocated"*). Docker 29 says *"failed to bind host port 0.0.0.0:52780/tcp:
+  address already in use"*. The README now quotes the current message and says the wording varies by
+  Docker version but always names the port.
+
+## Run 4 — the IPM path, on an instance that is not the container build
+
+This is the path no gate covers, and the one a reader with their own instance uses. A stock
+`intersystemsdc/iris-community:2026.2-zpm` container was started with **no FlightDeck in it**, the
+repository was copied in, and the README's command was run as written:
+
+```objectscript
+zpm "load /opt/flightdeck"
+```
+
+The installer reported, in order: capture routine deployed to `%SYS`; SysAdmin API v2 present; role
+`FlightDeck_Runtime` created (`%DB_USER:R`); web applications `/api/flightdeck` and `/flightdeck`
+present; 2 web applications recorded for self-protection; **`install complete (demo=0)`**.
+
+Verified afterwards against the instance's own security tables:
+
+| Claim in the README | Result |
+|---|---|
+| Two web applications, and nothing else | `/api/flightdeck` and `/flightdeck` — exactly two |
+| A role `FlightDeck_Runtime` | present |
+| A capture routine in `%SYS` | reported by the installer |
+| **Demonstration objects are off by default on this path** | 0 demo resources, and `/csp/fd-demo` **absent** |
+| The portal serves | `GET /flightdeck/` → 200 |
+
+Note for anyone reproducing this: the stock Community image's own entrypoint shuts IRIS down on
+start (the same finding as feature 001 research R2), so the throwaway instance was started the way
+this project's Dockerfile starts it, with `/tini -- /iris-main --check-caps false`.

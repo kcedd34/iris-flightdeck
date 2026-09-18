@@ -19,4 +19,7 @@ python3 "$root/scripts/build/check-descriptors.py"
 # left it out of the build while the descriptors did not exist; T050 turned it on.
 python3 "$root/scripts/build/check-secrets.py"
 python3 "$root/scripts/build/check-coverage.py"
+# The README carries checkable facts and is never compiled, so it is the one artifact that can drift
+# silently. Two of the five judging criteria are decided by it (feature 006).
+python3 "$root/scripts/build/check-readme.py"
 echo "check-generated: up to date"

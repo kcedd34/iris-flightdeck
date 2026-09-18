@@ -22,6 +22,23 @@ test("PRD UC08-1. The instruments update continuously and keep a sliding window 
   // It fills as time passes: the window grows with readings rather than starting full.
   const width = await series.evaluate((node) => (node as HTMLCanvasElement).width);
   expect(width).toBeGreaterThan(0);
+  // And it actually draws. Asserting the canvas exists is not the same as asserting it painted: the
+  // window used to hand out its live array, so the redraw effect saw one identity for ever, ran once
+  // on mount with a single point, and the line was never stroked. Every other assertion here passed
+  // throughout. Count non-transparent pixels, which is the only thing that cannot be faked.
+  await expect
+    .poll(
+      async () =>
+        series.evaluate((node) => {
+          const canvas = node as HTMLCanvasElement;
+          const image = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;
+          let painted = 0;
+          for (let i = 3; i < image.length; i += 4) if (image[i] !== 0) painted++;
+          return painted;
+        }),
+      { timeout: 20_000, intervals: [1_000] },
+    )
+    .toBeGreaterThan(0);
   const first = await page.getByTestId("instrument-value-cpu").textContent();
   await expect
     .poll(async () => page.getByTestId("instrument-value-cpu").textContent(), { timeout: 20_000, intervals: [500] })

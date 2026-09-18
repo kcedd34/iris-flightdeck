@@ -149,23 +149,66 @@ A API oficial nivela a cobertura por baixo. Todo mundo tem os mesmos 273 endpoin
 
 ## 7. Checklist de conformidade, para o dia 13
 
+Cada linha é fechada com o ponteiro para a evidência, ou marcada como **ação do autor** com o que
+falta e o prazo. Não existe terceiro estado: um visto sem ponteiro não é uma linha fechada, é uma
+alegação — e o checklist existe justamente para o último dia não ser gasto reconferindo alegações.
+
 Escopo:
 
-- [ ] Os seis eixos implementados, com operação real de leitura e mutação
-- [ ] 273 operações da API oficial atribuídas e implementadas, ou explicitamente degradadas com motivo
-- [ ] Logs com no mínimo cinco origens sob esquema normalizado
+- [x] **Os seis eixos implementados, com operação real de leitura e mutação** — features 002 a 005.
+  Evidência: projetos Playwright `webapps`, `rest`, `permissions`, `security`, `secrets`, `tasks`,
+  `system`, `instruments`, `processes`, `logs`, mais `mutation` e `last-admin` para as escritas.
+  148 testes na matriz completa, verdes nas três instalações
+  (`verification/feature-005-signoff.md`).
+- [x] **273 operações da API oficial atribuídas e implementadas, ou explicitamente degradadas com
+  motivo** — `scripts/build/check-coverage.py`, no build: *268 operations across 6 shipped domains,
+  11 declined*, **sem lista de lacunas toleradas**. As 11 recusadas estão em
+  `FlightDeck.Capability.Policy` com motivo e caminho nativo. As 5 restantes das 273 são a seção 0
+  (Sessão), implementada na feature 001 e fora dos seis eixos que o gate conta: 8 + 31 + 89 + 24 +
+  102 + 14 = 268.
+- [x] **Logs com no mínimo cinco origens sob esquema normalizado** — feature 005. Evidência: projeto
+  `logs` (13 testes) e, na instalação limpa 2026.2, as cinco origens responderam: audit 40 eventos,
+  messages 40, journal 10, alerts 1, interoperabilidade 0 nomeando o namespace que leu.
 
 Julgamento:
 
-- [ ] README lido por alguém que não conhece o projeto, sem dúvidas remanescentes
-- [ ] Instalação testada em ambiente limpo, nas duas imagens Community
-- [ ] Todas as telas com dados no primeiro acesso
-- [ ] Vídeo abrindo pelo cluster de instrumentos e pelo dry-run, não por menu
+- [ ] **README lido por alguém que não conhece o projeto, sem dúvidas remanescentes** — passagens de
+  agente registradas em `verification/cold-read.md`. **Ação do autor:** a passagem humana final, por
+  alguém que conhece IRIS e não conhece o FlightDeck, cronometrada. Prazo: antes da submissão.
+- [x] **Instalação testada em ambiente limpo, nas duas imagens Community** — `verification/install-runs.md`,
+  executando os comandos do próprio README, lendo versão e contagem de capacidades do portal e não
+  da tag.
+- [x] **Todas as telas com dados no primeiro acesso** — registrado em cada corrida de
+  `verification/install-runs.md`, com a última tela conferida nomeada.
+- [ ] **Vídeo abrindo pelo cluster de instrumentos e pelo dry-run, não por menu** — roteiro e driver
+  prontos: `docs/demo-script.md` (nove planos, tempos mínimos declarados) e
+  `frontend/e2e/demo.spec.ts`, que dirige o portal na ordem do roteiro **na velocidade real do
+  portal**. **Ação do autor:** gravar e publicar. Prazo: antes da submissão.
 
 Formal:
 
-- [ ] Licença MIT com arquivo no repositório
-- [ ] README em inglês, com passos de instalação e link para a ideia
-- [ ] Vídeo publicado
-- [ ] Submetido e aprovado pela moderação
-- [ ] Bônus de tecnologia conferidos e endereçados
+- [x] **Licença MIT com arquivo no repositório** — `LICENSE` na raiz, citada na última seção do
+  README. Conferido pelo gate `check-readme` (elemento 10).
+- [ ] **README em inglês, com passos de instalação e link para a ideia** — inglês e instalação
+  fechados e conferidos por `scripts/build/check-readme.py` (dez elementos, na ordem exigida).
+  **Ação do autor:** publicar a ideia no Ideas Portal e me passar a URL; a linha final já está
+  escrita no README esperando o link, marcada com `<!-- idea-link-pending -->`, e o gate avisa
+  enquanto o marcador existir. Prazo: antes da submissão.
+- [ ] **Vídeo publicado** — mesma ação do autor da linha do vídeo acima.
+- [ ] **Submetido e aprovado pela moderação** — **ação do autor**, no Open Exchange. A aprovação é
+  anterior à aparição na página do contest, e é por isso que a meta interna é 26/09.
+- [ ] **Bônus de tecnologia conferidos e endereçados** — **ação do autor**, dependente do anúncio dos
+  bônus, que ainda não saiu (§3). O que já está no projeto e costuma contar: IPM, Docker,
+  InterSystems API oficial, e a implementação de uma ideia do Ideas Portal.
+
+### As três ações do autor, reunidas
+
+| Ação | O que falta | Prazo |
+|---|---|---|
+| Link da ideia | Publicar no `ideas.intersystems.com` e passar a URL | Antes da submissão |
+| Vídeo | Gravar seguindo `docs/demo-script.md` e publicar | Antes da submissão |
+| Leitura fria humana | Um leitor que conhece IRIS e não conhece o FlightDeck, cronometrado | Antes da submissão |
+| URL de clone no README | O repositório ainda não tem remote configurado, então nada nele sabe o próprio endereço publicado. Hoje o README manda copiar a URL do botão **Code** do GitHub ou da listagem no Open Exchange, o que funciona para quem chega pela página; com a URL real, vira um comando copiável | Antes da submissão |
+
+Nenhuma delas bloqueia as demais linhas: todas as outras fecham sem elas. As quatro são de minutos
+cada, e três delas foram deixadas prontas para receber só o dado que falta.

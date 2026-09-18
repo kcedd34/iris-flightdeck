@@ -22,7 +22,12 @@ export function createWindow(capacity: number): Window {
       series.set(id, points);
     },
     series(id) {
-      return series.get(id) ?? [];
+      // A copy, deliberately. The window mutates its arrays in place as readings arrive, and handing
+      // out the live one made every consumer see the same array identity for ever: the canvas's
+      // redraw effect is keyed on that identity, so it ran once, on mount, when the window still
+      // held a single point — and the series never drew a line at all. A copy also stops a caller
+      // corrupting the window. Sixty numbers; the cost is not worth the class of bug it removes.
+      return [...(series.get(id) ?? [])];
     },
   };
 }

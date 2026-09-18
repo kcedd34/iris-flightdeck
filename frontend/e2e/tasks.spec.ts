@@ -44,9 +44,14 @@ test("PRD UC07-2. A failed run shows the complete message and jumps to the logs 
   await expect(page).toHaveURL(/taskId=\d+/);
   await expect(page).toHaveURL(/from=/);
   await expect(page).toHaveURL(/to=/);
-  const correlation = page.getByTestId("logs-correlation");
+  const correlation = page.getByTestId("logs-correlated");
   await expect(correlation).toBeVisible();
-  await expect(correlation).toContainText("Correlation received: task");
+  // The wording is the stream's own (feature 005 implements this side of the contract). This
+  // assertion was written in feature 004 against an invented string and a test id that never
+  // existed, and it went unnoticed because the test skips on an install with no failed run — which
+  // was every install until one was made to fail on purpose.
+  await expect(correlation).toContainText("Filtered on task");
+  await expect(correlation).toContainText("between");
 });
 
 test("PRD UC07-3. Running a task on demand goes through the shared dry-run, and the platform decides about a concurrent run", async ({ page }) => {

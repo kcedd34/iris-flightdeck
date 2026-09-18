@@ -1,137 +1,269 @@
 # FlightDeck for InterSystems IRIS
 
-A keyboard-first, safe-by-default management portal for InterSystems IRIS, built entirely on the
-official **SysAdmin API** (`/api/admin/v2`).
+FlightDeck is a keyboard-first management portal for InterSystems IRIS that ships as a container you
+can run in one command: you drive it from a command palette, every browser tab starts read-only, and
+every change is shown to you first — the exact fields that would change and the users who would lose
+access — and only applied once you confirm. It is built entirely on IRIS's official **SysAdmin API**
+(the REST management API under `/api/admin`), so what you can see and do is exactly what your own
+IRIS account is allowed to see and do, and your password is never stored by any part of it.
 
-![FlightDeck shell: glareshield, rail, section tabs and inspector](docs/img/shell.png)
+![The instrument cluster: CPU, memory, shared memory, disk, processes and devices, each with its live reading and a trailing time series drawn on canvas](docs/img/instruments.png)
 
-- **Command palette.** Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS) and
-  type the name of any user, role, web application, task or action.
-- **Safe mode by default.** Every browser tab starts read-only. Changes need an explicit
-  "Turn off safe mode", scoped to that tab only, and the server enforces it too.
-- **Your IRIS identity, nothing stored.** You sign in with your IRIS account. FlightDeck keeps no
-  password or token anywhere. What you can do comes from the privileges the SysAdmin API declares
-  for each operation.
-- **Permissions you can follow.** Users, roles, resources, services and privileged routines, with the
-  chain that grants each privilege: which role, through which inherited roles, granting which
-  resource. Before a removal, FlightDeck says who loses access and what becomes unreachable.
-- **Security and secrets.** TLS, X.509, OAuth 2.0 in its three roles, wallet, LDAP, MFT, auditing,
-  web authentication and superservers. Secrets are set or replaced, never shown.
-- **Web applications and REST APIs.** Web applications are listed with graded exposure markers,
-  edited through a field-by-field dry run, and linked to the roles and REST services behind them.
-  Every REST service the instance serves is discovered, with its OpenAPI specification when it has
-  one (FlightDeck's own API included), and can be tried from the browser.
-- **Real host telemetry.** CPU and memory come from the host; IRIS shared memory and database usage
-  come from the SysAdmin API.
-- **One log stream from five sources.** The messages log, alerts, the interoperability event log, the
-  audit trail and the journal, normalised into one line — timestamp, source, severity, namespace,
-  process, user, message — with every event's original record one click away, live follow, and a jump
-  from an event to the process, namespace or user it names.
+## Install
 
-> This release completes the six domains: the foundation, web applications and the REST explorer,
-> permissions and security, tasks and the operating system, and the **unified log stream** — the one
-> axis of the brief the official API does not cover, where five sources are normalised into one line
-> that keeps every original record.
+**Requirements**
 
-Related idea on the InterSystems Ideas Portal: _link pending publication by the author_
+- **Docker Engine 24+ with Docker Compose v2.** Linux, macOS and Windows (including WSL2).
+- **About 3 GB of free disk space** for the IRIS Community image, 5 GB for IRIS for Health.
+- **A free port** — 52780 by default, and any other port works (see below).
+- **x86-64 or arm64.** The images are multi-architecture, so Apple Silicon runs them natively, with
+  no emulation.
 
----
+**One command, after cloning**
 
-## Requirements
-
-- **Docker Engine 24+ with Docker Compose v2.** Works on Linux, macOS and Windows (including WSL2).
-- **About 3 GB of free disk space** for the IRIS Community image (5 GB for IRIS for Health).
-- **Free port 52780**, or pick another one (see [Port already in use](#port-already-in-use)).
-- **IRIS 2026.2 or later for the full portal.** FlightDeck uses SysAdmin API **v2**, which first
-  ships in IRIS 2026.2, so the install pins the `2026.2` images for you.
-- **IRIS 2026.1 runs in limited mode.** That release (still the `latest` tag of the Community
-  images) only has API v1. FlightDeck translates what v1 offers, shows a **Limited**
-  indicator at the top, and disables the 64 operations it cannot offer (databases, ECP, namespace
-  changes, the journal and a few more), each with its reason. Namespaces can still be browsed.
-
-## Quick start
+Copy this repository's clone URL from its **Code** button on GitHub, or from its Open Exchange
+listing, then:
 
 ```bash
-git clone <repository-url> iris-flightdeck
+git clone <that URL> iris-flightdeck
 cd iris-flightdeck
-docker compose up -d
+docker compose up -d      # the install
 docker compose logs -f iris
 ```
 
-Wait for this line (about 15 seconds after the image is downloaded):
+This pulls **`intersystemsdc/iris-community:2026.2-zpm`**, pinned in `docker-compose.yml`, and builds
+a small image on top of it that adds FlightDeck. So the default install gives you the **full
+portal**, not the limited mode described under [Compatibility](#compatibility) — you have to ask for
+an older IRIS to get that.
+
+Wait for this line — about 15 seconds after the first build, which itself takes a few minutes while
+the base image downloads:
 
 ```text
 FlightDeck is ready at http://localhost:52780/flightdeck/ — sign in with the default account documented in the README (local evaluation only).
 ```
 
-Open **http://localhost:52780/flightdeck/** and sign in:
+Open **http://localhost:52780/flightdeck/** and sign in with `_SYSTEM` / `SYS`, the default account
+of the InterSystems Community image. FlightDeck creates and changes no credential. **Use it for local
+evaluation only.**
 
-| Username | Password |
-|---|---|
-| `_SYSTEM` | `SYS` |
+FlightDeck installs into the `USER` namespace and does not replace the InterSystems Management
+Portal — it runs beside it, on the same instance, and points you back to it for the few operations it
+[declines to perform](#what-flightdeck-declines-to-do).
 
-This is the default account of the InterSystems Community image. FlightDeck does not create or
-change any credential. **Use it for local evaluation only.**
+This container also creates the [demonstration objects](#demonstration-objects), so that every screen
+has something to show on first open. One of them, `/csp/fd-demo`, is **deliberately unauthenticated**
+— it exists so the exposure warning has something real to point at. That is fine on a throwaway
+container bound to your own machine, and it is the reason the IPM path creates nothing of the sort
+unless you ask.
 
-Then try:
+Then try these three, in order — they are the portal in ninety seconds:
 
-1. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type `FD_Demo`. The demonstration roles, resources, web
-   application, tasks and wallet collection appear, grouped by domain.
-2. Type `delete a role` and press <kbd>Enter</kbd>. FlightDeck offers to turn off safe mode first,
-   because this tab is read-only.
+1. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS — FlightDeck takes the
+   shortcut from the browser while the portal has focus) and type `FD_Demo`. The demonstration
+   roles, resources, web application, tasks and wallet collection appear, grouped by domain.
+2. Type `delete` and press <kbd>Enter</kbd> on "Delete a role" — the palette matches against the
+   names of objects and actions, so a fragment is enough. FlightDeck offers to turn off safe mode
+   first, because this tab is read-only. Turn it off and choose `FD_Demo_Operator`: before anything
+   happens you get the fields that would change, the users who would lose access, and a confirmation
+   that asks you to type the role's name. Cancel it — nothing has been sent.
 3. Open a second tab. It starts in safe mode again: safe mode is per tab and never remembered.
 
-To stop: `docker compose down`. To remove everything, including IRIS data: `docker compose down -v`.
+To stop: `docker compose down`. To remove everything including IRIS data: `docker compose down -v`.
+If the ready line never appears, or sign-in refuses you, see [Troubleshooting](#troubleshooting).
 
-### IRIS for Health
-
-Same procedure, one variable:
+**On IRIS for Health** — the same procedure, one variable. `--build` is needed here and not above
+because the local image has already been built on top of IRIS Community, and changing the base means
+rebuilding it:
 
 ```bash
 docker compose down -v
 IRIS_IMAGE=intersystemsdc/irishealth-community:2026.2-zpm docker compose up -d --build
 ```
 
-### Port already in use
-
-If port 52780 is taken, `docker compose up -d` stops with:
+**If the port is already in use**, `docker compose up -d` stops with a message like this one —
+Docker's exact wording varies by version, but it always names the port:
 
 ```text
-Error response from daemon: failed to set up container networking: … Bind for 0.0.0.0:52780 failed: port is already allocated
+Error response from daemon: failed to set up container networking: driver failed programming
+external connectivity on endpoint iris-flightdeck-iris-1: failed to bind host port
+0.0.0.0:52780/tcp: address already in use
 ```
 
-Pick another port:
+Pick another one. Nothing else changes, and the ready line shows the new URL:
 
 ```bash
 FLIGHTDECK_PORT=52790 docker compose up -d
 ```
 
-The ready line in the log shows the new URL.
+That syntax is POSIX shell. **In PowerShell or `cmd`**, or whenever you would rather not repeat the
+variable, put it in a `.env` file next to `docker-compose.yml` — Compose reads it automatically:
 
-## Install with IPM on an existing instance
+```text
+FLIGHTDECK_PORT=52790
+```
 
-On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want FlightDeck, from a clone of this
-repository:
+### Install with IPM on an existing instance
+
+This path needs IPM (ZPM) already installed on the instance — the `-zpm` Community images carry it.
+On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want
+FlightDeck, from a clone of this repository:
 
 ```objectscript
 zpm "load /path/to/iris-flightdeck"
 ```
 
-This installs:
-- two web applications, `/flightdeck` (the interface) and `/api/flightdeck` (the API, Password
-  authentication);
-- a role `FlightDeck_Runtime`, which grants read access to FlightDeck's code database only, inside
-  those two web applications;
-- a small capture routine, also installed in `%SYS`.
+This installs two web applications — `/flightdeck` for the interface and `/api/flightdeck` for the
+API, with Password authentication — a role `FlightDeck_Runtime` granting read access to FlightDeck's
+code database inside those two applications only, and a small capture routine in `%SYS`. Nothing else
+is created or changed.
 
-Nothing else is created or changed. **Demonstration objects are off by default.** To add them:
+On an instance older than 2026.1 there is no SysAdmin API at all: FlightDeck installs, and sign-in
+refuses with the version it detected rather than half-working.
+
+**Demonstration objects are off by default** on this path. To add them:
 
 ```objectscript
 zpm "load /path/to/iris-flightdeck -DDemo=1"
 ```
 
+⚠️ **`-DDemo=1` creates `/csp/fd-demo`, a deliberately unauthenticated web application**, so that the
+exposure warning has something real to point at. That is what you want on a scratch instance and not
+what you want on a shared one. Without the flag, nothing of the sort is created.
+
 The installer creates the role and every demonstration object through the SysAdmin API. The
-installing user needs `%All` (or equivalent) for the web applications and the `%SYS` routine.
+installing user needs `%All`, or equivalent rights for the web applications and the `%SYS` routine.
+
+## The six domains
+
+- **Web applications and REST APIs** — every web application with a graded exposure marker, edited
+  through a field-by-field rehearsal; every REST service the instance serves, discovered with its
+  OpenAPI specification and callable from the browser.
+- **Permissions** — users, roles, resources, services and privileged routines, each privilege shown
+  with the chain of roles that grants it, and each removal preceded by who loses what.
+- **Security and secrets** — TLS, X.509, OAuth 2.0 in its three roles, the wallet, LDAP, MFT,
+  auditing, web authentication and superservers; secrets are set or replaced, never shown.
+- **Tasks** — the task list with each task's recent history, run, suspend, resume and reschedule, and
+  a jump from a failed run to the logs of that period.
+- **Operating system** — processes, databases, directories, namespaces, devices, licence, locks, web
+  sessions, ECP, external language servers, DocDB and file-system access, with a live instrument
+  cluster above them.
+- **Logs** — five sources in one stream under a single normalised schema, live follow, a jump from an
+  event to the entity it names, and the original record behind every line.
+
+## What makes it different
+
+- **A command palette, not a menu tree.** <kbd>Ctrl</kbd>+<kbd>K</kbd> from anywhere finds any user,
+  role, web application, task or action by name, grouped by domain, and opens it in the inspector.
+  Every destination in the portal is reachable without the mouse.
+
+![The command palette: one query, results grouped by domain — web applications, resources, roles and users — with keyboard hints](docs/img/palette.png)
+- **An entity graph, not isolated forms.** Objects link to the objects they affect: a role to the
+  users who hold it and the resources it grants, a web application to its roles and REST services, a
+  log event to the process, namespace or user it names. You follow a question instead of re-finding
+  each object by name.
+- **A dry-run with impact analysis before every change.** Current and commanded values side by side,
+  the effect on users when it can be determined, confirmation graded by risk — destructive changes
+  ask you to type the target's name — and the server recomputes the whole preview and refuses if the
+  object moved underneath you.
+
+![A rehearsed deletion: the field-by-field difference, the users who would lose a privilege, and the typed confirmation](docs/img/dry-run.png)
+
+- **Safe mode, per tab, enforced by the server.** Every tab starts read-only, and turning it off
+  applies to that tab alone — never shared, never remembered. The API rejects a change from a
+  read-only tab before it reaches IRIS, so the guarantee does not depend on the interface.
+- **One unified log stream, where the official API offers almost nothing.** Of the five places IRIS
+  reports what happened, the SysAdmin API covers two. FlightDeck reads the audit trail and the
+  journal through it, and implements the messages log, the alerts log and the interoperability event
+  log natively, normalising all five into one line that keeps every original record. This is the part
+  of the portal that could not be assembled from the API alone.
+
+## Compatibility
+
+FlightDeck needs the official **SysAdmin API** — v2 for the full portal, v1 for a reduced one — and
+reads capability from the API's own declarations rather than from a version number: an operation the
+instance does not offer is a disabled control with the reason on it, never a missing screen.
+
+| IRIS version | Channel | Offered to you | Not offered by that IRIS | Declined by FlightDeck | Total |
+|---|---|---|---|---|---|
+| IRIS 2026.2 | `latest-cd` | 262 | 0 | 11 | 273 |
+| IRIS 2026.1 | `latest` | 200 | 62 | 11 | 273 |
+
+"Not offered by that IRIS" is what the instance's own API does not expose; "Declined by FlightDeck"
+is what the portal [refuses to do](#what-flightdeck-declines-to-do) on every version. These numbers were read from a
+running instance of each, and you can reproduce them on yours:
+
+```bash
+curl -s -u _SYSTEM:SYS -H 'X-FlightDeck-Tab: check' \
+  http://localhost:52780/api/flightdeck/v1/session | grep -o '"capabilitySummary":{[^}]*}'
+```
+
+(The `v1` there is FlightDeck's own API version, not the SysAdmin API's. The header can be any
+string: FlightDeck's API requires each browser tab to identify itself, which is how safe mode is
+scoped to one tab.)
+
+IRIS for Health Community Edition 2026.2 reports the same numbers as IRIS 2026.2.
+
+**IRIS 2026.1 runs in limited mode.** That release — still the `latest` tag of the Community images —
+exposes API v1 only. FlightDeck translates what v1 offers, shows a persistent **Limited** indicator,
+and disables the rest with the reason on each control. Namespaces are still browsable, read through a
+native provider because v1 has no endpoint for them.
+
+An instance with no SysAdmin API at all refuses sign-in and says so, naming the version it detected.
+
+**Why disabled controls name a version, if nothing checks one.** FlightDeck never asks the instance
+what release it is in order to decide what to offer: it asks the API what it declares, and an
+operation that is absent is disabled. The *sentence* on the disabled control names the release that
+first shipped the operation, because "Requires IRIS 2026.2" is more useful to a reader than "this
+instance does not declare this operation". The version is in the message, not in the decision.
+
+## The REST test executor
+
+- **Confined to this instance.** A test request names a method, a path, query parameters, headers and
+  a body. Scheme, host and port always come from the instance serving FlightDeck. Paths carrying a
+  scheme, a host, `..` segments (plain or percent-encoded) or backslashes are refused, and so are
+  `Authorization`, `Cookie`, `Proxy-Authorization` and `Host` headers. **The executor is not an
+  outbound proxy**: it opens no network connection at all. The request is dispatched in-process to
+  the REST application that serves the path.
+- **Runs as you.** The request runs with your IRIS identity, in the application's namespace, and only
+  if the application is enabled and you hold its resource. Your roles are kept or reduced, never
+  raised: when an application grants extra roles to real callers, a test request does not receive
+  them, and the result can differ from a real call. The explorer says so before and after running.
+- **Safe mode applies.** `GET`, `HEAD` and `OPTIONS` run directly. `POST`, `PUT`, `PATCH` and
+  `DELETE` are refused by the server while the tab is read-only; otherwise they open the shared
+  confirmation showing exactly what will be sent, and are recorded in the session trail.
+- **Copy as curl** produces a command targeting this instance, carrying the literal placeholder
+  `-u '<user>:<password>'` and never your credentials.
+
+## What FlightDeck declines to do
+
+Eleven official operations are implemented nowhere in FlightDeck **by decision**, on every version.
+They appear as disabled controls stating the reason and the native path that performs them, and
+`docs/api-coverage.md` lists them as declined. They share one property: the portal can neither
+rehearse them nor undo them.
+
+- **Encryption writes — 8 operations.** Creating an encryption key file, adding or removing its
+  administrators, adding or removing keys, activating and deactivating a key, and changing the
+  encryption settings. A mistake here can make an instance's data permanently unreadable, and a
+  deleted key cannot decrypt what it encrypted. Native path: *System Administration > Encryption*.
+- **Destructive storage writes — 3 operations.** Truncating a database directory, deleting a
+  database, and deleting a namespace. FlightDeck creates databases and namespaces but deletes
+  neither, because deletion removes data with no recovery from the portal and no safe way to show you
+  first what it would cost. Native path: *System Administration > Configuration > Local Databases* and
+  *> Namespaces*.
+
+**The journal is a different decision, and a more interesting one.** Three of the five log sources
+exist precisely because the official API offers nothing for them, so a missing operation is normally
+a candidate for a native provider. The journal is where that stops. On IRIS 2026.1 the journal
+operations are withheld by the platform, and FlightDeck does **not** read journal records natively to
+fill the gap:
+
+> FlightDeck does not read the journal natively: filtering records by the databases you can read is
+> an authorization decision that belongs to IRIS.
+
+Implementing it would mean the portal deciding which records you may see. That decision belongs to
+the platform, so on that version the journal source says why it is absent and the other four keep
+streaming.
 
 ## Demonstration objects
 
@@ -148,28 +280,26 @@ SysAdmin API, and re-running creates no duplicates.
 
 ## How sign-in and safe mode work
 
-- **Credentials.** The sign-in form sends your username and password to IRIS once, in an HTTP
-  Basic header. IRIS authenticates you and keeps its own session cookie. FlightDeck never stores,
-  caches or logs the password, and uses no JWT or refresh token. Invalid credentials always produce
-  the same message, whether or not the user exists.
+- **Credentials.** The sign-in form sends your username and password to IRIS once, in an HTTP Basic
+  header. IRIS authenticates you and keeps its own session cookie. FlightDeck never stores, caches or
+  logs the password, and uses no JWT or refresh token. Invalid credentials always produce the same
+  message, whether or not the user exists.
 - **What you can do.** Every SysAdmin API operation declares the privilege it needs (for example
-  `%Admin_Secure:U`). FlightDeck crosses those declarations with the privileges IRIS reports for
-  you. Actions you cannot perform stay visible, disabled, with the privilege to ask for.
-- **Safe mode.** Safe mode lives in the tab's memory only. It is not in cookies, storage or the URL,
-  so reloads, new tabs and duplicated tabs always start in safe mode. Every request carries the
-  tab's state, and the FlightDeck API rejects any change request from a tab in safe mode before it
-  reaches IRIS.
-- **Changes.** Every change opens the same confirmation view: current and commanded values side by
-  side, graded confirmation (deleting or disabling asks you to type the name), and the effect on
-  users when it can be determined. The server recomputes the preview and refuses the change if the
-  object changed in the meantime. FlightDeck refuses changes that would disable its own
-  applications.
+  `%Admin_Secure:U`). FlightDeck crosses those declarations with the privileges IRIS reports for you.
+  Actions you cannot perform stay visible, disabled, with the privilege to ask for.
+- **Safe mode.** Safe mode lives in the tab's memory only — not in cookies, storage or the URL — so
+  reloads, new tabs and duplicated tabs always start read-only. Every request carries the tab's
+  state, and the FlightDeck API rejects any change request from a read-only tab before it reaches
+  IRIS.
+- **Changes.** Every change opens the same confirmation: current and commanded values side by side,
+  graded confirmation, and the effect on users when it can be determined. The server recomputes the
+  preview and refuses if the object changed in the meantime. FlightDeck refuses changes that would
+  disable its own applications or remove the last administrative access to the instance.
 - **Session trail.** Applied, failed and blocked changes are recorded in a trail you can open from
-  the confirmation view or the palette and export as JSON. The trail is local to the browser tab
-  (session storage, cleared at sign-out and when the session expires), holds no secret values, and
-  does **not** replace IRIS auditing.
-- **Users without administrative privileges** cannot open a session. FlightDeck lists the
-  privileges they would need.
+  the confirmation view or the palette and export as JSON. It is local to the browser tab, holds no
+  secret values, and does **not** replace IRIS auditing.
+- **Users without administrative privileges** cannot open a session. FlightDeck lists the privileges
+  they would need.
 
 ## What the permissions screens claim, and what they do not
 
@@ -187,90 +317,74 @@ SysAdmin API, and re-running creates no duplicates.
   incomplete, names what it could not read, and asks for the reinforced confirmation. The session
   trail records which of the two happened.
 
-## Secrets, and what FlightDeck declines to do
+## Secrets
 
 - **Secret material is write-only** everywhere: wallet secrets, private keys, client secrets,
   passwords and tokens are set, replaced or deleted. No screen, API answer, session trail or log of
   FlightDeck carries a value, and the wallet has no operation that reads one back.
-- **Encryption is read-only in FlightDeck.** Creating an encryption key file, administering one,
-  activating or deactivating a key and changing the encryption settings can make an instance's data
-  permanently unreadable, with no recovery through the portal. Those eight operations appear in the
-  interface as disabled controls, each stating that reason and pointing at
-  "System Administration > Encryption" in the platform's own management portal. They are listed in
-  `docs/api-coverage.md` as declined, not missing.
-- **Auditing**: FlightDeck changes the setting and performs the two writes that touch the audit trail
-  — copying records to another namespace, and purging them. A purge asks for the maximum
-  confirmation and states that it erases the instance's own audit trail. Reading audit records
-  belongs to the logs screens.
+- **Auditing.** FlightDeck changes the setting and performs the two writes that touch the audit trail
+  — copying records to another namespace, and purging them. A purge asks for the maximum confirmation
+  and states that it erases the instance's own audit trail. Reading audit records belongs to the logs
+  screens.
 
 ## What the log stream reads, and what it does not
 
-- **Five sources, one schema.** Two come from the official API (the audit trail and the journal, both
-  read asynchronously); three have no API and are read natively, which is the exception the project's
-  constitution names: the instance's messages log, its alerts log, and the interoperability event log.
-- **The original record is always kept.** Normalisation never discards anything: every event carries
-  the record it came from. Where the original can no longer be recovered — a purged journal file, a
-  rotated log — the event says so where the record would be and keeps the fields FlightDeck read
-  before it went. There is no third case, and nothing is invented to fill the gap.
-- **Severity is mapped, never guessed.** Each source states its own level and FlightDeck maps it. A
-  source that states no level gets `unknown`, a fifth value outside the ordering — not `info`, and
-  never a guess from the words in the message. The minimum-severity filter says how it treats it.
+- **Five sources, one schema.** Two come from the official API — the audit trail and the journal,
+  both read asynchronously; three have no API and are read natively: the instance's messages log, its
+  alerts log, and the interoperability event log.
+- **The original record is always kept.** Normalisation discards nothing, so an event either shows
+  you the record it came from, or — when that record can no longer be recovered, a purged journal
+  file or a rotated log — says so in the record's place and keeps the fields FlightDeck read before
+  it went. Those two are the only cases: nothing is ever invented to fill the gap.
+- **Severity is mapped, never guessed.** The scale is `info`, `warning`, `error`, `fatal`. Each
+  source states its own level and FlightDeck maps it onto that scale. A source that states no level
+  gets a fifth value, `unknown`, which sits outside the ordering — not `info`, and never a guess from
+  the words in the message. The minimum-severity filter says how it treats it.
 - **Big files are read backwards, in pages.** A log is never read whole, at any size: each page seeks
   to an offset near the end and reads one bounded window. A 100 MB file pages at the same cost as a
   small one, wherever in it you are.
 - **A source that cannot be read says why, and the others keep streaming.** A stock instance writes no
   alerts log, so that source is normally absent and explains what an alerts log is and where it comes
-  from. On IRIS 2026.1 the journal operations are withheld and the journal source says so. Neither
-  takes the stream with it.
-- **What it is not.** FlightDeck does not store, index or forward any event: nothing is persisted,
-  and the live window lives in the browser. It is a reader, not a log platform.
-
-## REST API explorer: what a test request can and cannot do
-
-- **Confined to this instance.** A test request names only a method, a path, query parameters,
-  headers and a body. Scheme, host and port always come from the instance serving FlightDeck. Paths
-  with a scheme, a host, `..` segments (plain or percent-encoded) or backslashes are refused, and so
-  are `Authorization`, `Cookie`, `Proxy-Authorization` and `Host` headers. **The executor is not an
-  outbound proxy**: it opens no network connection at all. The request is dispatched in-process to
-  the REST application that serves the path.
-- **Runs as you.** The request runs with your IRIS identity, in the application's namespace, and
-  only if the application is enabled and you hold its resource. Your roles are kept or reduced,
-  never raised: when an application grants extra roles to real callers (its role mapping), a test
-  request does not receive them, and the result can differ from a real call. The explorer says so
-  before and after running.
-- **Safe mode applies.** `GET`, `HEAD` and `OPTIONS` run directly. `POST`, `PUT`, `PATCH` and
-  `DELETE` are refused by the server while the tab is in safe mode; otherwise they open the shared
-  confirmation view showing exactly what will be sent (a `DELETE` asks you to type the path), and
-  are recorded in the session trail.
-- **Copy as curl.** The copied command targets this instance and carries the literal placeholder
-  `-u '<user>:<password>'`, never your credentials.
-- FlightDeck's own API requires the `X-FlightDeck-Tab` header on every call, and
-  `X-FlightDeck-Safe-Mode: disarmed` on changes. Its specification declares both; the explorer adds
-  nothing on your behalf, so a request without them returns the API's own 400 or 403.
+  from.
+- **What it is not.** FlightDeck does not store, index or forward any event: nothing is persisted, and
+  the live window lives in the browser. It is a reader, not a log platform.
 
 ## Day-1 platform verification
 
-`scripts/verify/verify_platform.py` checks, in order, the eight platform facts FlightDeck depends
-on:
-1. SysAdmin API v2;
-2. which sign-in path works without storing credentials;
-3. monitor data shapes;
-4. asynchronous database metrics;
-5. wallet;
-6. the REST management API;
-7. log file locations and the interoperability log;
-8. auditing.
+`scripts/verify/verify_platform.py` checks, in order, the eight platform facts FlightDeck depends on:
+SysAdmin API v2; which sign-in path works without storing credentials; monitor data shapes;
+asynchronous database metrics; the wallet; the REST management API; log file locations and the
+interoperability log; and auditing.
 
 Each fact is classified `confirmed_present`, `confirmed_absent` or `inconclusive`, with the raw
-response recorded. To run it against fresh IRIS Community and IRIS for Health containers:
+response recorded. You do not need to run it — the reports it produced are committed — but if you
+want to:
 
 ```bash
 scripts/verify/run-both-images.sh
 ```
 
-Reports are written to `verification/<product>-<version>.json`. Exit code: `0` when nothing is
+It needs Python 3, **starts and removes its own throwaway containers** on ports of its own, and does
+not touch the install you are running or the data in it.
+
+Reports are written to `verification/<product>-<version>.json`. Exit code `0` when nothing is
 inconclusive, `1` otherwise, `2` for a usage error. The committed reports and findings are in
 [`verification/`](verification/).
+
+## Checking what this README claims
+
+Every assertion here is enforced somewhere, because a claim nobody can check is a claim that drifts.
+
+| Claim | Where it is enforced |
+|---|---|
+| The operation counts, and that every operation is implemented or declined for a stated reason | `scripts/build/check-coverage.py`, in the build: it fails naming any operation of a shipped domain that no code reaches and no policy declines, and it keeps no list of tolerated gaps |
+| This README's own structure and numbers | `scripts/build/check-readme.py`, in the build |
+| No credential stored, cached or logged; no secret in any response, trail or export | `frontend/e2e/audit.spec.ts` and `secrets.spec.ts` sweep the responses and the exports; `scripts/build/check-secrets.py` fails on an undeclared secret field |
+| Safe mode is enforced by the server, not the interface | `scripts/dev/check-safe-mode-enforcement.sh` sends every mutating route directly, bypassing the interface, and requires each to be refused |
+| Every mutation goes through the one confirmation path | `npm run check:mutation-boundary` and `scripts/dev/check-mutation-enforcement.sh` |
+| The REST executor opens no outbound connection | `frontend/e2e/rest-confinement.spec.ts` |
+| A 100 MB log pages at constant cost | Measured and recorded in `verification/feature-005-signoff.md` |
+| It runs on both Community images, from clean | `verification/install-runs.md`, one entry per install |
 
 ## Troubleshooting
 
@@ -278,14 +392,13 @@ inconclusive, `1` otherwise, `2` for a usage error. The committed reports and fi
   `docker compose logs iris`. It names the step and the IRIS error. IRIS stays running so you can
   inspect it.
 - **Sign-in says "Not available on this IRIS version or edition. Requires IRIS 2026.1."** The
-  instance has no SysAdmin API. Use the pinned images or upgrade.
-- **The top bar shows "Limited".** The instance is IRIS 2026.1 (for example a `latest`
-  Community image). Disabled actions say "Requires IRIS 2026.2"; use the pinned images for the
-  full portal.
+  instance has no SysAdmin API at all. Use the pinned images, or upgrade.
+- **The top bar shows "Limited".** The instance is IRIS 2026.1, for example a `latest` Community
+  image. Disabled actions say "Requires IRIS 2026.2"; use the pinned images for the full portal.
 - **Sign-in says "Invalid credentials".** The default account is `_SYSTEM` / `SYS` on the Docker
   install. On an existing instance, use your own IRIS account.
-- **Sign-in says "Requires Use on …".** The account has no administrative privilege. Grant one of
-  the listed `%Admin_*` resources, for example through the `%Operator` or `%Manager` role.
+- **Sign-in says "Requires Use on …".** The account has no administrative privilege. Grant one of the
+  listed `%Admin_*` resources, for example through the `%Operator` or `%Manager` role.
 
 ## Development
 
@@ -294,12 +407,18 @@ inconclusive, `1` otherwise, `2` for a usage error. The committed reports and fi
 | Frontend dev server (proxies the API to the Docker install) | `cd frontend && npm ci && npm run dev`, then open http://localhost:5173/flightdeck/ |
 | Frontend checks | `npm run lint && npm run check:tokens && npm run check:dialect && npm run contrast && npm run test` |
 | End-to-end tests (Docker install running) | `npx playwright install chromium && npm run e2e` |
-| Backend unit tests (inside the container) | `zpm "iris-flightdeck test"` |
+| Backend unit tests (inside the container) | `docker compose exec iris iris session iris -U USER`, then `zpm "iris-flightdeck test"` |
 | Rebuild the committed frontend bundle | `cd frontend && npm run build` (verify with `scripts/build/check-dist.sh`) |
 | Regenerate the capability map from the official spec | `python3 scripts/build/gen-capability-spec.py` (verify with `scripts/build/check-generated.sh`) |
+| Regenerate the documentation images | `cd frontend && FD_CAPTURE=1 npx playwright test --project=docs` |
 
-Specifications, plan and research live in [`specs/001-foundation-shell/`](specs/001-foundation-shell/).
-The project constitution is in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
+Specifications, plans and research for all six features live in [`specs/`](specs/). The project
+constitution is in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
+
+## The idea behind it
+
+FlightDeck implements an idea published on the InterSystems Ideas Portal:
+<!-- idea-link-pending --> _link to be added by the author before submission_.
 
 ## License
 
