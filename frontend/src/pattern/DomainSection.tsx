@@ -9,7 +9,12 @@ import "./pattern.css";
 
 /** What the inspector shows instead of the entity: a create, an edit, or another form.
  * A mode other than "create" always carries the entity it acts on. */
-export type FormState = { mode: "create"; detail?: undefined } | { mode: "edit" | "password"; detail: EntityDetailResponse } | null;
+export type FormState =
+  | { mode: "create"; detail?: undefined }
+  | { mode: "edit" | "password"; detail: EntityDetailResponse }
+  /** Any other declared action of the entity, named by the section that opens it (feature 004). */
+  | { mode: "action"; detail: EntityDetailResponse; action: string }
+  | null;
 
 const FILTER_IDS = ["q", "state"] as const;
 

@@ -21,7 +21,18 @@ ClassMethod For(kind As %String, listItem As %DynamicObject) As %DynamicObject
 	if kind = "task" quit ..Task(listItem)
 	if kind = "task-manager" quit ..TaskManager(listItem)
 	if kind = "async-result" quit ..AsyncResult(listItem)
+	if kind = "catalog-item" quit ..CatalogItem(listItem)
 	quit {}
+}
+
+/// Facts of a pattern-catalog item: the capability field the fixture uses to exercise the standing
+/// rule that an official schema's capability governs its control (RN-FD-34). An item that carries no
+/// such field leaves the fact absent, which is not a refusal.
+ClassMethod CatalogItem(item As %DynamicObject) As %DynamicObject
+{
+	set facts = {}
+	if item.%IsDefined("CanBeEdited") do facts.%Set("canBeEdited", ''item.CanBeEdited, "boolean")
+	quit facts
 }
 
 /// Occupancy bands for a database directory, in percent of its size limit. The home panel uses the

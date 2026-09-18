@@ -3,7 +3,16 @@ import { ActionBar } from "../../pattern/ActionBar";
 import { DomainSection } from "../../pattern/DomainSection";
 import { SingletonSection } from "../../pattern/SingletonSection";
 import { useDomainMutation } from "../../pattern/useDomainMutation";
-import { INITIAL_ACCESS_TOKEN, OAUTH_CLIENT_SECRET, OAUTH_SERVER_PASSWORD, RESOURCE_SERVER_SECRET, SecurityActionForm } from "./ActionForms";
+import {
+  INITIAL_ACCESS_TOKEN,
+  OAUTH_CLIENT_SECRET,
+  OAUTH_REVOKE,
+  OAUTH_SERVER_PASSWORD,
+  RESOURCE_SERVER_MAPPING,
+  RESOURCE_SERVER_MAPPING_DELETE,
+  RESOURCE_SERVER_SECRET,
+  SecurityActionForm,
+} from "./ActionForms";
 import { FORMS } from "./forms";
 
 const FAMILIES = [
@@ -100,6 +109,8 @@ function ServerClients() {
           FORMS.oauthServerClient({ mode: "create", original: {}, onDone: done })
         ) : form.mode === "password" ? (
           <SecurityActionForm config={OAUTH_CLIENT_SECRET} keys={form.detail.keys} onDone={() => done()} />
+        ) : form.mode === "action" ? (
+          <SecurityActionForm config={OAUTH_REVOKE} keys={form.detail.keys} onDone={() => done()} />
         ) : (
           FORMS.oauthServerClient({ mode: "edit", keys: form.detail.keys, original: form.detail.object, onDone: done })
         )
@@ -112,6 +123,7 @@ function ServerClients() {
             actions={[
               { operationId: "PUT /v2/security/oauth2/server/client", label: "Edit", mutating: true, onActivate: () => openForm({ mode: "edit", detail }) },
               { operationId: "POST /v2/security/oauth2/server/client/secret", label: "Replace client secret", mutating: true, onActivate: () => openForm({ mode: "password", detail }) },
+              { operationId: "POST /v2/security/oauth2/revoke", label: "Revoke a user's tokens", mutating: true, onActivate: () => openForm({ mode: "action", detail, action: "revoke" }) },
               {
                 operationId: "DELETE /v2/security/oauth2/server/client",
                 label: "Delete",
@@ -142,6 +154,8 @@ function ResourceServers() {
           FORMS.oauthResourceServer({ mode: "create", original: { Enabled: true }, onDone: done })
         ) : form.mode === "password" ? (
           <SecurityActionForm config={RESOURCE_SERVER_SECRET} keys={form.detail.keys} onDone={() => done()} />
+        ) : form.mode === "action" ? (
+          <SecurityActionForm config={form.action === "delete-mapping" ? RESOURCE_SERVER_MAPPING_DELETE : RESOURCE_SERVER_MAPPING} keys={form.detail.keys} onDone={() => done()} />
         ) : (
           FORMS.oauthResourceServer({ mode: "edit", keys: form.detail.keys, original: form.detail.object, onDone: done })
         )
@@ -154,6 +168,8 @@ function ResourceServers() {
             actions={[
               { operationId: "PUT /v2/security/oauth2/resource-server", label: "Edit", mutating: true, onActivate: () => openForm({ mode: "edit", detail }) },
               { operationId: "POST /v2/security/oauth2/resource-server/secret", label: "Replace client secret", mutating: true, onActivate: () => openForm({ mode: "password", detail }) },
+              { operationId: "PUT /v2/security/oauth2/resource-server/mapping", label: "Add a mapping", mutating: true, onActivate: () => openForm({ mode: "action", detail, action: "mapping" }) },
+              { operationId: "DELETE /v2/security/oauth2/resource-server/mapping", label: "Delete a mapping", mutating: true, onActivate: () => openForm({ mode: "action", detail, action: "delete-mapping" }) },
               {
                 operationId: "DELETE /v2/security/oauth2/resource-server",
                 label: "Delete",

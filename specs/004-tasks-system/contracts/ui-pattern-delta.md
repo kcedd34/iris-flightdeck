@@ -111,12 +111,36 @@ large database"). When present, the dry-run states it beside the consequence, an
 repeats it. This is how compact, defragment and integrity-check avoid reading as a frozen
 application — the same failure the ten-second TLS test showed in feature 003 (spec FR-037b).
 
-### 3.2 A control disabled by the object itself
+### 3.2 A control disabled by the object itself — `refusedWhen`
 
-`ActionBar` already disables a control the capability map does not offer. It now also accepts a
-per-object reason, so a control the **API** disabled for **this object** (`CanBeTerminated` false,
-`Removable` false) renders disabled with that reason and **never issues the request** (RN-FD-34,
-spec FR-029). The reason text comes from the descriptor, and the predicate reads facts only.
+`ActionBar` already disables a control the capability map does not offer. It now also renders the
+object's own answer, which travels with the capability (`objectEnabled`, `objectReason`), so every
+domain gets the rule from the pattern instead of wiring it per screen.
+
+The descriptor declares it:
+
+```json
+"refusedWhen":    {"op": "equals", "path": "facts.canBeTerminated", "value": false},
+"disabledReason": "The instance reports that this process cannot be terminated."
+```
+
+**This is a standing rule, not a case.** Wherever an official schema exposes a capability field over
+an object, that field governs the corresponding control, and the interface never infers permission
+(RN-FD-34). `CanBeTerminated`, `CanBeSuspended`, `CanReceiveBroadcast` and `CanBeExamined` on a
+process, and `Removable` on a lock, are the instances this feature met; a field in any other schema
+is treated the same way.
+
+Two properties of the rule are deliberate:
+
+- **Written as a refusal.** An absent fact is not a refusal — the portal then lets the platform
+  answer instead of denying on a guess. An `enabledWhen` would have inverted that, and did, until a
+  test caught it refusing every action whose facts had not been read.
+- **Enforced on the server.** `FlightDeck.Mutation.Service.Refusal` evaluates the same predicate
+  before any write, so a request that bypasses the screen is refused too (spec FR-029).
+
+`check-descriptors` and `FlightDeck.Domain.Descriptor.Validate` both reject a `refusedWhen` with no
+`disabledReason`, and `FlightDeck.Test.ObjectCapabilities` tests the rule across two schemas so a
+third needs no new test shape.
 
 ---
 

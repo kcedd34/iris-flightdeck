@@ -703,7 +703,8 @@ XData EntityTypes [ MimeType = application/json ]
   "mutations": [
    "PUT /v2/security/ldap/configuration",
    "DELETE /v2/security/ldap/configuration",
-   "POST /v2/security/ldap/configuration/search-password"
+   "POST /v2/security/ldap/configuration/search-password",
+   "POST /v2/security/ldap/test"
   ]
  },
  "security/mft-connection": {
@@ -739,7 +740,8 @@ XData EntityTypes [ MimeType = application/json ]
   "mutations": [
    "PUT /v2/security/mft/connection",
    "DELETE /v2/security/mft/connection",
-   "DELETE /v2/security/mft/connection/token"
+   "DELETE /v2/security/mft/connection/token",
+   "GET /v2/security/mft/connection/auth-code-url"
   ]
  },
  "security/superserver": {
@@ -813,7 +815,8 @@ XData EntityTypes [ MimeType = application/json ]
   "mutations": [
    "PUT /v2/security/oauth2/client/server-definition",
    "DELETE /v2/security/oauth2/client/server-definition",
-   "POST /v2/security/oauth2/client/server-definition/initial-access-token"
+   "POST /v2/security/oauth2/client/server-definition/initial-access-token",
+   "POST /v2/security/oauth2/client/server-definition"
   ]
  },
  "security/oauth2-server-client": {
@@ -838,7 +841,8 @@ XData EntityTypes [ MimeType = application/json ]
   "mutations": [
    "PUT /v2/security/oauth2/server/client",
    "DELETE /v2/security/oauth2/server/client",
-   "POST /v2/security/oauth2/server/client/secret"
+   "POST /v2/security/oauth2/server/client/secret",
+   "POST /v2/security/oauth2/server/client"
   ]
  },
  "security/oauth2-resource-server": {
@@ -870,7 +874,9 @@ XData EntityTypes [ MimeType = application/json ]
     }
    }
   ],
-  "links": [],
+  "links": [
+   "oauth2-resource-server-mappings"
+  ],
   "mutations": [
    "PUT /v2/security/oauth2/resource-server",
    "DELETE /v2/security/oauth2/resource-server",
@@ -910,7 +916,8 @@ XData EntityTypes [ MimeType = application/json ]
    "DELETE /v2/security/oauth2/client/client-configuration",
    "POST /v2/security/oauth2/client/client-configuration/secrets",
    "POST /v2/security/oauth2/client/client-configuration/register-client",
-   "POST /v2/security/oauth2/client/client-configuration/rotate-keys"
+   "POST /v2/security/oauth2/client/client-configuration/rotate-keys",
+   "POST /v2/security/oauth2/revoke"
   ]
  },
  "security/audit-settings": {
@@ -935,12 +942,15 @@ XData EntityTypes [ MimeType = application/json ]
     }
    }
   ],
-  "links": [],
+  "links": [
+   "audit-records"
+  ],
   "singleton": true,
   "mutations": [
    "PUT /v2/security/audit/enabled",
    "POST /v2/security/audit/record/copy",
-   "POST /v2/security/audit/record/purge"
+   "POST /v2/security/audit/record/purge",
+   "POST /v2/security/audit/event/clear-count"
   ]
  },
  "security/encryption-settings": {
@@ -954,7 +964,12 @@ XData EntityTypes [ MimeType = application/json ]
   "schema": "EncryptionSettings",
   "facts": "",
   "markers": [],
-  "links": [],
+  "links": [
+   "encryption-keys",
+   "encryption-data-element-keys",
+   "encryption-file-keys",
+   "encryption-file-admins"
+  ],
   "singleton": true,
   "readOnly": true,
   "mutations": [
@@ -1800,6 +1815,32 @@ XData EntityTypes [ MimeType = application/json ]
    "DELETE /v2/fs-access-purpose",
    "PUT /v2/fs-access-purpose/path",
    "DELETE /v2/fs-access-purpose/path"
+  ]
+ },
+ "security/oauth2-resource-server-mapping": {
+  "domain": "security",
+  "entityType": "oauth2-resource-server-mapping",
+  "label": "Resource server mapping",
+  "section": "oauth2",
+  "detailOperation": "GET /v2/security/oauth2/resource-server/mapping",
+  "keys": [
+   {
+    "param": "service",
+    "field": "Service"
+   },
+   {
+    "param": "key",
+    "field": "Key"
+   }
+  ],
+  "displayName": "{key}",
+  "schema": "OAuth2ResourceServerMapping",
+  "facts": "",
+  "markers": [],
+  "links": [],
+  "mutations": [
+   "PUT /v2/security/oauth2/resource-server/mapping",
+   "DELETE /v2/security/oauth2/resource-server/mapping"
   ]
  }
 }

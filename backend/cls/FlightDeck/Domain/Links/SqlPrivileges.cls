@@ -10,7 +10,7 @@ Class FlightDeck.Domain.Links.SqlPrivileges [ Abstract ]
 
 ClassMethod Operations() As %List
 {
-	quit $listbuild("GET /v2/security/sql-privileges", "GET /v2/security/sql-admin-privileges", "GET /v2/namespaces")
+	quit $listbuild("GET /v2/security/sql-privileges", "GET /v2/security/sql-admin-privileges", "GET /v2/security/sql-column-privileges", "GET /v2/namespaces")
 }
 
 ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
@@ -27,6 +27,10 @@ ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %D
 	set unread = []
 	do ..Collect(group, unread, "GET /v2/security/sql-privileges", grantee, namespace, "object")
 	do ..Collect(group, unread, "GET /v2/security/sql-admin-privileges", grantee, namespace, "admin")
+	// Column privileges are the third kind the platform records, and the finest: INSERT on one column
+	// of one table. They are read per object, so they are collected for the objects the two listings
+	// above already named — a privilege on a column nobody can reach is not a privilege in practice.
+	do ..Columns(group, unread, grantee, namespace)
 	set group.count = group.items.%Size()
 	if unread.%Size() > 0 {
 		set group.state = "undetermined"
@@ -62,6 +66,48 @@ ClassMethod Namespaces(Output reason As %String) As %DynamicArray
 }
 
 /// One official listing, rendered with the provenance the API reports.
+/// Column privileges for the objects this grantee already holds an object privilege on.
+ClassMethod Columns(group As %DynamicObject, unread As %DynamicArray, grantee As %String, namespace As %String)
+{
+	set objects = "", iter = group.items.%GetIterator()
+	while iter.%GetNext(, .item) {
+		set name = item.displayName
+		continue:'(name [ " on ")
+		set object = $piece(name, " on ", 2, *)
+		continue:object=""
+		set objects(object) = ""
+	}
+	set object = "", read = 0
+	for {
+		set object = $order(objects(object))
+		quit:object=""
+		// A grantee with privileges on very many objects would otherwise turn one panel into hundreds
+		// of requests; the cap is declared and what was not read is stated.
+		if read >= ..#MAXCOLUMNOBJECTS {
+			do unread.%Push("column privileges beyond the first " _ ..#MAXCOLUMNOBJECTS _ " objects")
+			quit
+		}
+		set read = read + 1
+		set sc = ##class(FlightDeck.Domain.Upstream).Call("GET", "/v2/security/sql-column-privileges", {"grantee":(grantee), "namespace":(namespace), "object":(object), "maxRows":1000}, "", .status, .json, .raw)
+		if $$$ISERR(sc) set status = 500, raw = $system.Status.GetErrorText(sc)
+		if status '= 200 {
+			do unread.%Push("column privileges on " _ object _ " (" _ ##class(FlightDeck.Admin.Client).ErrorText($get(json), $get(raw)) _ ")")
+			continue
+		}
+		set rows = $select($isobject(json) && $isobject(json.result):json.result, 1:[])
+		set cols = rows.%GetIterator()
+		while cols.%GetNext(, .row) {
+			set action = $select(row.%IsDefined("Action"):row.Action, row.%IsDefined("Privilege"):row.Privilege, 1:"")
+			set column = $select(row.%IsDefined("Column"):row.Column, row.%IsDefined("Name"):row.Name, 1:"")
+			set detail = $select(row.%IsDefined("GrantedVia"):row.GrantedVia, 1:"") _ $select(''row.GrantOption:", with grant option", 1:"")
+			do group.items.%Push({"entityType":"sql-privilege", "domain":"permissions", "displayName":(action _ " on " _ object _ "." _ column), "keys":{}, "detail":(detail)})
+		}
+	}
+}
+
+/// How many objects' column privileges one panel reads. Declared, and what it skipped is stated.
+Parameter MAXCOLUMNOBJECTS = 10;
+
 ClassMethod Collect(group As %DynamicObject, unread As %DynamicArray, operationId As %String, grantee As %String, namespace As %String, kind As %String)
 {
 	set sc = ##class(FlightDeck.Domain.Upstream).Call("GET", ##class(FlightDeck.Domain.Entity).Path(operationId), {"grantee":(grantee), "namespace":(namespace), "maxRows":1000}, "", .status, .json, .raw)

@@ -19,7 +19,9 @@ ClassMethod Build(privileges As %DynamicObject) As %DynamicArray
 			while providers.%GetNext(, .provider) {
 				set class = ##class(FlightDeck.Domain.LinkProviders).Class(provider)
 				continue:class=""
-				set ops = ops _ $classmethod(class, "Operations")
+				// A provider may serve several groups from one class, named "Class:Method"; the
+				// operations it declares belong to the class either way.
+				set ops = ops _ $classmethod($piece(class, ":", 1), "Operations")
 			}
 			do out.%Push(..Entry(id_".links", ops, privileges))
 		}

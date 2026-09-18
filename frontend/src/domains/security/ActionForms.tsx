@@ -123,6 +123,73 @@ export const AUDIT_PURGE: ActionConfig = {
   ],
 };
 
+/** Feature 003 gap closed: a real sign-in at the directory server, so the password is write-only. */
+export const LDAP_TEST: ActionConfig = {
+  operationId: "POST /v2/security/ldap/test",
+  title: "Test a login against this directory server",
+  noun: "LDAP login test",
+  submitLabel: "Review test",
+  fields: [
+    { name: "Username", type: "string", description: "The account to try, as the directory server knows it. Required." },
+    { name: "Password", type: "string", description: "Its password. Sent once, never stored or shown. Required.", secret: true },
+  ],
+};
+
+/** Feature 003 gap closed: asks the file transfer provider for an authorization URL. */
+export const MFT_AUTH_URL: ActionConfig = {
+  operationId: "GET /v2/security/mft/connection/auth-code-url",
+  title: "Get an authorization URL",
+  noun: "MFT authorization URL",
+  submitLabel: "Review request",
+  fields: [
+    { name: "redirect", type: "string", description: "Where the provider sends the user back. Required." },
+    { name: "scope", type: "string", description: "The access being asked for. Required." },
+  ],
+  fromKeys: { connection: "name" },
+};
+
+/** Feature 003 gap closed: a mapping of the resource server, created by service and key. */
+export const RESOURCE_SERVER_MAPPING: ActionConfig = {
+  operationId: "PUT /v2/security/oauth2/resource-server/mapping",
+  title: "Add or edit a service mapping",
+  noun: "resource server mapping",
+  fields: [
+    { name: "key", type: "string", description: "The mapping's key. Required." },
+    { name: "Value", type: "string", description: "What the key maps to. Required." },
+  ],
+  fromKeys: { service: "name" },
+};
+
+/** Feature 003 gap closed: removes one mapping of the resource server. */
+export const RESOURCE_SERVER_MAPPING_DELETE: ActionConfig = {
+  operationId: "DELETE /v2/security/oauth2/resource-server/mapping",
+  title: "Delete a service mapping",
+  noun: "resource server mapping",
+  fields: [{ name: "key", type: "string", description: "The mapping's key. Required." }],
+  fromKeys: { service: "name" },
+};
+
+/** Feature 003 gap closed: revokes a user's tokens at the authorization server. */
+export const OAUTH_REVOKE: ActionConfig = {
+  operationId: "POST /v2/security/oauth2/revoke",
+  title: "Revoke a user's tokens",
+  noun: "OAuth 2.0 tokens",
+  submitLabel: "Review revocation",
+  fields: [{ name: "user", type: "string", description: "The user whose tokens stop working. Required." }],
+};
+
+/** Feature 003 gap closed: clears the recorded count of one audit event. */
+export const AUDIT_CLEAR_COUNT: ActionConfig = {
+  operationId: "POST /v2/security/audit/event/clear-count",
+  title: "Clear the count of an audit event",
+  noun: "audit event count",
+  fields: [
+    { name: "source", type: "string", description: "Event source, for example %System. Required." },
+    { name: "type", type: "string", description: "Event type, for example %Security. Required." },
+    { name: "name", type: "string", description: "Event name. Required." },
+  ],
+};
+
 export const AUDIT_COPY: ActionConfig = {
   operationId: "POST /v2/security/audit/record/copy",
   title: "Copy audit records to another namespace",

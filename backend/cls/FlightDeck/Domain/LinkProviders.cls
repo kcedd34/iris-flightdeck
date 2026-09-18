@@ -1,6 +1,8 @@
 /// Registry of link providers named by entity-type descriptors (feature 002 data-model §1.3).
 /// Every provider composes official reads only, declares the operations it calls (for composite
 /// capabilities), and answers one LinkGroup or "" when the group does not apply.
+/// <p>A provider that serves several groups of the same family names its method after a colon
+/// ("Class:Method"); the class still declares every operation those groups call.
 Class FlightDeck.Domain.LinkProviders [ Abstract ]
 {
 
@@ -24,6 +26,12 @@ ClassMethod Class(provider As %String) As %String
 		"tls-consumers":"FlightDeck.Domain.Links.TlsConsumers",
 		"certificate":"FlightDeck.Domain.Links.Certificate",
 		"oauth2-clients":"FlightDeck.Domain.Links.OAuth2Clients",
+		"encryption-keys":"FlightDeck.Domain.Links.EncryptionKeys:Activated",
+		"encryption-data-element-keys":"FlightDeck.Domain.Links.EncryptionKeys:DataElement",
+		"encryption-file-keys":"FlightDeck.Domain.Links.EncryptionKeys:FileKeys",
+		"encryption-file-admins":"FlightDeck.Domain.Links.EncryptionKeys:FileAdmins",
+		"oauth2-resource-server-mappings":"FlightDeck.Domain.Links.ResourceServerMappings",
+		"audit-records":"FlightDeck.Domain.Links.AuditRecords",
 		"global-mappings":"FlightDeck.Domain.Links.GlobalMappings",
 		"package-mappings":"FlightDeck.Domain.Links.PackageMappings",
 		"routine-mappings":"FlightDeck.Domain.Links.RoutineMappings",

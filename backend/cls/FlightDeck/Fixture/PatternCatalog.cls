@@ -23,19 +23,63 @@ XData EntityTypes [ MimeType = application/json ]
   "section": "pattern",
   "listOperation": "GET /fixture/catalog-items",
   "detailOperation": "GET /fixture/catalog-item",
-  "keys": [ {"param": "name", "field": "Name"} ],
+  "keys": [
+   {
+    "param": "name",
+    "field": "Name"
+   }
+  ],
   "displayName": "{name}",
   "schema": "CatalogItem",
-  "facts": "",
-  "forwardParams": ["drift", "reset"],
-  "secretFields": ["Secret"],
-  "markers": [
-   { "id": "critical", "tone": "warning", "text": "Critical", "when": {"op": "equals", "path": "object.Critical", "value": true} },
-   { "id": "protected", "tone": "neutral", "text": "Protected", "when": {"op": "equals", "path": "object.Protected", "value": true} },
-   { "id": "disabled", "tone": "neutral", "text": "Disabled", "when": {"op": "equals", "path": "object.Enabled", "value": false} }
+  "facts": "catalog-item",
+  "forwardParams": [
+   "drift",
+   "reset"
   ],
-  "links": ["catalog-tags"],
-  "mutations": ["PUT /fixture/catalog-item", "DELETE /fixture/catalog-item", "POST /fixture/catalog-tag/grant", "POST /fixture/catalog-tag/revoke"]
+  "secretFields": [
+   "Secret"
+  ],
+  "markers": [
+   {
+    "id": "critical",
+    "tone": "warning",
+    "text": "Critical",
+    "when": {
+     "op": "equals",
+     "path": "object.Critical",
+     "value": true
+    }
+   },
+   {
+    "id": "protected",
+    "tone": "neutral",
+    "text": "Protected",
+    "when": {
+     "op": "equals",
+     "path": "object.Protected",
+     "value": true
+    }
+   },
+   {
+    "id": "disabled",
+    "tone": "neutral",
+    "text": "Disabled",
+    "when": {
+     "op": "equals",
+     "path": "object.Enabled",
+     "value": false
+    }
+   }
+  ],
+  "links": [
+   "catalog-tags"
+  ],
+  "mutations": [
+   "PUT /fixture/catalog-item",
+   "DELETE /fixture/catalog-item",
+   "POST /fixture/catalog-tag/grant",
+   "POST /fixture/catalog-tag/revoke"
+  ]
  }
 }
 }
@@ -49,39 +93,105 @@ XData Mutations [ MimeType = application/json ]
   "readOperation": "GET /fixture/catalog-item",
   "schema": "CatalogItem",
   "target": "{name}",
-  "secretFields": ["Secret"],
+  "secretFields": [
+   "Secret"
+  ],
   "grade": [
-   { "when": {"op": "and", "all": [ {"op": "equals", "path": "kind", "value": "edit"}, {"op": "equals", "path": "proposed.Enabled", "value": false} ]}, "grade": "reinforced" }
+   {
+    "when": {
+     "op": "and",
+     "all": [
+      {
+       "op": "equals",
+       "path": "kind",
+       "value": "edit"
+      },
+      {
+       "op": "equals",
+       "path": "proposed.Enabled",
+       "value": false
+      }
+     ]
+    },
+    "grade": "reinforced"
+   }
   ],
   "selfProtection": [
-   { "when": {"op": "equals", "path": "current.Protected", "value": true}, "message": "This catalog item is protected. The pattern refuses to change it." }
-  ]
+   {
+    "when": {
+     "op": "equals",
+     "path": "current.Protected",
+     "value": true
+    },
+    "message": "This catalog item is protected. The pattern refuses to change it."
+   }
+  ],
+  "refusedWhen": {
+   "op": "equals",
+   "path": "facts.canBeEdited",
+   "value": false
+  },
+  "disabledReason": "The API reports that this item may not be edited."
  },
  "POST /fixture/catalog-tag/grant": {
   "kind": "action",
   "entityType": "fixtures/catalog-item",
-  "params": ["name", "tag"],
+  "params": [
+   "name",
+   "tag"
+  ],
   "readOperation": "GET /fixture/catalog-tags",
-  "readParams": {"name": "{name}"},
-  "rowKey": [ {"field": "Tag", "value": "{tag}"} ],
+  "readParams": {
+   "name": "{name}"
+  },
+  "rowKey": [
+   {
+    "field": "Tag",
+    "value": "{tag}"
+   }
+  ],
   "rowLabel": "tag {tag}",
   "effect": "add",
   "target": "the tag {tag} on {name}",
   "secretFields": [],
-  "grade": [ { "when": {"op": "true"}, "grade": "simple" } ]
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "simple"
+   }
+  ]
  },
  "POST /fixture/catalog-tag/revoke": {
   "kind": "action",
   "entityType": "fixtures/catalog-item",
-  "params": ["name", "tag"],
+  "params": [
+   "name",
+   "tag"
+  ],
   "readOperation": "GET /fixture/catalog-tags",
-  "readParams": {"name": "{name}"},
-  "rowKey": [ {"field": "Tag", "value": "{tag}"} ],
+  "readParams": {
+   "name": "{name}"
+  },
+  "rowKey": [
+   {
+    "field": "Tag",
+    "value": "{tag}"
+   }
+  ],
   "rowLabel": "tag {tag}",
   "effect": "remove",
   "target": "the tag {tag} on {name}",
   "secretFields": [],
-  "grade": [ { "when": {"op": "true"}, "grade": "reinforced" } ]
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced"
+   }
+  ]
  },
  "DELETE /fixture/catalog-item": {
   "kind": "delete",
@@ -89,16 +199,40 @@ XData Mutations [ MimeType = application/json ]
   "readOperation": "GET /fixture/catalog-item",
   "schema": "CatalogItem",
   "target": "{name}",
-  "secretFields": ["Secret"],
+  "secretFields": [
+   "Secret"
+  ],
   "grade": [
-   { "when": {"op": "equals", "path": "current.Critical", "value": true}, "grade": "maximum", "consequence": "This catalog item is critical. Everything that depends on it stops working." },
-   { "when": {"op": "true"}, "grade": "reinforced" }
+   {
+    "when": {
+     "op": "equals",
+     "path": "current.Critical",
+     "value": true
+    },
+    "grade": "maximum",
+    "consequence": "This catalog item is critical. Everything that depends on it stops working."
+   },
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced"
+   }
   ],
   "selfProtection": [
-   { "when": {"op": "equals", "path": "current.Protected", "value": true}, "message": "This catalog item is protected. The pattern refuses to change it." }
+   {
+    "when": {
+     "op": "equals",
+     "path": "current.Protected",
+     "value": true
+    },
+    "message": "This catalog item is protected. The pattern refuses to change it."
+   }
   ],
   "impact": "catalog-impact",
-  "impactWhen": {"op": "true"}
+  "impactWhen": {
+   "op": "true"
+  }
  }
 }
 }
@@ -168,7 +302,11 @@ ClassMethod Seed() As %DynamicArray
 	quit [
 		{"Name":"plain-item", "Description":"Edits are a simple confirmation; disabling asks for the name.", "Enabled":true, "Critical":false, "Protected":false, "Secret":"catalog-secret-plain", "Revision":1, "Tags":["reviewed"]},
 		{"Name":"critical-item", "Description":"Deleting it is a maximum confirmation.", "Enabled":true, "Critical":true, "Protected":false, "Secret":"catalog-secret-critical", "Revision":1},
-		{"Name":"protected-item", "Description":"Self-protection blocks every change.", "Enabled":true, "Critical":false, "Protected":true, "Secret":"catalog-secret-protected", "Revision":1}
+		{"Name":"protected-item", "Description":"Self-protection blocks every change.", "Enabled":true, "Critical":false, "Protected":true, "Secret":"catalog-secret-protected", "Revision":1},
+		// The object's own capability field, false: the control is disabled with the API's reason and
+		// the request is never issued (RN-FD-34). The rule is refusedWhen, so the item below, which
+		// carries no such field at all, stays editable — an unknown capability is not a refusal.
+		{"Name":"refused-item", "Description":"The API says this one may not be edited.", "Enabled":true, "Critical":false, "Protected":false, "CanBeEdited":false, "Secret":"catalog-secret-refused", "Revision":1}
 	]
 }
 

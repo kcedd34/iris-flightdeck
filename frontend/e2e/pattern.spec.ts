@@ -234,3 +234,26 @@ test("9. An asynchronous value keeps its number while refreshing and when the pl
   await expect(page.getByTestId("instrument-message-async")).toContainText("cancelled the task");
   await expect(page.getByTestId("instrument-async").locator(".skeleton")).toHaveCount(0);
 });
+
+test("10. An object whose schema refuses an operation disables that control with the API's reason, and an unknown capability does not", async ({ page }) => {
+  await page.goto("__fixtures__/pattern");
+  // The standing rule (RN-FD-34, contract delta §3.2): the field decides the control.
+  await page.getByTestId("list-row").filter({ hasText: "refused-item" }).click();
+  const inspector = page.getByTestId("entity-inspector");
+  await expect(inspector).toBeVisible();
+  const edit = inspector.getByTestId("action-PUT-fixture-catalog-item-edit");
+  await expect(edit).toHaveAttribute("aria-disabled", "true");
+  await expect(inspector).toContainText("may not be edited");
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/mutations/")) requests.push(request.url());
+  });
+  await edit.click({ force: true });
+  await page.waitForTimeout(400);
+  expect(requests, "a control the object refused must not reach the mutation layer").toEqual([]);
+
+  // The same rule, the other way: an item that carries no such field is not refused. The rule is
+  // written as a refusal so an unknown capability lets the platform answer for itself.
+  await page.getByTestId("list-row").filter({ hasText: "plain-item" }).click();
+  await expect(page.getByTestId("entity-inspector").getByTestId("action-PUT-fixture-catalog-item-edit")).not.toHaveAttribute("aria-disabled", "true");
+});

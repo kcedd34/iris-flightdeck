@@ -139,7 +139,9 @@ ClassMethod Groups(type As %DynamicObject, entity As %DynamicObject, only As %St
 		set class = ##class(FlightDeck.Domain.LinkProviders).Class(provider)
 		continue:class=""
 		try {
-			set group = $classmethod(class, "Group", entity, params)
+			// A provider may serve more than one group; the registry then names the method after a
+			// colon ("Class:Method"). One class, several reads of the same family.
+			set group = $classmethod($piece(class, ":", 1), $select(class [ ":":$piece(class, ":", 2), 1:"Group"), entity, params)
 		} catch ex {
 			set group = ##class(FlightDeck.Domain.LinkProviders).NewGroup(provider, provider)
 			set group.state = "undetermined", group.reason = ex.DisplayString()

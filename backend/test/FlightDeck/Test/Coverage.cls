@@ -32,6 +32,39 @@ Method TestEveryDescriptorOperationIsInTheSpec()
 	do $$$AssertEquals(missing, "", "every descriptor operation is in the capability map:"_missing)
 }
 
+/// The three operations whose effect leaves this instance are confirmed, not offered as one more
+/// control: an administrator must see what reaches outside before it does (feature 003 gaps closed).
+Method TestOperationsThatReachOutsideAreConfirmed()
+{
+	set cases = $listbuild(
+		$listbuild("POST /v2/security/ldap/test", "directory server"),
+		$listbuild("GET /v2/security/mft/connection/auth-code-url", "provider"),
+		$listbuild("POST /v2/security/oauth2/revoke", "authorization server"))
+	set ptr = 0
+	while $listnext(cases, ptr, case) {
+		set operationId = $list(case, 1), mentions = $list(case, 2)
+		set descriptor = ##class(FlightDeck.Domain.Descriptor).Mutation(operationId)
+		do $$$AssertTrue($isobject(descriptor), operationId_" has a descriptor")
+		set rule = descriptor.grade.%Get(descriptor.grade.%Size() - 1)
+		do $$$AssertEquals(rule.grade, "reinforced", operationId_" is confirmed, not a plain control")
+		do $$$AssertTrue(rule.consequence [ mentions, operationId_" says what it reaches: "_rule.consequence)
+	}
+	// The password an LDAP test sends is write-only, like every other secret.
+	set ldap = ##class(FlightDeck.Domain.Descriptor).Mutation("POST /v2/security/ldap/test")
+	do $$$AssertTrue(##class(FlightDeck.Domain.Predicate).ArrayHas(ldap.secretFields, "Password"), "the test password is a secret field")
+}
+
+/// The encryption reads are offered: the policy declined the writes, never the reads.
+Method TestEncryptionReadsAreOfferedWhileItsWritesAreDeclined()
+{
+	set type = ##class(FlightDeck.Domain.Descriptor).EntityType("security", "encryption-settings")
+	do $$$AssertTrue($isobject(type), "the encryption section exists")
+	for provider = "encryption-keys", "encryption-data-element-keys", "encryption-file-keys", "encryption-file-admins" {
+		do $$$AssertTrue(##class(FlightDeck.Domain.Predicate).ArrayHas(type.links, provider), provider_" is offered")
+	}
+	do $$$AssertNotEquals(##class(FlightDeck.Capability.Policy).Reason("PUT /v2/security/encryption/settings"), "", "its writes are still declined")
+}
+
 Method TestTheTwoDomainsAreFullyDeclared()
 {
 	set types = ##class(FlightDeck.Domain.Descriptor).EntityTypes()

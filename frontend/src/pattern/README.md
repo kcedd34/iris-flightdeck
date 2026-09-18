@@ -56,12 +56,42 @@ performs it. It then reaches every screen as unavailable with that reason, throu
 already exists, and the coverage document lists it. Do not omit the control: an absent control reads
 as a missing feature, a disabled one with a reason is a decision.
 
+## When the object itself says no
+
+Some official schemas state what may be done to one object: a process's `CanBeTerminated`,
+`CanBeSuspended`, `CanReceiveBroadcast` and `CanBeExamined`, a lock's `Removable`. **Wherever a
+schema carries such a field, that field decides the control** (RN-FD-34). This is a rule about
+schemas, not a list of endpoints: a capability field in any other schema is treated the same way,
+with no new decision and no new code path.
+
+How to declare it, in the mutation descriptor:
+
+```json
+"refusedWhen":    {"op": "equals", "path": "facts.canBeTerminated", "value": false},
+"disabledReason": "The instance reports that this process cannot be terminated."
+```
+
+Three things make it a rule rather than a special case:
+
+- **The fact comes from the object the API returned**, never from a type, a user or a state the
+  screen inferred. The list carries the fact, so a row's controls are decided without opening it.
+- **It is written as a refusal, not as a permission.** A fact FlightDeck could not read is not a
+  refusal: with `refusedWhen`, an unknown capability lets the platform answer for itself, where an
+  `enabledWhen` would have the portal deny on a guess. This is the direction that fails safe for the
+  user rather than for the code.
+- **The server enforces it.** `FlightDeck.Mutation.Service.Refusal` evaluates the same predicate
+  before any write, so a request that arrives without going through the screen is refused too. The
+  screen disabling the control is not the guard.
+
+`check-descriptors` fails a `refusedWhen` with no `disabledReason`: a refusal must say why.
+
 ## What a domain never does
 
 - Render a dialog, a confirmation, a diff or its own trail. The dry-run in `src/mutation/` is the
   only confirmation UI; `check:mutation-boundary` fails the build and names the file.
 - Read or write `sessionStorage`, or call `window.confirm`.
-- Hide a control. Unavailable, forbidden and blocked actions stay visible, disabled, with the reason.
+- Hide a control. Unavailable, forbidden, object-refused and blocked actions stay visible, disabled,
+  with the reason.
 - Decide availability from a version: availability comes from the capability map.
 - Show a secret value. Secret fields leave the server only as `changed` or `unchanged`.
 

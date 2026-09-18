@@ -5,11 +5,14 @@ import { DomainSection } from "../../pattern/DomainSection";
 import { SingletonSection } from "../../pattern/SingletonSection";
 import { useDomainMutation } from "../../pattern/useDomainMutation";
 import {
+  AUDIT_CLEAR_COUNT,
   AUDIT_COPY,
   AUDIT_PURGE,
   CONNECTION_TEST,
   INITIAL_ACCESS_TOKEN,
   LDAP_SEARCH_PASSWORD,
+  LDAP_TEST,
+  MFT_AUTH_URL,
   OAUTH_CLIENT_SECRET,
   OAUTH_SERVER_PASSWORD,
   RESOURCE_SERVER_SECRET,
@@ -193,6 +196,8 @@ export function Ldap() {
           FORMS.ldap({ mode: "create", original: {}, onDone: done })
         ) : form.mode === "password" ? (
           <SecurityActionForm config={LDAP_SEARCH_PASSWORD} keys={form.detail.keys} onDone={() => done()} />
+        ) : form.mode === "action" ? (
+          <SecurityActionForm config={LDAP_TEST} keys={form.detail.keys} onDone={() => done()} />
         ) : (
           FORMS.ldap({ mode: "edit", keys: form.detail.keys, original: form.detail.object, onDone: done })
         )
@@ -209,6 +214,7 @@ export function Ldap() {
             actions={[
               { operationId: "PUT /v2/security/ldap/configuration", label: "Edit", mutating: true, onActivate: () => openForm({ mode: "edit", detail }) },
               { operationId: "POST /v2/security/ldap/configuration/search-password", label: "Set search password", mutating: true, onActivate: () => openForm({ mode: "password", detail }) },
+              { operationId: "POST /v2/security/ldap/test", label: "Test a login", mutating: true, onActivate: () => openForm({ mode: "action", detail, action: "test" }) },
               {
                 operationId: "DELETE /v2/security/ldap/configuration",
                 label: "Delete",
@@ -237,9 +243,13 @@ export function Mft() {
       createOperationId="PUT /v2/security/mft/connection"
       meta={(item) => String(item.object.Service ?? "")}
       renderForm={(form, done) =>
-        form.mode === "create"
-          ? FORMS.mft({ mode: "create", original: {}, onDone: done })
-          : FORMS.mft({ mode: "edit", keys: form.detail.keys, original: form.detail.object, onDone: done })
+        form.mode === "create" ? (
+          FORMS.mft({ mode: "create", original: {}, onDone: done })
+        ) : form.mode === "action" ? (
+          <SecurityActionForm config={MFT_AUTH_URL} keys={form.detail.keys} onDone={() => done()} />
+        ) : (
+          FORMS.mft({ mode: "edit", keys: form.detail.keys, original: form.detail.object, onDone: done })
+        )
       }
       actions={(detail, openForm) => (
         <>
@@ -252,6 +262,7 @@ export function Mft() {
             capabilities={detail.availableMutations}
             actions={[
               { operationId: "PUT /v2/security/mft/connection", label: "Edit", mutating: true, onActivate: () => openForm({ mode: "edit", detail }) },
+              { operationId: "GET /v2/security/mft/connection/auth-code-url", label: "Get an authorization URL", mutating: true, onActivate: () => openForm({ mode: "action", detail, action: "auth-url" }) },
               {
                 operationId: "DELETE /v2/security/mft/connection/token",
                 label: "Delete stored token",
@@ -325,9 +336,10 @@ export type ActionFormComponent = (props: ActionFormProps) => JSX.Element;
 /** UC06: auditing — its setting, and the two writes that touch the instance's own audit trail. */
 export function Auditing() {
   const { run, error } = useDomainMutation();
-  const [form, setForm] = useState<"purge" | "copy" | null>(null);
+  const [form, setForm] = useState<"purge" | "copy" | "clear-count" | null>(null);
   if (form) {
-    return <SecurityActionForm config={form === "purge" ? AUDIT_PURGE : AUDIT_COPY} keys={{}} onDone={() => setForm(null)} />;
+    const config = form === "purge" ? AUDIT_PURGE : form === "copy" ? AUDIT_COPY : AUDIT_CLEAR_COUNT;
+    return <SecurityActionForm config={config} keys={{}} onDone={() => setForm(null)} />;
   }
   return (
     <SingletonSection
@@ -353,6 +365,7 @@ export function Auditing() {
               },
               { operationId: "POST /v2/security/audit/record/copy", label: "Copy records", mutating: true, onActivate: () => setForm("copy") },
               { operationId: "POST /v2/security/audit/record/purge", label: "Purge records", mutating: true, onActivate: () => setForm("purge") },
+              { operationId: "POST /v2/security/audit/event/clear-count", label: "Clear an event count", mutating: true, onActivate: () => setForm("clear-count") },
             ]}
           />
         </>

@@ -100,7 +100,12 @@ Method TestProtectedIsBlockedAndRecorded()
 	do $$$AssertEquals(status, 403)
 	do $$$AssertEquals(response.error.code, "SELF_PROTECTION")
 	do $$$AssertEquals(response.trail.result, "Blocked")
-	do $$$AssertEquals(##class(FlightDeck.Fixture.PatternCatalog).Load().%Size(), 3, "nothing deleted")
+	// What matters is that the blocked delete changed nothing, not how many items the catalog seeds:
+	// a fixture gains items as new pattern behaviours are added to it.
+	set items = ##class(FlightDeck.Fixture.PatternCatalog).Load(), found = 0
+	set iter = items.%GetIterator()
+	while iter.%GetNext(, .item) { if item.Name = "protected-item" set found = 1 }
+	do $$$AssertTrue(found, "the protected item is still there")
 }
 
 Method TestDriftForcesStateChanged()

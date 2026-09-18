@@ -2940,6 +2940,171 @@ XData Mutations [ MimeType = application/json ]
   "body": {
    "Path": "{path}"
   }
+ },
+ "PUT /v2/security/oauth2/resource-server/mapping": {
+  "kind": "upsert",
+  "entityType": "security/oauth2-resource-server-mapping",
+  "readOperation": "GET /v2/security/oauth2/resource-server/mapping",
+  "schema": "OAuth2ResourceServerMapping",
+  "target": "{key} of {service}",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "simple"
+   }
+  ]
+ },
+ "DELETE /v2/security/oauth2/resource-server/mapping": {
+  "kind": "delete",
+  "entityType": "security/oauth2-resource-server-mapping",
+  "readOperation": "GET /v2/security/oauth2/resource-server/mapping",
+  "schema": "OAuth2ResourceServerMapping",
+  "target": "{key} of {service}",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "Requests that relied on this mapping stop resolving to the service."
+   }
+  ]
+ },
+ "POST /v2/security/oauth2/server/client": {
+  "kind": "upsert",
+  "entityType": "security/oauth2-server-client",
+  "readOperation": "GET /v2/security/oauth2/server/client",
+  "schema": "OAuth2ServerClient",
+  "target": "a new OAuth 2.0 client",
+  "secretFields": [
+   "ClientSecret"
+  ],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "simple"
+   }
+  ]
+ },
+ "POST /v2/security/oauth2/client/server-definition": {
+  "kind": "upsert",
+  "entityType": "security/oauth2-server-definition",
+  "readOperation": "GET /v2/security/oauth2/client/server-definition",
+  "schema": "OAuth2ServerDefinition",
+  "target": "a new authorization server definition",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "equals",
+     "path": "params.discover",
+     "value": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The instance contacts the authorization server to read its metadata."
+   },
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "simple"
+   }
+  ]
+ },
+ "POST /v2/security/audit/event/clear-count": {
+  "kind": "action",
+  "entityType": "security/audit-settings",
+  "params": [
+   "source",
+   "type",
+   "name"
+  ],
+  "target": "the count of {source}/{type}/{name}",
+  "secretFields": [],
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The recorded count for this event returns to zero. What it counted is not recoverable."
+   }
+  ]
+ },
+ "POST /v2/security/ldap/test": {
+  "kind": "action",
+  "entityType": "security/ldap-configuration",
+  "params": [],
+  "localParams": [
+   "Username",
+   "Password"
+  ],
+  "body": {
+   "Username": "{Username}",
+   "Password": "{Password}"
+  },
+  "target": "a test login against the directory server",
+  "secretFields": [
+   "Password"
+  ],
+  "applyNotice": "The instance signs in to the directory server itself and reports what it answered.",
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "This is a real sign-in attempt at the directory server. Repeated failures can lock the account there, and the attempt is recorded in that server's own logs."
+   }
+  ]
+ },
+ "GET /v2/security/mft/connection/auth-code-url": {
+  "kind": "action",
+  "entityType": "security/mft-connection",
+  "params": [
+   "connection"
+  ],
+  "localParams": [
+   "redirect",
+   "scope"
+  ],
+  "target": "an authorization URL for {connection}",
+  "secretFields": [],
+  "applyNotice": "The instance asks the file transfer provider for the URL and returns what it answered.",
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "The URL this returns begins an authorization at the provider, for the scope asked. Anyone who follows it can grant that access."
+   }
+  ]
+ },
+ "POST /v2/security/oauth2/revoke": {
+  "kind": "action",
+  "entityType": "security/oauth2-client",
+  "params": [
+   "user"
+  ],
+  "target": "the OAuth 2.0 tokens of {user}",
+  "secretFields": [],
+  "applyNotice": "The instance revokes the tokens at the authorization server and reports its answer.",
+  "grade": [
+   {
+    "when": {
+     "op": "true"
+    },
+    "grade": "reinforced",
+    "consequence": "Every access and refresh token this instance holds for that user stops working at once, here and at the authorization server. They sign in again to get new ones."
+   }
+  ]
  }
 }
 }

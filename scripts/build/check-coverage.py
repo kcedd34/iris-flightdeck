@@ -8,6 +8,9 @@ neither reachable through a descriptor (an entity type's list or detail read, or
 declared in FlightDeck.Capability.Policy.
 
 Domains are opted in as their feature ships, so a domain still to be built does not fail the build.
+There is no list of accepted gaps: one existed while feature 003's fifteen unreached operations were
+being closed, and it was removed when they were. A gate with a tolerated list means less every time
+a line is added to it.
 
 Usage: check-coverage.py
 """
@@ -34,27 +37,6 @@ SHIPPED = {
 
 ROW = re.compile(r"^\|\s*(GET|PUT|POST|DELETE|PATCH)\s*\|\s*`([^`]+)`")
 
-# Operations a shipped feature did not reach. Found by this check on 2026-09-18, when it was written
-# for feature 004: feature 003 shipped these fifteen unreached and nothing said so. They are listed
-# here, not hidden, so the gate passes today while the debt stays visible and any NEW gap fails the
-# build. Removing a line is how one is paid off.
-KNOWN_GAPS = {
-    "POST /v2/security/audit/event/clear-count",
-    "POST /v2/security/audit/records",
-    "GET /v2/security/encryption/data-element-keys",
-    "GET /v2/security/encryption/file/admins",
-    "GET /v2/security/encryption/file/keys",
-    "GET /v2/security/encryption/keys",
-    "POST /v2/security/ldap/test",
-    "GET /v2/security/mft/connection/auth-code-url",
-    "POST /v2/security/oauth2/client/server-definition",
-    "DELETE /v2/security/oauth2/resource-server/mapping",
-    "GET /v2/security/oauth2/resource-server/mapping",
-    "PUT /v2/security/oauth2/resource-server/mapping",
-    "GET /v2/security/oauth2/resource-server/mappings",
-    "POST /v2/security/oauth2/revoke",
-    "POST /v2/security/oauth2/server/client",
-}
 
 
 
@@ -101,6 +83,11 @@ def reachable():
         CLS / "Admin" / "V1Routes.cls",
         CLS / "API" / "OpenAPI.cls",
         CLS / "Domain" / "Schemas.cls",
+        # Read structurally above. Scanning their text too would count an operation an entity type
+        # merely names as reachable, even with no descriptor behind it — and then the gate would
+        # pass on exactly the gap it exists to catch.
+        ENTITY_TYPES,
+        MUTATIONS,
     }
     for path in CLS.rglob("*.cls"):
         if path in catalogues:
@@ -120,7 +107,7 @@ def main():
     sections = operations_by_section()
     declined = set(xdata(POLICY, "Declined"))
     reached = reachable()
-    problems, counted, gaps = [], 0, []
+    problems, counted = [], 0
     for section, feature in SHIPPED.items():
         if section not in sections:
             problems.append(f"section '{section}' is not in docs/api-coverage.md")
@@ -129,9 +116,6 @@ def main():
             counted += 1
             if operation in reached or operation in declined:
                 continue
-            if operation in KNOWN_GAPS:
-                gaps.append(operation)
-                continue
             problems.append(f"{operation} ({section}, feature {feature}) is neither reachable nor declined")
     if problems:
         for problem in problems:
@@ -139,10 +123,6 @@ def main():
         print(f"check-coverage: {len(problems)} of {counted} operations are not accounted for", file=sys.stderr)
         sys.exit(1)
     print(f"check-coverage: ok ({counted} operations across {len(SHIPPED)} shipped domains, {len(declined)} declined)")
-    if gaps:
-        print(f"check-coverage: {len(gaps)} known gaps from an earlier feature are still open:")
-        for gap in sorted(gaps):
-            print(f"  {gap}")
 
 
 if __name__ == "__main__":
