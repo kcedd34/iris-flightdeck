@@ -1,19 +1,26 @@
 import { execFileSync } from "node:child_process";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { disarm, setTheme, signIn } from "./setup/helpers";
+import { capability, disarm, setTheme, signIn } from "./setup/helpers";
 import { adminRequest, ensureUser } from "./setup/users";
 
 // Feature 002 polish: the credential audit extended to edits, test requests, the trail export and
 // copied curl (T083, SC-010), and axe on the new surfaces in both themes (T084).
 
 const AUDIT = { user: "fd_e2e_audit", password: "Audit-Pass-7Q2x-2026" };
+// Feature 003 secrets written during the audited session, none of which may appear anywhere after.
+const WALLET_SECRET = "audit-wallet-secret-2026";
+const NEW_PASSWORD = "Audit-New-Pass-5R3y-2026";
+const COLLECTION = "FD_E2E_AuditVault";
+const SUBJECT = "fd_e2e_audit_subject";
 const APP = "/csp/fd-e2e-audit";
 const CONTAINER = process.env.FD_CONTAINER ?? "iris-flightdeck-iris-1";
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
 test.beforeAll(async () => {
   await ensureUser(AUDIT.user, AUDIT.password, ["%All"]);
+  await ensureUser(SUBJECT, "Audit-Subject-2026", []);
+  await adminRequest("PUT", "/wallet/collection", { name: COLLECTION }, { UseResource: "FD_Demo_Reports:READ", EditResource: "FD_Demo_Reports:WRITE" });
   await adminRequest("DELETE", "/web-app", { name: APP });
   const created = await adminRequest("PUT", "/web-app", { name: APP }, { NameSpace: "USER", Description: "FlightDeck audit application", Enabled: true, AutheEnabled: 32 });
   expect(created.status).toBe(201);
@@ -21,6 +28,9 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await adminRequest("DELETE", "/web-app", { name: APP });
+  await adminRequest("DELETE", "/wallet/secret", { name: `${COLLECTION}.audit_token` });
+  await adminRequest("DELETE", "/wallet/collection", { name: COLLECTION });
+  await adminRequest("DELETE", "/security/user", { name: SUBJECT });
 });
 
 async function axe(page: Page, where: string) {
@@ -57,6 +67,34 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   await page.getByTestId("rest-execute").click();
   await dryRun.getByTestId("dry-run-apply").click();
   await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+  // Feature 003: a wallet secret and a user password, both written through the shared layer. Where
+  // the install does not offer the wallet secret write, the password alone carries this session's
+  // secret, and the sweep below is the same.
+  const walletWrite = (await capability(page, "PUT /v2/wallet/secret"))?.available ?? false;
+  let form = page.getByTestId("object-form");
+  if (walletWrite) {
+    await page.goto(`security/wallet?inspect=${encodeURIComponent(`security/wallet-collection:${COLLECTION}`)}`);
+    await disarm(page);
+    await page.getByTestId("action-PUT-v2-wallet-secret-new-secret").click();
+    await form.locator("#f-secretName").fill("audit_token");
+    await form.locator("#f-type").selectOption("%Wallet.KeyValue");
+    await form.locator("#f-secret").fill(WALLET_SECRET);
+    await form.getByTestId("form-submit").click();
+    await dryRun.getByTestId("dry-run-apply").click();
+    await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+    await dryRun.getByRole("button", { name: "Close" }).click();
+  }
+
+  await page.goto(`permissions/users?inspect=${encodeURIComponent(`permissions/user:${SUBJECT}`)}`);
+  await disarm(page);
+  await page.getByTestId("action-POST-v2-security-user-password-set-password").click();
+  form = page.getByTestId("object-form");
+  await form.locator("#f-NewPassword").fill(NEW_PASSWORD);
+  await form.getByTestId("form-submit").click();
+  await dryRun.getByTestId("dry-run-confirm-input").fill(`the password of ${SUBJECT}`);
+  await dryRun.getByTestId("dry-run-apply").click();
+  await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+
   // Export the trail.
   await dryRun.getByRole("button", { name: "Open session trail" }).click();
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByTestId("trail-export").click()]);
@@ -65,7 +103,7 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
   const exported = Buffer.concat(chunks).toString("utf8");
 
   const basic = Buffer.from(`${AUDIT.user}:${AUDIT.password}`).toString("base64");
-  const needles = [AUDIT.password, basic, "Authorization"];
+  const needles = [AUDIT.password, basic, "Authorization", WALLET_SECRET, NEW_PASSWORD];
   const storage = await page.evaluate(() => JSON.stringify({ session: { ...window.sessionStorage }, local: { ...window.localStorage } }));
   const cookies = JSON.stringify(await context.cookies());
   for (const [where, text] of Object.entries({ exported, curl, storage, cookies })) {
@@ -76,7 +114,7 @@ test("SC-010. No credential in the trail export, copied curl, browser storage, c
 
   let logs: string | null;
   try {
-    logs = execFileSync("docker", ["exec", CONTAINER, "sh", "-c", `grep -rlF -e '${AUDIT.password}' -e '${basic}' /durable/iris/mgr --include='*.log' || true`], { encoding: "utf8" });
+    logs = execFileSync("docker", ["exec", CONTAINER, "sh", "-c", `grep -rlF -e '${AUDIT.password}' -e '${basic}' -e '${WALLET_SECRET}' -e '${NEW_PASSWORD}' /durable/iris/mgr --include='*.log' || true`], { encoding: "utf8" });
   } catch {
     logs = null;
   }
@@ -89,11 +127,38 @@ for (const theme of ["dark", "light"] as const) {
     test.setTimeout(180_000);
     await signIn(page);
     await setTheme(page, theme);
-    for (const section of ["web-applications", "percent-class-access", "rest-apis"]) {
-      await page.goto(`web-apps/${section}`);
+    for (const section of ["web-apps/web-applications", "web-apps/percent-class-access", "web-apps/rest-apis"]) {
+      await page.goto(section);
       await expect(page.getByTestId("list-row").first()).toBeVisible();
       await axe(page, section);
     }
+    // Feature 003 sections: every list, every singleton, and the home panel's attention list.
+    for (const section of [
+      "permissions/users",
+      "permissions/roles",
+      "permissions/resources",
+      "permissions/services",
+      "permissions/privileged-routines",
+      "security/tls",
+      "security/x509",
+      "security/oauth2",
+      "security/wallet",
+      "security/encryption",
+      "security/ldap",
+      "security/mft",
+      "security/auditing",
+      "security/web-authentication",
+      "security/superservers",
+      "./",
+    ]) {
+      await page.goto(section);
+      await expect(page.getByTestId("domain-list").or(page.getByTestId("singleton-inspector")).or(page.getByTestId("home-attention")).first()).toBeVisible();
+      await axe(page, section);
+    }
+    // An inspector with the chain, and one with a parameterised panel.
+    await page.goto(`permissions/users?inspect=${encodeURIComponent("permissions/user:_SYSTEM")}`);
+    await expect(page.getByTestId("links-group-effective-privileges")).toBeVisible();
+    await axe(page, "permissions inspector");
     await page.goto(`web-apps/rest-apis?inspect=${encodeURIComponent("web-apps/rest-service:?webApplication=%2Fapi%2Fflightdeck")}`);
     await page.getByTestId("rest-operation").first().getByRole("button").click();
     await page.getByTestId("rest-path").fill("/api/flightdeck/v1/nothing-here");

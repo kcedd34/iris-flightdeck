@@ -17,9 +17,10 @@ ROOT = Path(__file__).resolve().parents[2]
 CLS = ROOT / "backend" / "cls" / "FlightDeck"
 SPEC = CLS / "Capability" / "Spec.cls"
 ENTITY_TYPES = CLS / "Domain" / "EntityTypes.cls"
+POLICY = CLS / "Capability" / "Policy.cls"
 MUTATIONS = CLS / "Mutation" / "Descriptors.cls"
 FORBIDDEN = {"requires", "privilege", "privileges", "resource", "permission", "permissions"}
-OPERATORS = {"true", "and", "or", "not", "equals", "in", "defined", "empty", "contains", "changed", "bitsCleared", "lacksTargetRole"}
+OPERATORS = {"true", "and", "or", "not", "equals", "in", "defined", "empty", "contains", "changed", "bitsCleared", "lacksTargetRole", "lastAdministrator", "checkIncomplete"}
 
 
 def xdata(path, name):
@@ -62,42 +63,70 @@ def predicate(expr, roots):
     return ""
 
 
+def action(op, mutation, problems):
+    """Mirrors the action-kind rules of FlightDeck.Domain.Descriptor (feature 003 data-model 5.1)."""
+    if not mutation.get("params") and not mutation.get("localParams") and not mutation.get("optionalParams"):
+        problems.append(f"action {op} declares no parameters at all")
+    if not mutation.get("target"):
+        problems.append(f"action {op} has no target")
+    if "readOperation" in mutation:
+        row_key = mutation.get("rowKey")
+        if not isinstance(row_key, list) or not row_key:
+            problems.append(f"action {op} needs a rowKey list of {{field, value}} pairs")
+        else:
+            for pair in row_key:
+                if not isinstance(pair, dict) or "field" not in pair or "value" not in pair:
+                    problems.append(f"action {op} rowKey pair needs field and value")
+        if mutation.get("effect") not in ("add", "remove"):
+            problems.append(f"action {op} needs effect add or remove")
+
+
 def main():
     entity_path = Path(sys.argv[1]) if len(sys.argv) > 2 else ENTITY_TYPES
     mutation_path = Path(sys.argv[2]) if len(sys.argv) > 2 else MUTATIONS
     operations = {op["operationId"] for op in xdata(SPEC, "Operations")}
     entity_types = xdata(entity_path, "EntityTypes")
     mutations = xdata(mutation_path, "Mutations")
+    declined = set(xdata(POLICY, "Declined")) if POLICY.exists() else set()
     problems = []
     for tid, t in entity_types.items():
         forbidden(t, f"entity type {tid}", problems)
         for key in ("listOperation", "detailOperation"):
             if key in t and t[key] not in operations:
                 problems.append(f"entity type {tid} {key} names unknown operation '{t[key]}'")
-        if not t.get("keys"):
+        # A singleton type identifies one object per instance, so it has no keys by design.
+        if not t.get("singleton") and not t.get("keys"):
             problems.append(f"entity type {tid} has no keys")
         for marker in t.get("markers", []):
             problem = predicate(marker.get("when"), {"object", "facts"})
             if problem:
                 problems.append(f"entity type {tid} marker {marker.get('id')}: {problem}")
         for op in t.get("mutations", []):
+            # Operations FlightDeck declines to offer have no descriptor by design (feature 003).
+            if op in declined:
+                continue
             if op not in mutations:
                 problems.append(f"entity type {tid} names mutation {op} without a descriptor")
     for op, m in mutations.items():
         forbidden(m, f"mutation {op}", problems)
-        if m.get("kind") != "request":
+        if m.get("kind") == "action":
+            action(op, m, problems)
+            for candidate in [op] + ([m["readOperation"]] if "readOperation" in m else []):
+                if candidate not in operations:
+                    problems.append(f"mutation {op} names unknown operation '{candidate}'")
+        elif m.get("kind") != "request":
             for candidate in (op, m.get("readOperation")):
                 if candidate not in operations:
                     problems.append(f"mutation {op} names unknown operation '{candidate}'")
         if (m.get("kind") in ("delete", "request") or "grade" in m) and not m.get("target"):
             problems.append(f"mutation {op} has no target")
         if "impactWhen" in m:
-            problem = predicate(m["impactWhen"], {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind"})
+            problem = predicate(m["impactWhen"], {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind", "params"})
             if problem:
                 problems.append(f"mutation {op} impactWhen: {problem}")
         for key in ("grade", "selfProtection"):
             for rule in m.get(key, []):
-                problem = predicate(rule.get("when"), {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind"})
+                problem = predicate(rule.get("when"), {"current", "proposed", "isSystem", "isFlightDeck", "facts", "request", "kind", "params"})
                 if problem:
                     problems.append(f"mutation {op} {key}: {problem}")
     if problems:

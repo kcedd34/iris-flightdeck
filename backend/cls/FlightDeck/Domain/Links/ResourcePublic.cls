@@ -8,7 +8,7 @@ ClassMethod Operations() As %List
 	quit $listbuild("GET /v2/security/resource")
 }
 
-ClassMethod Group(entity As %DynamicObject) As %DynamicObject
+ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
 {
 	set resource = entity.object.Resource
 	quit:resource="" ""

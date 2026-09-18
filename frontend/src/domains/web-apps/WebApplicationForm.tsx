@@ -1,7 +1,7 @@
 import { SCHEMAS } from "../generated/schemas";
 import { changedFields, ObjectForm } from "../../pattern/ObjectForm";
 import { PRESENTATIONS } from "../presentation";
-import { AuthenticationEditor, MatchRolesEditor } from "./editors";
+import { AuthenticationEditor, MatchRolesEditor } from "../../pattern/editors";
 import { useDomainMutation } from "../../pattern/useDomainMutation";
 
 const NAME_FIELD = { name: "Name", type: "string", description: "Path of the web application, for example /csp/myapp." } as const;

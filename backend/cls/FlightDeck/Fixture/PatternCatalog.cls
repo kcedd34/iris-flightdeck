@@ -34,8 +34,8 @@ XData EntityTypes [ MimeType = application/json ]
    { "id": "protected", "tone": "neutral", "text": "Protected", "when": {"op": "equals", "path": "object.Protected", "value": true} },
    { "id": "disabled", "tone": "neutral", "text": "Disabled", "when": {"op": "equals", "path": "object.Enabled", "value": false} }
   ],
-  "links": [],
-  "mutations": ["PUT /fixture/catalog-item", "DELETE /fixture/catalog-item"]
+  "links": ["catalog-tags"],
+  "mutations": ["PUT /fixture/catalog-item", "DELETE /fixture/catalog-item", "POST /fixture/catalog-tag/grant", "POST /fixture/catalog-tag/revoke"]
  }
 }
 }
@@ -56,6 +56,32 @@ XData Mutations [ MimeType = application/json ]
   "selfProtection": [
    { "when": {"op": "equals", "path": "current.Protected", "value": true}, "message": "This catalog item is protected. The pattern refuses to change it." }
   ]
+ },
+ "POST /fixture/catalog-tag/grant": {
+  "kind": "action",
+  "entityType": "fixtures/catalog-item",
+  "params": ["name", "tag"],
+  "readOperation": "GET /fixture/catalog-tags",
+  "readParams": {"name": "{name}"},
+  "rowKey": [ {"field": "Tag", "value": "{tag}"} ],
+  "rowLabel": "tag {tag}",
+  "effect": "add",
+  "target": "the tag {tag} on {name}",
+  "secretFields": [],
+  "grade": [ { "when": {"op": "true"}, "grade": "simple" } ]
+ },
+ "POST /fixture/catalog-tag/revoke": {
+  "kind": "action",
+  "entityType": "fixtures/catalog-item",
+  "params": ["name", "tag"],
+  "readOperation": "GET /fixture/catalog-tags",
+  "readParams": {"name": "{name}"},
+  "rowKey": [ {"field": "Tag", "value": "{tag}"} ],
+  "rowLabel": "tag {tag}",
+  "effect": "remove",
+  "target": "the tag {tag} on {name}",
+  "secretFields": [],
+  "grade": [ { "when": {"op": "true"}, "grade": "reinforced" } ]
  },
  "DELETE /fixture/catalog-item": {
   "kind": "delete",
@@ -102,7 +128,32 @@ ClassMethod Capability(operationId As %String) As %DynamicObject
 ClassMethod FieldNames(schema As %String) As %List
 {
 	quit:schema'="CatalogItem" ""
-	quit $listbuild("Name", "Description", "Enabled", "Critical", "Protected", "Secret", "Revision")
+	quit $listbuild("Name", "Description", "Enabled", "Critical", "Protected", "Secret", "Revision", "Tags")
+}
+
+/// Link provider "catalog-tags", parameterised by scope, so the pattern's parameterised panel is
+/// exercised where no domain data can hide a gap (feature 003 T075).
+ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
+{
+	set group = ##class(FlightDeck.Domain.LinkProviders).NewGroup("catalog-tags", "tags on this item", "out")
+	set scope = $select($isobject(params):params.%Get("scope"), 1:"")
+	if scope = "" {
+		set parameters = [(##class(FlightDeck.Domain.LinkProviders).Parameter("scope", 1, ["all", "critical"]))]
+		quit ##class(FlightDeck.Domain.LinkProviders).NeedsParameter(group, parameters, "Choose a scope: the catalog answers per scope, as the official SQL listings answer per namespace.")
+	}
+	set group.parameters = [(##class(FlightDeck.Domain.LinkProviders).Parameter("scope", 1, ["all", "critical"], scope))]
+	do ..Call("GET", "/fixture/catalog-tags", {"name":(entity.keys.name)}, "", .status, .json)
+	if status '= 200 {
+		set group.state = "undetermined", group.reason = "The catalog could not be read."
+		quit group
+	}
+	set iter = json.result.%GetIterator()
+	while iter.%GetNext(, .row) {
+		continue:((scope="critical")&&(row.Tag'["critical"))
+		do group.items.%Push({"entityType":"catalog-tag", "domain":"fixtures", "displayName":(row.Tag), "keys":{}, "detail":(scope)})
+	}
+	set group.count = group.items.%Size()
+	quit group
 }
 
 ClassMethod Impact(provider As %String, current As %DynamicObject) As %DynamicObject
@@ -115,7 +166,7 @@ ClassMethod Impact(provider As %String, current As %DynamicObject) As %DynamicOb
 ClassMethod Seed() As %DynamicArray
 {
 	quit [
-		{"Name":"plain-item", "Description":"Edits are a simple confirmation; disabling asks for the name.", "Enabled":true, "Critical":false, "Protected":false, "Secret":"catalog-secret-plain", "Revision":1},
+		{"Name":"plain-item", "Description":"Edits are a simple confirmation; disabling asks for the name.", "Enabled":true, "Critical":false, "Protected":false, "Secret":"catalog-secret-plain", "Revision":1, "Tags":["reviewed"]},
 		{"Name":"critical-item", "Description":"Deleting it is a maximum confirmation.", "Enabled":true, "Critical":true, "Protected":false, "Secret":"catalog-secret-critical", "Revision":1},
 		{"Name":"protected-item", "Description":"Self-protection blocks every change.", "Enabled":true, "Critical":false, "Protected":true, "Secret":"catalog-secret-protected", "Revision":1}
 	]
@@ -155,6 +206,31 @@ ClassMethod Call(method As %String, path As %String, query As %DynamicObject = "
 			do ..Save(items)
 		}
 		set status = 200, result = {"result":(items)}
+		quit $$$OK
+	}
+	if path = "/fixture/catalog-tags" {
+		if index < 0 set status = 404, raw = "Catalog item "_name_" does not exist." quit $$$OK
+		set tags = []
+		set item = items.%Get(index)
+		if $isobject(item.Tags) {
+			set iter = item.Tags.%GetIterator()
+			while iter.%GetNext(, .tag) { do tags.%Push({"Tag":(tag)}) }
+		}
+		set status = 200, result = {"result":(tags)}
+		quit $$$OK
+	}
+	if (path = "/fixture/catalog-tag/grant") || (path = "/fixture/catalog-tag/revoke") {
+		if index < 0 set status = 404, raw = "Catalog item "_name_" does not exist." quit $$$OK
+		set item = items.%Get(index), tag = query.tag
+		if tag = "" set status = 400, raw = "tag is required" quit $$$OK
+		if '$isobject(item.Tags) set item.Tags = []
+		set kept = []
+		set iter = item.Tags.%GetIterator()
+		while iter.%GetNext(, .existing) { do:existing'=tag kept.%Push(existing) }
+		if path = "/fixture/catalog-tag/grant" do kept.%Push(tag)
+		set item.Tags = kept, item.Revision = item.Revision + 1
+		do ..Save(items)
+		set status = 200, result = {"result":(item)}
 		quit $$$OK
 	}
 	if path '= "/fixture/catalog-item" set status = 404, raw = "Unknown catalog path "_path quit $$$OK

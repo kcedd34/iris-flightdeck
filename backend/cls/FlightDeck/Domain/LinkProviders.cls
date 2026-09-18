@@ -6,12 +6,47 @@ Class FlightDeck.Domain.LinkProviders [ Abstract ]
 
 ClassMethod Class(provider As %String) As %String
 {
+	// The pattern catalog's own providers exist only on a fixtures install (research R13).
+	if provider = "catalog-tags" quit $select(##class(FlightDeck.Domain.Fixtures).Enabled():##class(FlightDeck.Domain.Fixtures).#CATALOG, 1:"")
 	quit $case(provider,
 		"resource-roles":"FlightDeck.Domain.Links.ResourceRoles",
 		"role-owners":"FlightDeck.Domain.Links.RoleOwners",
 		"resource-public":"FlightDeck.Domain.Links.ResourcePublic",
 		"rest-service":"FlightDeck.Domain.Links.RestService",
+		"role-holders":"FlightDeck.Domain.Links.RoleHolders",
+		"user-roles":"FlightDeck.Domain.Links.UserRoles",
+		"effective-privileges":"FlightDeck.Domain.Links.EffectivePrivileges",
+		"role-resources":"FlightDeck.Domain.Links.RoleResources",
+		"resource-objects":"FlightDeck.Domain.Links.ResourceObjects",
+		"sql-privileges":"FlightDeck.Domain.Links.SqlPrivileges",
+		"wallet-secrets":"FlightDeck.Domain.Links.WalletSecrets",
+		"wallet-users":"FlightDeck.Domain.Links.WalletUsers",
+		"tls-consumers":"FlightDeck.Domain.Links.TlsConsumers",
+		"certificate":"FlightDeck.Domain.Links.Certificate",
+		"oauth2-clients":"FlightDeck.Domain.Links.OAuth2Clients",
 		:"")
+}
+
+/// Declares a parameter the provider needs before it can answer (feature 003 contract
+/// ui-pattern-delta D2): the panel renders a control for it, and the group answers nothing until it
+/// has a value. `values` are the known choices when the session may list them, empty when it may not
+/// — the reason then says why, and the control accepts a typed value.
+ClassMethod Parameter(name As %String, required As %Boolean = 1, values As %DynamicArray = "", value As %String = "") As %DynamicObject
+{
+	set parameter = {"name":(name)}
+	do parameter.%Set("required", required, "boolean")
+	set parameter.values = $select($isobject(values):values, 1:[])
+	do parameter.%Set("value", value, $select(value="":"null", 1:"string"))
+	quit parameter
+}
+
+/// Marks a group as waiting for a parameter the caller has not supplied yet.
+ClassMethod NeedsParameter(group As %DynamicObject, parameters As %DynamicArray, reason As %String = "") As %DynamicObject
+{
+	set group.state = "needs-parameter"
+	set group.parameters = parameters
+	if reason '= "" set group.reason = reason
+	quit group
 }
 
 /// A LinkGroup skeleton.

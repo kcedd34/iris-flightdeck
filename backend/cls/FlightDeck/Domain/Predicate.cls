@@ -14,11 +14,15 @@
 /// lacks at least one bit of the integer at bitsPath</li>
 /// <li><code>{"op":"lacksTargetRole","path":..,"rolePath":..}</code>: the MatchRoles array at path is
 /// defined and no entry's TargetRoles contains the role at rolePath</li>
+/// <li><code>{"op":"lastAdministrator"}</code>: the change would leave the instance with no
+/// administrator, decided in complete mode (feature 003 FR-010)</li>
+/// <li><code>{"op":"checkIncomplete"}</code>: that check ran and could not assert, so the caller
+/// asks for the reinforced confirmation instead of refusing</li>
 /// </ul>
 Class FlightDeck.Domain.Predicate [ Abstract ]
 {
 
-Parameter OPERATORS = "true,and,or,not,equals,in,defined,empty,contains,changed,bitsCleared,lacksTargetRole";
+Parameter OPERATORS = "true,and,or,not,equals,in,defined,empty,contains,changed,bitsCleared,lacksTargetRole,lastAdministrator,checkIncomplete";
 
 ClassMethod Eval(expr As %DynamicObject, ctx As %DynamicObject) As %Boolean
 {
@@ -36,6 +40,10 @@ ClassMethod Eval(expr As %DynamicObject, ctx As %DynamicObject) As %Boolean
 		quit result
 	}
 	if op = "not" quit '..Eval(expr.expr, ctx)
+	// The last-administrator predicate (feature 003 FR-010): a rule names it, the server evaluates it
+	// against re-read state, and the context carries the mode it ran in for the trail.
+	if op = "lastAdministrator" quit ##class(FlightDeck.Mutation.LastAdmin).WouldRemoveLast(ctx)
+	if op = "checkIncomplete" quit ##class(FlightDeck.Mutation.LastAdmin).Incomplete(ctx)
 	if op = "changed" {
 		set changed = ctx.changedFields, result = 0
 		quit:'$isobject(changed) 0

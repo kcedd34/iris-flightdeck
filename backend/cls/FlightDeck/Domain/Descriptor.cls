@@ -62,7 +62,8 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 			continue:'type.%IsDefined(key)
 			do ..KnownOperation(type.%Get(key), "entity type "_id_" "_key, problems)
 		}
-		if '$isobject(type.keys) || (type.keys.%Size() = 0) do problems.%Push("entity type "_id_" has no keys")
+		// A singleton type identifies one object per instance, so it has no keys by design.
+		if ''type.singleton = 0, '$isobject(type.keys) || (type.keys.%Size() = 0) do problems.%Push("entity type "_id_" has no keys")
 		if type.%IsDefined("markers") {
 			set markers = type.markers.%GetIterator()
 			while markers.%GetNext(, .marker) {
@@ -73,6 +74,9 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 		if type.%IsDefined("mutations") {
 			set ops = type.mutations.%GetIterator()
 			while ops.%GetNext(, .op) {
+				// An operation FlightDeck declines to offer has no descriptor by design: the capability
+				// map answers for it, with the reason and the native path (feature 003 FR-020).
+				continue:##class(FlightDeck.Capability.Policy).Entry(op)'=""
 				if '$isobject(mutations.%Get(op)) do problems.%Push("entity type "_id_" names mutation "_op_" without a descriptor")
 			}
 		}
@@ -80,11 +84,30 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 	set iter = mutations.%GetIterator()
 	while iter.%GetNext(.op, .mutation) {
 		do ..Forbidden(mutation, "mutation "_op, problems)
-		if mutation.kind '= "request" {
+		if (mutation.kind '= "request") && (mutation.kind '= "action") {
 			do ..KnownOperation(op, "mutation "_op, problems)
 			do ..KnownOperation(mutation.readOperation, "mutation "_op_" readOperation", problems)
 		}
-		if ($listfind($listbuild("delete", "request"), mutation.kind) || mutation.%IsDefined("grade")) && (mutation.target = "") {
+		if mutation.kind = "action" {
+			// An action names an official operation and its declared parameters; its optional listing
+			// is an official operation too (feature 003 data-model §5.1).
+			do ..KnownOperation(op, "mutation "_op, problems)
+			// An action identifies its target with params, or carries only body values (localParams).
+			set declared = 0
+			for list = "params", "localParams", "optionalParams" {
+				set value = mutation.%Get(list)
+				if $isobject(value), value.%Size() > 0 set declared = 1
+			}
+			if 'declared do problems.%Push("action "_op_" declares no parameters at all")
+			if mutation.%IsDefined("readOperation") {
+				do ..KnownOperation(mutation.readOperation, "mutation "_op_" readOperation", problems)
+				if '$isobject(mutation.rowKey) || (mutation.rowKey.%ClassName(1) '= "%Library.DynamicArray") {
+					do problems.%Push("action "_op_" needs a rowKey list of {field, value} pairs")
+				}
+				if '$listfind($listbuild("add", "remove"), mutation.effect) do problems.%Push("action "_op_" needs effect add or remove")
+			}
+		}
+		if ($listfind($listbuild("delete", "request", "action"), mutation.kind) || mutation.%IsDefined("grade")) && (mutation.target = "") {
 			do problems.%Push("mutation "_op_" has no target")
 		}
 		if mutation.%IsDefined("impactWhen") {
@@ -95,7 +118,7 @@ ClassMethod Validate(entityTypes As %DynamicObject = "", mutations As %DynamicOb
 			continue:'mutation.%IsDefined(list)
 			set rules = mutation.%Get(list).%GetIterator()
 			while rules.%GetNext(, .rule) {
-				set problem = ##class(FlightDeck.Domain.Predicate).Problem(rule.when, "current,proposed,isSystem,isFlightDeck,facts,request,kind")
+				set problem = ##class(FlightDeck.Domain.Predicate).Problem(rule.when, "current,proposed,isSystem,isFlightDeck,facts,request,kind,params")
 				if problem '= "" do problems.%Push("mutation "_op_" "_list_": "_problem)
 			}
 		}

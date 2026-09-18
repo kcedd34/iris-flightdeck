@@ -32,6 +32,7 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 		quit ""
 	}
 	if descriptor.kind = "request" quit ##class(FlightDeck.Mutation.RequestMode).Context(request, descriptor, .failure)
+	if descriptor.kind = "action" quit ##class(FlightDeck.Mutation.Action).Context(request, descriptor, .failure)
 	set capability = ##class(FlightDeck.Capability.Map).CurrentEntry(operationId)
 	if 'capability.available {
 		set failure = {"status":501, "code":"UNAVAILABLE", "message":(capability.reason)}
@@ -72,6 +73,9 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 	set listItem = ##class(FlightDeck.Domain.Entity).ListItemFor(type, keys)
 	set basis = $select($isobject(listItem):listItem, $isobject(current):current, 1:{})
 	set facts = ##class(FlightDeck.Domain.Facts).For(type.facts, basis)
+	// The signed-in user's own account: a change to it takes effect in this session immediately
+	// (feature 003 FR-011), so a rule can grade it without any screen deciding that.
+	do facts.%Set("selfTarget", (typeId = "permissions/user") && (keys.name = $username), "boolean")
 	set record = ##class(FlightDeck.Domain.Facts).FlightDeckApplication(keys.name)
 	if $isobject(record) {
 		do facts.%Set("requiredAuthBits", +record.requiredAuthBits, "number")
@@ -89,6 +93,16 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 	quit ctx
 }
 
+/// The object as it would be after the change: the current state with the proposed fields applied.
+/// Self-protection and impact rules test this, never the fragment the client sent.
+ClassMethod Proposed(ctx As %DynamicObject) As %DynamicObject
+{
+	set merged = ##class(%DynamicAbstractObject).%FromJSON(ctx.current.%ToJSON())
+	set iter = ctx.proposed.%GetIterator()
+	while iter.%GetNext(.field, .value) { do ..CopyValue(ctx.proposed, field, merged, field) }
+	quit merged
+}
+
 /// JSON-equal comparison of one field in two objects.
 ClassMethod Same(a As %DynamicObject, b As %DynamicObject, field As %String) As %Boolean
 {
@@ -104,6 +118,7 @@ ClassMethod Same(a As %DynamicObject, b As %DynamicObject, field As %String) As 
 ClassMethod Preview(descriptor As %DynamicObject, ctx As %DynamicObject) As %DynamicObject
 {
 	if ctx.kind = "request" quit ##class(FlightDeck.Mutation.RequestMode).Preview(descriptor, ctx)
+	if ctx.kind = "action" quit ##class(FlightDeck.Mutation.Action).Preview(descriptor, ctx)
 	set secrets = descriptor.secretFields
 	set resolved = ##class(FlightDeck.Mutation.Grade).Resolve(descriptor, ctx, ctx.keys)
 	set rows = ..Rows(descriptor, ctx)
@@ -118,17 +133,29 @@ ClassMethod Preview(descriptor As %DynamicObject, ctx As %DynamicObject) As %Dyn
 	set blocked = ##class(FlightDeck.Mutation.SelfProtection).Evaluate(descriptor, ctx)
 	if blocked = "" { do response.%Set("blocked", "", "null") } else { set response.blocked = {"message":(blocked)} }
 	do response.%Set("requestMode", "", "null")
+	// A server note about this preview: today, a last-administrator check that could not assert.
+	set notice = $select($isobject(ctx.check):##class(FlightDeck.Mutation.LastAdmin).Notice(ctx), 1:"")
+	do response.%Set("notice", notice, $select(notice="":"null", 1:"string"))
+	set applyNotice = $select(descriptor.%IsDefined("applyNotice"):descriptor.applyNotice, 1:"")
+	do response.%Set("applyNotice", applyNotice, $select(applyNotice="":"null", 1:"string"))
 	set response.impact = {"state":"none"}
 	if descriptor.%IsDefined("impact") && (ctx.kind '= "create") {
 		set when = $select(descriptor.%IsDefined("impactWhen"):descriptor.impactWhen, 1:{"op":"true"})
-		if ##class(FlightDeck.Domain.Predicate).Eval(when, ctx) set response.impact = ..Impact(descriptor.impact, ctx.current)
+		if ##class(FlightDeck.Domain.Predicate).Eval(when, ctx) set response.impact = ..Impact(descriptor.impact, ctx.current, ctx)
 	}
 	quit response
 }
 
-ClassMethod Impact(provider As %String, current As %DynamicObject) As %DynamicObject
+/// The impact provider's answer. `ctx` is the whole evaluation context, which action-kind providers
+/// need because an action names its target with parameters instead of an object.
+ClassMethod Impact(provider As %String, current As %DynamicObject, ctx As %DynamicObject = "") As %DynamicObject
 {
 	if provider = "webapp-impact" quit ##class(FlightDeck.Domain.Links.WebAppImpact).Impact(current)
+	if provider = "role-impact" quit ##class(FlightDeck.Domain.Impact.RoleImpact).Impact(current, ctx)
+	if provider = "resource-impact" quit ##class(FlightDeck.Domain.Impact.ResourceImpact).Impact(current, ctx)
+	if provider = "sql-privilege-impact" quit ##class(FlightDeck.Domain.Impact.SqlPrivilegeImpact).Impact(current, ctx)
+	if provider = "tls-impact" quit ##class(FlightDeck.Domain.Impact.TlsImpact).Impact(current, ctx)
+	if provider = "wallet-impact" quit ##class(FlightDeck.Domain.Impact.WalletImpact).Impact(current, ctx)
 	if ##class(FlightDeck.Domain.Fixtures).Enabled() quit $classmethod(##class(FlightDeck.Domain.Fixtures).#CATALOG, "Impact", provider, current)
 	quit {"state":"undetermined", "summary":"The impact could not be determined.", "reason":("No impact provider "_provider_".")}
 }
@@ -225,6 +252,7 @@ ClassMethod DoApply(request As %DynamicObject, Output status As %Integer) As %Dy
 		quit {"error":{"code":"CONFIRMATION_REQUIRED", "message":(unsatisfied), "raw":null}, "preview":(preview)}
 	}
 	if ctx.kind = "request" quit ##class(FlightDeck.Mutation.RequestMode).Apply(descriptor, ctx, preview, .status)
+	if ctx.kind = "action" quit ##class(FlightDeck.Mutation.Action).Apply(descriptor, ctx, preview, .status)
 	// Send only what changed (edit), the proposed object (create), nothing (delete).
 	set method = $piece(request.operationId, " ", 1), path = ##class(FlightDeck.Domain.Entity).Path(request.operationId)
 	set body = ""
@@ -280,6 +308,13 @@ ClassMethod Trail(preview As %DynamicObject, ctx As %DynamicObject, result As %S
 	do record.%Set("status", status, "number")
 	do record.%Set("message", message, $select(message="":"null", 1:"string"))
 	if $isobject(preview.requestMode) set record.request = preview.requestMode.request
+	// The last-administrator check, when one ran: a reader of the trail must be able to tell an
+	// affirmative block from a change applied under an incomplete check (feature 003 FR-010c).
+	if $isobject(ctx.check) {
+		set record.checkMode = ctx.check.mode
+		set record.checkResult = ctx.check.result
+		if $isobject(ctx.check.unread), ctx.check.unread.%Size() > 0 set record.checkUnread = ctx.check.unread
+	}
 	quit record
 }
 

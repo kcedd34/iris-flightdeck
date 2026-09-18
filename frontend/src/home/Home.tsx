@@ -1,4 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { request } from "../api/client";
+import type { AttentionResponse } from "../api/types";
+import { MarkerTag } from "../pattern/MarkerTag";
+import { encodeInspect } from "../pattern/useEntityType";
 import { useSession, useUnavailableOperations } from "../session/SessionProvider";
 import { DOMAINS } from "../shell/domains";
 import { EmptyState } from "../shell/EmptyState";
@@ -10,6 +15,51 @@ function productLabel(product: string): string {
 }
 
 /** The initial dashboard of UC01 (FR-036). */
+/**
+ * What needs attention (RN-FD-15): today, credentials whose certificate is expiring or expired.
+ * The list carries only what this session may read, and says so when a source was refused or a read
+ * cap was reached — an empty list means nothing is wrong, never "could not tell".
+ */
+function AttentionItems() {
+  const attention = useQuery({
+    queryKey: ["attention"],
+    queryFn: ({ signal }) => request<AttentionResponse>("/attention", { signal }),
+  });
+  const items = attention.data?.items ?? [];
+  return (
+    <section className="home-attention" aria-label="Attention items" data-testid="home-attention">
+      <div className="sect-h">Attention items</div>
+      {attention.isPending && <div className="field skeleton" aria-busy="true" />}
+      {attention.error && (
+        <div className="dlist-error" role="alert">
+          {attention.error.message}
+        </div>
+      )}
+      {attention.data?.degraded && attention.data.reason && <div className="lgroup-reason">{attention.data.reason}</div>}
+      {attention.data && items.length === 0 && (
+        <EmptyState
+          title="Nothing needs attention"
+          cause="No credential this session can read is expiring or expired."
+          nextAction="Items appear here as certificates approach their validity date."
+        />
+      )}
+      {items.map((item) => (
+        <Link
+          key={`${item.kind}:${item.label}`}
+          className="home-attention-item"
+          to={`/${item.target.domain}/${SECTION_OF[item.target.entityType] ?? ""}?inspect=${encodeURIComponent(encodeInspect({ domain: item.target.domain, entityType: item.target.entityType, keys: item.target.keys }))}`}
+          data-testid={`attention-${item.band}`}
+        >
+          <MarkerTag marker={{ id: item.kind, text: item.label, tone: item.band === "expired" ? "warning" : "caution" }} />
+        </Link>
+      ))}
+    </section>
+  );
+}
+
+/** Where an attention item opens. Entity types are unique across domains. */
+const SECTION_OF: Record<string, string> = { "x509-credential": "x509" };
+
 export function Home() {
   const { session, capabilities } = useSession();
   const { unavailable } = useUnavailableOperations();
@@ -57,14 +107,7 @@ export function Home() {
         ))}
       </section>
 
-      <section className="home-attention" aria-label="Attention items">
-        <div className="sect-h">Attention items</div>
-        <EmptyState
-          title="No attention items yet"
-          cause="Attention items come from the domain screens, and none are part of this build."
-          nextAction="They appear here as domain screens are added."
-        />
-      </section>
+      <AttentionItems />
     </div>
   );
 }

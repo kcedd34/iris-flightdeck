@@ -35,6 +35,27 @@ pattern does not offer, change the pattern, not the domain.
    domain's acceptance scenarios. Run `npm run build` (it includes `check:tokens`,
    `check:dialect` and `check:mutation-boundary`), then `scripts/build/check-dist.sh`.
 
+## The kinds of mutation
+
+| Kind | When | What the dry-run shows |
+|---|---|---|
+| `upsert` | the official operation writes an object (`PUT`, or `POST` that creates) | the field-by-field diff |
+| `delete` | the official operation deletes one | every field, as it stands today |
+| `action` | a verb with parameters and no editable object: grant, revoke, set a password, test a connection, purge | the affected set before and after (with `readOperation`), or exactly what will be sent |
+| `request` | the REST explorer's own test requests | the request block |
+
+An action declares `params` (sent as query parameters), `localParams` (required, never sent as query
+parameters: a password belongs in the body), `optionalParams` (may be empty, as an audit purge
+without dates means every record), an optional `readOperation` with `readParams`, `rowKey` and
+`effect` to show the before and after, and `body` as a template filled from those parameters.
+
+## When an operation should not be offered at all
+
+Declare it in `backend/cls/FlightDeck/Capability/Policy.cls` with its reason and the native path that
+performs it. It then reaches every screen as unavailable with that reason, through the mechanism that
+already exists, and the coverage document lists it. Do not omit the control: an absent control reads
+as a missing feature, a disabled one with a reason is a decision.
+
 ## What a domain never does
 
 - Render a dialog, a confirmation, a diff or its own trail. The dry-run in `src/mutation/` is the

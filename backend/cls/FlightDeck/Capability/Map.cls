@@ -39,14 +39,21 @@ ClassMethod Entry(op As %DynamicObject, privileges As %DynamicObject) As %Dynami
 		"operationId": (op.operationId), "method": (op.method), "path": (op.path),
 		"domain": (op.domain), "summary": (op.summary), "requires": (op.requires)
 	}
-	// On the v1 dialect an operation without a v1 route is unavailable (Constitution III, dialect
-	// note): the privilege still comes from the v2 declaration, and the version reason wins.
-	set available = ##class(FlightDeck.Admin.Client).Has(op.operationId)
+	// Two reasons make an operation unavailable, and both answer the same question the screens ask.
+	// A policy declaration (FlightDeck.Capability.Policy) wins over the dialect: FlightDeck declines
+	// to offer the operation on every version, so that is what the reason must say.
+	set declined = ##class(FlightDeck.Capability.Policy).Reason(op.operationId)
+	set available = (declined = "") && ##class(FlightDeck.Admin.Client).Has(op.operationId)
 	do entry.%Set("mutating", op.mutating, "boolean")
 	do entry.%Set("allowed", allowed, "boolean")
 	do entry.%Set("available", available, "boolean")
+	// Screens ask one question ("is this available, and why not"), but the two reasons are not the
+	// same fact: the instance not offering an operation is limited mode, while FlightDeck declining
+	// to offer it is a decision of this portal, true on every version. The flag keeps the limited
+	// mode indicator honest (feature 001 alignment) without adding a second question to any screen.
+	do entry.%Set("declined", declined '= "", "boolean")
 	if 'available {
-		do entry.%Set("reason", ##class(FlightDeck.Admin.Client).UnavailableReason(op.operationId))
+		do entry.%Set("reason", $select(declined'="":declined, 1:##class(FlightDeck.Admin.Client).UnavailableReason(op.operationId)))
 	} elseif allowed {
 		do entry.%Set("reason", "", "null")
 	} else {
@@ -112,15 +119,18 @@ ClassMethod Allowed(requires As %DynamicArray, privileges As %DynamicObject) As 
 
 /// allowed counts operations the user may run on this instance (privilege held and available);
 /// unavailable counts operations the instance's dialect does not offer.
+/// allowed counts what the user may run; unavailable counts what this **instance** does not offer
+/// (limited mode); declined counts what **FlightDeck** does not offer on any version (policy).
 ClassMethod Summary(entries As %DynamicArray) As %DynamicObject
 {
-	set allowed = 0, unavailable = 0
+	set allowed = 0, unavailable = 0, declined = 0
 	set iter = entries.%GetIterator()
 	while iter.%GetNext(, .entry) {
+		if entry.declined { set declined = declined + 1 continue }
 		if 'entry.available { set unavailable = unavailable + 1 continue }
 		set:entry.allowed allowed = allowed + 1
 	}
-	quit {"allowed":(allowed), "unavailable":(unavailable), "total":(entries.%Size())}
+	quit {"allowed":(allowed), "unavailable":(unavailable), "declined":(declined), "total":(entries.%Size())}
 }
 
 /// The privileges the v2 specification declares for one operation ("" when unknown).

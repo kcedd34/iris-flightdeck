@@ -74,19 +74,36 @@ ClassMethod Links(domain As %String, entityType As %String) As %Status
 	if missing '= "" quit ##class(FlightDeck.API.Response).WriteError(400, "MISSING_KEY", "Query parameter '"_missing_"' is required.")
 	set entity = ##class(FlightDeck.Domain.Entity).Read(type, keys, .status, .json, .raw)
 	if '$isobject(entity) quit ##class(FlightDeck.Domain.Entity).WriteFailure(type.detailOperation, status, json, raw)
-	quit ##class(FlightDeck.API.Response).WriteJSON({"groups":(..Groups(type, entity))})
+	quit ##class(FlightDeck.API.Response).WriteJSON({"groups":(..Groups(type, entity, $get(%request.Data("provider", 1)), ..Parameters()))})
 }
 
-ClassMethod Groups(type As %DynamicObject, entity As %DynamicObject) As %DynamicArray
+/// Query parameters a provider may declare (feature 003 D2). Everything the request carries that is
+/// not an entity key is offered to the providers; each one reads only what it declared.
+ClassMethod Parameters() As %DynamicObject
+{
+	set params = {}
+	set name = ""
+	for {
+		set name = $order(%request.Data(name))
+		quit:name=""
+		continue:name="provider"
+		do params.%Set(name, $get(%request.Data(name, 1)))
+	}
+	quit params
+}
+
+ClassMethod Groups(type As %DynamicObject, entity As %DynamicObject, only As %String = "", params As %DynamicObject = "") As %DynamicArray
 {
 	set groups = []
 	quit:'type.%IsDefined("links") groups
+	if '$isobject(params) set params = {}
 	set iter = type.links.%GetIterator()
 	while iter.%GetNext(, .provider) {
+		continue:((only'="")&&(provider'=only))
 		set class = ##class(FlightDeck.Domain.LinkProviders).Class(provider)
 		continue:class=""
 		try {
-			set group = $classmethod(class, "Group", entity)
+			set group = $classmethod(class, "Group", entity, params)
 		} catch ex {
 			set group = ##class(FlightDeck.Domain.LinkProviders).NewGroup(provider, provider)
 			set group.state = "undetermined", group.reason = ex.DisplayString()

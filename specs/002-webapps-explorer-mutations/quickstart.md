@@ -119,8 +119,12 @@ the copied `curl` contains `-u '<user>:<password>'` literally.
 
 ```bash
 cd frontend && FLIGHTDECK_PORT=52791 npx playwright test --project limited
-FD_DEV_CONTAINER=fd-v1-iris-1 scripts/dev/test-backend.sh
+FD_DEV_CONTAINER=fd-v1-iris-1 scripts/dev/test-backend.sh   # the whole suite, never a subset
 ```
+
+The backend script fails when a test class in the repository did not run on the instance, so the
+older versions cannot silently run a reduced set: that is how `CapabilityMap.TestOrSemantics` stayed
+unrun on 2026.1 through feature 001.
 
 Expected: web application reads and writes work (all 8 operations are available there, decided by
 the capability map), and the explorer discovers services.

@@ -208,3 +208,104 @@ than in a domain:
 - **Blocked attempts missing from the trail.** A block decided at preview left Apply disabled, so the
   UI never reached apply and no `Blocked` record was written (FR-014). A blocked preview now
   carries the server's masked `Blocked` record, which the shared layer appends once.
+
+## Same backend set on every version (2026-09-17)
+
+Feature 001's 2026.1 matrix ran a chosen subset of test classes, and `CapabilityMap` was not in it;
+the class failed there and nobody saw it until feature 002's matrix ran everything. Two changes keep
+the versions comparable:
+
+- `scripts/dev/test-backend.sh` (no class filter) fails when a test class present in
+  `backend/test/` did not run on that instance, naming it. This also catches a stale container copy.
+  Probed with a class created only on the host: the run failed and named it.
+- The 2026.1 entry of the feature 002 matrix is the whole suite (115 methods, 25 classes), the same
+  as IRIS CE 2026.2 and IRIS for Health 2026.2.
+
+Tests whose subject an instance does not offer report a skip inside the test; they are not removed
+from the run.
+
+## e2e that need Docker (2026-09-17)
+
+`rest-confinement` (container connection table), `audit` (IRIS logs) and `pattern` (the fixtures
+flag, which has no HTTP surface on purpose) run `docker exec` against `FD_CONTAINER`. All three now
+skip with a stated reason when it is unavailable, instead of failing: a red test caused by a missing
+Docker socket reads as a broken product.
+
+## Dialect-boundary gate extended to `declined` (feature 003), 2026-09-17
+
+The capability policy added `declined` to every capability entry: it says FlightDeck itself does not
+offer an operation, on any version. That is the same kind of fact as `dialect`, `limited` and
+`apiVersion` — one a screen must not branch on — and that family leaked once before, which is why
+the gate exists. `scripts/check-dialect-boundary.mjs` now flags `declined` too, with four declared
+exceptions: the policy class, the capability map, the API types, and the one frontend module that
+separates limited mode from a declined operation.
+
+Probed with two temporary files, one backend and one frontend, each reading `entry.declined`:
+
+```
+check-dialect-boundary: version or dialect checks outside the dialect layer.
+  backend/cls/FlightDeck/Domain/ProbeDeclined.cls:5: quit ''entry.declined
+  frontend/src/domains/ProbeDeclined.tsx:2: export const hidden = (c: MutationCapability) => c.declined === true;
+```
+
+Exit 1, both named. After removing the probes: `ok (8 declared exceptions)`.
+
+## Platform findings while building the security domain (feature 003 US3), 2026-09-17
+
+- **`GET /info` answers 404 for an account that holds only `%Admin_Wallet:U`**, although the wallet
+  operations answer 200 for that same account. FlightDeck derives privileges from `/info`, so such an
+  account cannot sign in. The end-to-end account for partial mode therefore holds `%Admin_Wallet`
+  plus `%Operator`; it still lacks `%Admin_Secure`, which is what makes the impact analysis report
+  itself incomplete. The 404 (rather than 403) is the platform's own answer and is not masked.
+- **`POST /v2/security/ssl-configuration/test` takes a fixed ten seconds to report a failed
+  connection.** The dry-run stays in its applying state for that long, and the end-to-end test waits
+  accordingly. Nothing is retried and nothing is timed out by FlightDeck: the platform's answer is
+  what the user sees.
+- **A wallet collection names its resource with the permission** (`FD_Demo_Reports:READ`), so a
+  resource link compares the part before the colon.
+- **A wallet secret is addressed as `<collection>.<secret>` in a single `name` parameter**, and the
+  listing returns names and types only. There is no operation that reads a secret's value: UC06-1 is
+  satisfied by the official API's own shape, not by a FlightDeck choice.
+- **The SQL listings return `Object` and `Action` where their own schema declares `Name` and
+  `Privilege`** (recorded earlier); the action descriptors accept either spelling and rewrite
+  neither.
+
+## Two usability corrections found by inspection, not by tests (feature 003), 2026-09-17
+
+- **Sign-in refused for an account the instance will not describe.** An account holding only
+  `%Admin_Wallet` is refused by the official `GET /info`, so FlightDeck cannot read its privileges.
+  The message used to list the privileges FlightDeck needs, which read as "you lack these" although
+  the account held one of them. It now states that the API is present and answering, that the
+  refusal is about the account, and what to ask for; it is not the version message, and a test
+  asserts that distinction. A wrong message here sends an administrator to investigate the instance
+  instead of the account.
+- **A dry-run that applies a slow operation.** The platform's TLS connection test takes a fixed ten
+  seconds, and the dialog said nothing while it waited, which reads as a frozen application. The
+  dry-run now shows an applying state, disables Apply while it runs, and a descriptor may declare
+  what to say about the wait (`applyNotice`), so the text comes from the operation, not from a
+  screen.
+
+Also fixed: `scripts/dev/load-backend.sh` ignored the status of the test-class load, so a test class
+that did not parse left the container running the previously compiled version and the suite reported
+a stale result. It now fails the load; probed with a deliberately broken class (exit 1, then exit 0
+once removed).
+
+## IRIS 2026.1: the wallet secret body has another shape (feature 003)
+
+`PUT /v2/wallet/secret` exists on the v1 dialect, but the body differs. Probed against the live
+2026.1 instance, one field at a time:
+
+```
+{"Type":"%Wallet.KeyValue","WalletSecretConfig":{"Secret":"value"}}
+  -> 400 Field 'WalletSecretConfig.Secret' needs to be an object, not a literal type
+{"...":{"Secret":{"Value":"value"}}}            -> 400 'WalletSecretConfig.AllowedHosts' is required
+{"...":{"AllowedHosts":["*"],...}}              -> 400 'WalletSecretConfig.RequireTLS' is required
+{"...":{"AllowedHosts":["*"],"RequireTLS":false,"Secret":{...}}}
+                                                -> 400 'WalletSecretConfig.Usage' is required
+{"...":"Usage":"any"...}                        -> 400 'WalletSecretConfig.Usage' needs to be an object
+```
+
+FlightDeck does not guess the shape of a secret: the operation is withheld on the v1 dialect
+(`scripts/build/v1-translations.json`, reason key `walletSecretWrite`), so the screen disables it
+with the reason and the native path, and the demo installer skips the demo secret with the same
+message. Reading and deleting wallet secrets stay available on that version.

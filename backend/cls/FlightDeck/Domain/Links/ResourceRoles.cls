@@ -9,9 +9,11 @@ ClassMethod Operations() As %List
 	quit $listbuild("GET /v2/security/roles", "GET /v2/security/role")
 }
 
-ClassMethod Group(entity As %DynamicObject) As %DynamicObject
+ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
 {
-	set resource = entity.object.Resource
+	// The entity either names a resource (a web application, a privileged routine application) or is
+	// one (the permissions domain, feature 003).
+	set resource = $select(entity.entityType = "resource":entity.keys.name, 1:entity.object.Resource)
 	set group = ##class(FlightDeck.Domain.LinkProviders).NewGroup("resource-roles", "roles grant this resource", "in")
 	if resource = "" {
 		set group.label = "Not restricted by a resource"

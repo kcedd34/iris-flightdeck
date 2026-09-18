@@ -19,7 +19,8 @@ Method TestDemoObjectsFoundUnderTheirDomains()
 {
 	set result = ##class(FlightDeck.Palette.Search).Run("FD_Demo", "", 5)
 	do $$$AssertNotTrue(result.degraded)
-	for pair = "Role:permissions:2", "Resource:permissions:2", "Web application:web-apps:2", "Task:tasks:3", "Wallet collection:security:1" {
+	// Feature 003 added the demo role chain (FD_Demo_L1 to L3), so five roles carry the demo prefix.
+	for pair = "Role:permissions:5", "Resource:permissions:2", "Web application:web-apps:2", "Task:tasks:3", "Wallet collection:security:1" {
 		set group = ..Group(result, $piece(pair, ":", 1))
 		do $$$AssertTrue($isobject(group), "group "_$piece(pair, ":", 1))
 		continue:'$isobject(group)

@@ -8,7 +8,7 @@ ClassMethod Operations() As %List
 	quit ""
 }
 
-ClassMethod Group(entity As %DynamicObject) As %DynamicObject
+ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
 {
 	quit:'entity.facts.restDispatcher ""
 	set group = ##class(FlightDeck.Domain.LinkProviders).NewGroup("rest-service", "REST service")

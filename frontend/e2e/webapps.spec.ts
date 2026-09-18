@@ -84,7 +84,7 @@ test("5. A user without the declared privilege sees the refusal with the require
   await expect(page.getByRole("alert")).toContainText("Requires Use on %Admin_Secure. Ask your instance administrator for access.");
 });
 
-test("6. A linked role opens read-only in the inspector with Back; the permissions route keeps its empty state", async ({ page }) => {
+test("6. A linked role opens read-only in the inspector with Back, and its own domain is one click away", async ({ page }) => {
   await signIn(page);
   await openWebApps(page);
   await row(page, "/csp/fd-demo-reports").click();
@@ -95,8 +95,10 @@ test("6. A linked role opens read-only in the inspector with Back; the permissio
   await expect(inspector.locator(".actions")).toHaveCount(0);
   await inspector.getByRole("button", { name: "Back" }).click();
   await expect(inspector.getByRole("heading", { name: "/csp/fd-demo-reports" })).toBeVisible();
-  await page.goto("permissions/roles");
-  await expect(page.getByRole("status").filter({ hasText: "Not available in this build yet" })).toBeVisible();
+  // Feature 003 implemented the permissions domain: the same role opens there, with its own actions.
+  await page.goto(`permissions/roles?inspect=${encodeURIComponent("permissions/role:FD_Demo_Auditor")}`);
+  await expect(page.getByTestId("entity-inspector").getByRole("heading", { name: "FD_Demo_Auditor" })).toBeVisible();
+  await expect(page.getByTestId("entity-inspector").locator(".actions")).not.toHaveCount(0);
 });
 
 test("Palette: selecting a web application opens its inspector on the domain pattern", async ({ page }) => {

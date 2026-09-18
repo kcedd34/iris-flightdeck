@@ -125,6 +125,42 @@ Type  /csp/fd-demo  to confirm   [____________]      [Cancel] [Apply]
   `rest-roles-note`, `rest-response`, `rest-status`, `rest-time`, `rest-headers-out`,
   `rest-body-out`, `rest-copy-curl`.
 
+## 7a. Added by feature 003 (permissions and security)
+
+These were the `ui-pattern-delta.md` of feature 003; they are part of this contract now.
+
+- **Action-kind mutations.** A descriptor may declare `kind: "action"` for an official operation that
+  changes state through a verb with parameters and no editable object (SQL grant and revoke, a
+  password change, a connection test, an audit purge). Domains call
+  `useDomainMutation().run({ operationId, params, options, noun })`. The dry-run shows the affected
+  set before and after when the descriptor names a `readOperation`, and otherwise the request block,
+  with the same grades, impact, masking and trail. Parameters that must not travel in the query
+  (a password) are declared as `localParams`; ones that may be empty as `optionalParams`.
+- **Parameterised link panels.** A provider may declare parameters it needs before it can answer
+  (the namespace of the SQL privileges panel). The group state is then `needs-parameter`; the panel
+  renders one control per parameter, with the known values when the session may list them, and
+  refreshes alone. Test id `links-group-<provider>-parameter-<name>`.
+- **Singleton sections.** An entity type with `singleton: true` has a detail operation, no list and
+  no keys; it renders inspector and actions without a list half. Test id `singleton-inspector`.
+- **Policy-declared unavailability.** An operation FlightDeck declines to offer on any version
+  reaches the client as `available: false` with its reason and the native path, and carries
+  `declined: true` so that limited mode still counts only what the **instance** lacks. Screens show
+  the control disabled with the reason as visible text; they never hide it.
+- **Trail: the last-administrator check.** A record may carry `checkMode`, `checkResult` and
+  `checkUnread`; the entry shows the mode and, expanded, what could not be read. Test id
+  `trail-entry-check-mode`.
+- **Server notes on a preview.** `notice` is shown above the diff (a check that could not assert),
+  and `applyNotice` while the operation is applying, for operations the platform answers slowly.
+  Test ids `dry-run-notice`, `dry-run-applying`.
+- **Validity vocabulary.** Markers `expired`, `expiring`, `validity-unknown` and `validity-not-read`,
+  with the days remaining interpolated from a fact (`{facts.daysRemaining}`). The home panel's
+  attention list renders the same vocabulary.
+- **Shared field editors.** `pattern/editors` (authentication bits, match roles) and
+  `pattern/GrantsEditor` (a role's resource grants) are pattern modules, used by more than one
+  domain.
+- **One section component.** `pattern/DomainSection` renders any domain's list and inspector; a
+  domain configures it and adds its actions.
+
 ## 7. REST test response panel
 
 - Before running: when the resolved application grants roles beyond the user's login roles, a note

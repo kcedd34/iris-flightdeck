@@ -15,6 +15,8 @@ ClassMethod Evaluate(descriptor As %DynamicObject, ctx As %DynamicObject) As %St
 	while iter.%GetNext(, .rule) {
 		if ##class(FlightDeck.Domain.Predicate).Eval(rule.when, ctx) {
 			set message = $select(rule.%IsDefined("message"):rule.message, 1:..#MESSAGE)
+			// A rule may name a message the evaluator composes, because only it knows what it counted.
+			if message = "last-administrator" set message = ##class(FlightDeck.Mutation.LastAdmin).Message(ctx)
 			quit
 		}
 	}

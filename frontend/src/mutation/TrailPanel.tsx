@@ -68,12 +68,22 @@ function Entry({ entry }: { entry: TrailRecord }) {
         <span className="nm mono">{entry.target}</span>
         <span className="meta mono">
           {entry.request ? <span className="num">{entry.status} · </span> : null}
+          {entry.checkMode && (
+            <span data-testid="trail-entry-check-mode">
+              {entry.checkMode === "partial" ? "incomplete check" : "checked"} ·{" "}
+            </span>
+          )}
           {entry.operationId}
         </span>
       </button>
       {expanded && (
         <div className="trail-detail">
           {entry.message && <div className="impact-u">{entry.message}</div>}
+          {entry.checkMode === "partial" && (
+            <div className="impact-u">
+              The last-administrator check was incomplete: {entry.checkUnread?.join(", ") ?? "part of the instance could not be read"}.
+            </div>
+          )}
           {entry.request && (
             <div className="impact-u mono">
               {entry.request.method} {entry.request.path}

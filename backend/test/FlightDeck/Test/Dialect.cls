@@ -48,8 +48,10 @@ Method TestCapabilityMapAvailability()
 	set iter = entries.%GetIterator()
 	while iter.%GetNext(, .e) { do byId.%Set(e.operationId, e) }
 	if ##class(FlightDeck.Admin.Client).Limited() {
-		// 273 v2 operations: 173 same shape + 28 translated + 8 native namespace reads = 209; 64 unavailable.
-		do $$$AssertEquals(summary.unavailable, 64)
+		// 273 v2 operations: 172 same shape + 28 translated + 8 native namespace reads = 208;
+		// 65 unavailable, one of them the wallet secret write, whose v1 route exists but whose body
+		// this version shapes differently, so FlightDeck withholds it with the platform's message.
+		do $$$AssertEquals(summary.unavailable, 65)
 		set dbs = byId.%Get("GET /v2/databases")
 		do $$$AssertNotTrue(dbs.available, "databases have no v1 route")
 		do $$$AssertEquals(dbs.reason, ##class(FlightDeck.API.Response).#MSGVERSION)
@@ -92,7 +94,11 @@ Method TestSessionReportsDialect()
 	do $$$AssertEquals(session.instance.dialect, ##class(FlightDeck.Admin.Client).Dialect())
 	do $$$AssertEquals(session.instance.apiVersion, ..InstanceApiVersion())
 	do $$$AssertNotTrue(session.instance.%IsDefined("limited"), "no limited flag in the session")
+	// Unavailable counts what this instance does not offer. Operations FlightDeck declines to offer
+	// on any version are counted separately, so the equivalence with limited mode still holds
+	// (feature 003 capability policy).
 	do $$$AssertEquals(session.capabilitySummary.unavailable > 0, ##class(FlightDeck.Admin.Client).Limited(), "unavailable operations exist exactly in limited mode")
+	do $$$AssertTrue(session.capabilitySummary.declined > 0, "the policy declines at least one operation on every version")
 }
 
 Method TestPaletteReportsUnavailableGroups()

@@ -39,7 +39,10 @@ test: no outbound connection from the executor (`rest-confinement`), no credenti
   applications are listed with exposure markers, inspected with links, and the REST tab discovers
   `/api/flightdeck`; one web application edit goes through the shared dry-run and is confirmed by
   reading the official object back. On 2026.1 the map offers these operations, and both passed.
-- The whole backend suite ran on 2026.1, not only a reduced set. `EntityReads`, `WebAppLinks`,
+- The whole backend suite ran on 2026.1, not only a reduced set, and `scripts/dev/test-backend.sh`
+  now fails when any test class in the repository did not run on the instance, so a reduced set
+  cannot come back unnoticed (probed with a class present only on the host: the run failed naming
+  it). `EntityReads`, `WebAppLinks`,
   `MutationService`, `SelfProtection`, `RestDiscovery` and `RestExecutorRoles` all pass.
 - **Test fixed:** `CapabilityMap.TestOrSemantics` (feature 001) assumed `GET /v2/databases` is
   offered. On 2026.1 it is not, so the version reason correctly takes precedence over the privilege

@@ -26,6 +26,13 @@ Method TestUrlMapMatchesOpenApi()
 			set specOps($zconvert(method, "U") _ " " _ path) = ""
 		}
 	}
+	// Two empty sets compare equal and assert nothing, so both are counted first.
+	set routeCount = 0, key = ""
+	for { set key = $order(routes(key)) quit:key=""  set routeCount = routeCount + 1 }
+	set specCount = 0, key = ""
+	for { set key = $order(specOps(key)) quit:key=""  set specCount = specCount + 1 }
+	do $$$AssertTrue(routeCount > 0, "the router declares routes")
+	do $$$AssertTrue(specCount > 0, "the served document declares operations")
 	set key = ""
 	for {
 		set key = $order(routes(key))
@@ -79,6 +86,17 @@ Method TestMutationServiceRoutes()
 	do $$$AssertEquals($classmethod(R, "GuardDecision", "POST", "/v1/rest/execute", "t", "armed"), "OK")
 	do $$$AssertEquals($classmethod(R, "GuardDecision", "GET", "/v1/domains/web-apps/web-application", "t", "armed"), "OK")
 	do $$$AssertEquals($classmethod(R, "GuardDecision", "GET", "/v1/domains/web-apps/web-application", "", "armed"), "MISSING_TAB_ID")
+}
+
+/// Feature 003: an account the instance will not describe is refused for the account, not for the
+/// version. The message must not send an administrator to investigate the instance.
+Method TestSignInRefusalNamesTheAccountNotTheVersion()
+{
+	set message = ##class(FlightDeck.API.Response).#MSGNOINFO
+	do $$$AssertTrue(message [ "present and answering", "it states that the API works")
+	do $$$AssertTrue(message [ "about the account", "it points at the account")
+	do $$$AssertNotTrue(message [ "Requires IRIS", "it is not the version message")
+	do $$$AssertNotTrue(message = ##class(FlightDeck.API.Response).#MSGNOAPI, "it is not the no-API message")
 }
 
 }

@@ -115,6 +115,22 @@ export default function PatternCatalog() {
                     actions={[
                       { operationId: "PUT /fixture/catalog-item", label: "Edit", mutating: true, onActivate: () => setEditing(detail) },
                       {
+                        operationId: "POST /fixture/catalog-tag/grant",
+                        label: "Add a tag",
+                        mutating: true,
+                        onActivate: async () => {
+                          await run({ operationId: "POST /fixture/catalog-tag/grant", params: { name: detail.keys.name!, tag: "reviewed-again" }, noun: "catalog tag" });
+                        },
+                      },
+                      {
+                        operationId: "POST /fixture/catalog-tag/revoke",
+                        label: "Remove a tag",
+                        mutating: true,
+                        onActivate: async () => {
+                          await run({ operationId: "POST /fixture/catalog-tag/revoke", params: { name: detail.keys.name!, tag: "reviewed" }, noun: "catalog tag" });
+                        },
+                      },
+                      {
                         operationId: "DELETE /fixture/catalog-item",
                         label: "Delete",
                         mutating: true,

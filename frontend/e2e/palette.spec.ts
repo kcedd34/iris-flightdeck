@@ -36,7 +36,8 @@ test("2. Given the term matches entities of different domains, when results show
     await expect(row).toBeVisible();
     await expect(row).toContainText(context);
   }
-  await expect(palette).toContainText("10 results");
+  // Feature 003 added the demo role chain (FD_Demo_L1 to L3) to the same prefix.
+  await expect(palette).toContainText("13 results");
 });
 
 test("3. Given entity search is unavailable, when the user types, then local actions are still offered and the unavailability is signaled", async ({ page }) => {

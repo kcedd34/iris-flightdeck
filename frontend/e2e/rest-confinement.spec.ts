@@ -11,7 +11,7 @@ const HOSTILE = ["http://example.com/", "https://example.com/api", "//example.co
 /** Remote endpoints of established TCP connections inside the container that are not loopback. */
 function outbound(): string[] | null {
   try {
-    const table = execFileSync("docker", ["exec", CONTAINER, "cat", "/proc/net/tcp", "/proc/net/tcp6"], { encoding: "utf8" });
+    const table = execFileSync("docker", ["exec", CONTAINER, "cat", "/proc/net/tcp", "/proc/net/tcp6"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
     return table
       .split("\n")
       .slice(1)

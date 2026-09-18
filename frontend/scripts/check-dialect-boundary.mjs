@@ -4,8 +4,11 @@
 // FlightDeck.Admin.Client.Has / UnavailableReason).
 //
 // Checked: backend/cls, backend/test, frontend/src, frontend/e2e (.cls, .ts, .tsx), comments removed.
-// Flagged: the identifiers dialect / Dialect, limited, Limited(...) and apiVersion in code, and a
-// string literal that is exactly one of those names (e.g. %Get("dialect"), body["limited"]).
+// Flagged: the identifiers dialect / Dialect, limited, Limited(...), apiVersion and declined in code,
+// and a string literal that is exactly one of those names (e.g. %Get("dialect"), body["limited"]).
+// `declined` belongs to the same family (feature 003): it says FlightDeck itself does not offer an
+// operation, and a screen that branches on it would be deciding availability again instead of
+// reading the capability map's `available` and `reason`.
 // Other string contents (UI text, test titles, test ids such as "limited-mode-indicator") are not
 // version checks and are ignored.
 // Allowed: the dialect layer (FlightDeck.Admin), the installer (bootstrap, runs before the map
@@ -19,6 +22,8 @@ const roots = ["backend/cls", "backend/test", "frontend/src", "frontend/e2e"];
 
 const ALLOWED_PREFIXES = [
   ["backend/cls/FlightDeck/Admin/", "the dialect layer itself"],
+  ["backend/cls/FlightDeck/Capability/Policy.cls", "the policy layer itself: it declares what FlightDeck declines to offer"],
+  ["backend/cls/FlightDeck/Capability/Map.cls", "the capability map: the one place that merges policy and dialect into available and reason"],
   ["backend/cls/FlightDeck/Install/Installer.cls", "installer bootstrap: checks the API before any capability map exists"],
 ];
 
@@ -28,10 +33,15 @@ const DECLARED_EXCEPTIONS = [
   ["backend/cls/FlightDeck/API/Session.cls", "reports instance.dialect and apiVersion as diagnostics only; no decision reads them"],
   ["backend/cls/FlightDeck/API/OpenAPI.cls", "generated verbatim from the contract, which documents the diagnostic fields"],
   ["frontend/e2e/setup/users.ts", "test infrastructure: creates e2e users through whichever admin API the install exposes"],
+  ["backend/test/FlightDeck/Test/CapabilityPolicy.cls", "tests the policy mechanism, which is its object"],
+  ["frontend/src/api/types.ts", "types the field the capability map sends; no decision is taken here"],
+  ["frontend/src/session/SessionProvider.tsx", "the one place that separates limited mode (what the instance lacks) from a declined operation (what FlightDeck does not offer)"],
+  ["frontend/e2e/limited.spec.ts", "asserts that limited mode and declined operations are counted apart, which is its object"],
+  ["frontend/e2e/setup/helpers.ts", "test infrastructure: reads the capability map so tests follow it instead of the version"],
 ];
 
-const NAMES = /^(dialect|Dialect|limited|Limited|apiVersion)$/;
-const FLAGGED = /(?<![-\w$])(dialect|Dialect|limited|apiVersion)(?![-\w])|(?<![-\w$])Limited\s*\(/;
+const NAMES = /^(dialect|Dialect|limited|Limited|apiVersion|declined|Declined)$/;
+const FLAGGED = /(?<![-\w$])(dialect|Dialect|limited|apiVersion|declined|Declined)(?![-\w])|(?<![-\w$])Limited\s*\(/;
 
 // Blanks string literal contents, keeping a literal that is exactly a flagged name.
 function maskStrings(line, quotes) {

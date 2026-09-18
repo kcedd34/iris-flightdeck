@@ -18,6 +18,11 @@ Parameter MSGVERSION = "Not available on this IRIS version or edition. Requires 
 /// Message 8 for an instance without any SysAdmin API FlightDeck speaks (FR-012a).
 Parameter MSGNOAPI = "Not available on this IRIS version or edition. Requires IRIS 2026.1.";
 
+/// Sign-in refused because the instance would not report the account's privileges. The API is
+/// present and answering: the account is what is missing something, and saying "version" here would
+/// send an administrator to investigate the instance instead of the account (feature 003).
+Parameter MSGNOINFO = "The instance's SysAdmin API is present and answering, but it refused to report this account's privileges, so FlightDeck cannot open a session for it. This is about the account, not the instance: ask for a privilege this instance accepts, for example %Admin_Operate. Ask your instance administrator for access.";
+
 /// docs/prd.md section 9, message 19.
 Parameter MSGENTITYSEARCH = "Entity search is unavailable right now. Portal actions are still available.";
 

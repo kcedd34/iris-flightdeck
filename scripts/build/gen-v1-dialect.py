@@ -61,8 +61,12 @@ def main():
     for op_id, key in withheld.items():
         if op_id not in v2ops:
             fail(f"withheld operation not in v2 spec: {op_id}")
-        if op_id in table:
-            fail(f"withheld operation is available: {op_id}")
+        # A withheld operation may well have a v1 route: the route exists but FlightDeck declines it,
+        # as with a body this version shapes differently. The decision wins over route discovery,
+        # but never over an explicit translation or native provider, which would contradict it.
+        if op_id in translations or op_id in native:
+            fail(f"withheld operation is also translated or native: {op_id}")
+        table.pop(op_id, None)
         if key not in reasons:
             fail(f"withheld operation has an unknown reason key: {op_id} -> {key}")
         withheld_out[op_id] = reasons[key]

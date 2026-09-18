@@ -43,6 +43,9 @@ ClassMethod DisplayName(type As %DynamicObject, keys As %DynamicObject) As %Stri
 }
 
 /// Markers whose predicate holds, with the first matching text variant.
+/// <p>A marker text may name a value: "{facts.daysRemaining}" or "{object.Name}". The value is
+/// substituted from the same context the predicate saw, so "Expires in 12 days" is data, not a
+/// second source of truth in a screen (feature 003 contract ui-pattern-delta D6).
 ClassMethod Markers(type As %DynamicObject, object As %DynamicObject, facts As %DynamicObject) As %DynamicArray
 {
 	set out = []
@@ -58,9 +61,23 @@ ClassMethod Markers(type As %DynamicObject, object As %DynamicObject, facts As %
 				if ##class(FlightDeck.Domain.Predicate).Eval(variant.when, ctx) set text = variant.text quit
 			}
 		}
-		do out.%Push({"id":(marker.id), "text":(text), "tone":(marker.tone)})
+		do out.%Push({"id":(marker.id), "text":(..Interpolate(text, ctx)), "tone":(marker.tone)})
 	}
 	quit out
+}
+
+/// Replaces "{facts.x}" and "{object.y}" in a marker text with the value from the context.
+ClassMethod Interpolate(text As %String, ctx As %DynamicObject) As %String
+{
+	quit:'(text [ "{") text
+	for i=2:2:$length(text, "{") {
+		set token = $piece($piece(text, "{", i), "}", 1)
+		continue:token=""
+		if ##class(FlightDeck.Domain.Predicate).Resolve(ctx, token, .value) {
+			set text = $replace(text, "{"_token_"}", value)
+		}
+	}
+	quit text
 }
 
 /// Calls the official list operation. Returns the items or "" with status/json/raw describing the
@@ -106,7 +123,9 @@ ClassMethod Read(type As %DynamicObject, keys As %DynamicObject, Output status A
 	set object = $select($isobject(json) && $isobject(json.result):json.result, 1:{})
 	do ..RemoveSecrets(type, object)
 	set listItem = $select(type.facts'="":..ListItemFor(type, keys), type.markers.%Size()>0:..ListItemFor(type, keys), 1:"")
-	set basis = $select($isobject(listItem):listItem, 1:object)
+	// Facts see the detail plus whatever only the list carries (IsSystemApp and Type for a web
+	// application, for example). The detail wins: it is the object the user is looking at.
+	set basis = ..Merge(object, listItem)
 	set facts = ##class(FlightDeck.Domain.Facts).For(type.facts, basis)
 	set entity = {"entityType":(type.entityType), "keys":(keys), "displayName":(..DisplayName(type, keys)), "object":(object), "facts":(facts)}
 	set entity.listItem = $select($isobject(listItem):listItem, 1:{})
@@ -114,6 +133,20 @@ ClassMethod Read(type As %DynamicObject, keys As %DynamicObject, Output status A
 	do entity.%Set("isFlightDeck", ''facts.flightDeck, "boolean")
 	set entity.markers = ..Markers(type, basis, facts)
 	quit entity
+}
+
+/// A copy of the detail object with the list item's extra fields added (never overwriting).
+ClassMethod Merge(object As %DynamicObject, listItem As %DynamicObject) As %DynamicObject
+{
+	quit:'$isobject(listItem) object
+	set merged = ##class(%DynamicAbstractObject).%FromJSON(object.%ToJSON())
+	set iter = listItem.%GetIterator()
+	while iter.%GetNext(.field, .value) {
+		continue:merged.%IsDefined(field)
+		set type = listItem.%GetTypeOf(field)
+		if $listfind($listbuild("boolean", "number", "null"), type) { do merged.%Set(field, value, type) } else { do merged.%Set(field, value) }
+	}
+	quit merged
 }
 
 /// Descriptor-declared secret fields never leave the server (Constitution VI).

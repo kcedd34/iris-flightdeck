@@ -52,3 +52,10 @@
   text-align: left;
   padding: 16px 0;
 }
+
+/* Attention items (RN-FD-15): each one opens the entity it is about. */
+.home-attention-item {
+  display: block;
+  padding: 4px 0;
+  text-decoration: none;
+}

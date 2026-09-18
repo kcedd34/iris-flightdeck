@@ -8,7 +8,7 @@ ClassMethod Operations() As %List
 	quit ##class(FlightDeck.Domain.Links.ResourceRoles).Operations() _ $listbuild("GET /v2/security/role/owners")
 }
 
-ClassMethod Group(entity As %DynamicObject) As %DynamicObject
+ClassMethod Group(entity As %DynamicObject, params As %DynamicObject = "") As %DynamicObject
 {
 	set resource = entity.object.Resource
 	quit:resource="" ""

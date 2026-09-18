@@ -206,6 +206,38 @@ O maior domínio da API. O "etc" do enunciado é lido como cobertura integral: T
 
 ---
 
+
+## Ownership of the security operations (feature 003)
+
+The 89 operations of Section 3 are owned as follows, decided by the criterion recorded in
+`specs/003-permissions-security/spec.md`: the boundary with the logs feature is **mutation against
+reading**, not configuration against records.
+
+| Operations | Owned by | State |
+|---|---|---|
+| 88 of the 89 (7 wallet, 81 security) | feature 003, permissions and security | implemented, except the eight declared unavailable below |
+| `POST /v2/security/audit/records` (listing audit records) | the logs feature | read, presented in the unified log flow |
+
+### Declared unavailable by FlightDeck (policy, not a gap)
+
+These eight are offered by the official API and **not** by FlightDeck. Each one appears in the
+interface as a disabled control with this reason and the native path that performs it
+(`FlightDeck.Capability.Policy`, spec FR-020):
+
+| Operation | Why |
+|---|---|
+| `POST /v2/security/encryption/file` | Creating an encryption key file can make an instance's data permanently unreadable, with no recovery through the portal. |
+| `POST /v2/security/encryption/file/admin` | Key file administration decides who can activate the keys that make data readable. |
+| `DELETE /v2/security/encryption/file/admin` | Removing the last administrator of a key file can make its keys unusable. |
+| `POST /v2/security/encryption/file/key` | Adds key material FlightDeck cannot verify or undo. |
+| `DELETE /v2/security/encryption/file/key` | A deleted key cannot decrypt what it encrypted. |
+| `POST /v2/security/encryption/file/activate` | Activation decides which key the instance uses to read and write encrypted data. |
+| `POST /v2/security/encryption/key/deactivate` | Same decision, in the other direction. |
+| `PUT /v2/security/encryption/settings` | Decides what the instance encrypts at startup; a wrong value is discovered at the next restart. |
+
+Everything else in those families is **read** by FlightDeck: settings, key files, key file
+administrators and data element keys.
+
 ## 4. Tarefas — 24 operações oficiais
 
 Inclui categorias do Work Queue Manager e o ciclo de resultados assíncronos, que também serve o instrumento de disco do domínio 5.

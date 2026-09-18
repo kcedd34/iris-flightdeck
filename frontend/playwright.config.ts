@@ -20,6 +20,11 @@ export default defineConfig({
     { name: "webapps", testMatch: /webapps\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "mutation", testMatch: /mutation\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "rest", testMatch: /rest(-confinement)?\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "permissions", testMatch: /permissions(-mutations)?\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "last-admin", testMatch: /last-admin\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "security", testMatch: /security\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    { name: "secrets", testMatch: /secrets\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
+    { name: "attention", testMatch: /attention\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "audit", testMatch: /audit\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/", acceptDownloads: true } },
     { name: "fixtures", testMatch: /(fixtures|pattern)\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5174/flightdeck/" } },
     // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.

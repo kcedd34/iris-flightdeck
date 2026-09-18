@@ -125,7 +125,9 @@ export function useSession(): SessionContextValue {
  */
 export function useUnavailableOperations(): { unavailable: number; total: number } {
   const { capabilities } = useSession();
-  return { unavailable: capabilities.filter((c) => !c.available).length, total: capabilities.length };
+  // Limited mode is what this instance does not offer. An operation FlightDeck declines to offer on
+  // every version (capability policy) is disabled with its own reason, but it is not limited mode.
+  return { unavailable: capabilities.filter((c) => !c.available && !c.declined).length, total: capabilities.length };
 }
 
 export function useCapability(operationId: string): CapabilityEntry | undefined {

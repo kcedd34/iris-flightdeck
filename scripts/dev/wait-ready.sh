@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-# Waits for the FlightDeck ready line in `docker compose logs iris`.
+# Waits for the FlightDeck ready line in `docker compose logs iris`, or in `docker logs $FD_CONTAINER`
+# when that names a container: a second install under another compose project is otherwise read
+# through the default project's logs, which reports the wrong instance as ready.
 # Exit 0 when ready, 1 on "FLIGHTDECK INSTALL FAILED" or timeout (default 600 s).
 set -uo pipefail
 timeout="${1:-600}"
+container="${FD_CONTAINER:-}"
 start=$(date +%s)
 while true; do
-  logs="$(docker compose logs iris 2>&1)"
+  if [ -n "$container" ]; then
+    logs="$(docker logs "$container" 2>&1)"
+  else
+    logs="$(docker compose logs iris 2>&1)"
+  fi
   if grep -q "FLIGHTDECK INSTALL FAILED" <<<"$logs"; then
     grep -A20 "FLIGHTDECK INSTALL FAILED" <<<"$logs" | head -40
     exit 1

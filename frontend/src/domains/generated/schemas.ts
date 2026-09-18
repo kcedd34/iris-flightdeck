@@ -14,7 +14,7 @@ export interface ObjectSchema {
   fields: readonly SchemaField[];
 }
 
-export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppPctAccess" | "PercentClassAccessListItem" | "Role" | "User" | "Resource" | "RoleOwnerListItem", ObjectSchema> = {
+export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppPctAccess" | "PercentClassAccessListItem" | "User" | "UserListItem" | "Role" | "RoleListItem" | "Resource" | "ResourceListItem" | "Service" | "ServiceListItem" | "PrivilegedRoutineApplication" | "PrivilegedRoutineApplicationListItem" | "RoleOwnerListItem" | "SQLPrivilegeListItem" | "SQLAdminPrivilegeListItem" | "SQLColumnPrivilegeListItem" | "SSLConfig" | "SSLConfigurationListItem" | "X509Credential" | "X509CredentialsListItem" | "X509CredentialCertificate" | "WalletCollection" | "WalletCollectionListItem" | "WalletSecretListItem" | "OAuth2Client" | "OAuth2ClientsUsingServerItem" | "OAuth2ServerDefinition" | "OAuth2AuthorizationServerListItem" | "OAuth2ServerConfiguration" | "OAuth2ServerClient" | "OAuth2ServerClientListItem" | "OAuth2ResourceServer" | "OAuth2ResourceServerListItem" | "OAuth2ResourceServerMapping" | "LDAPConfig" | "LDAPConfigurationListItem" | "MFTConnection" | "MFTConnectionListItem" | "Superserver" | "SuperserverListItem" | "WebAuthenticationSettings" | "EncryptionSettings" | "AuditingEnabled" | "AuditEvent", ObjectSchema> = {
  "Application": {
   "source": "Application",
   "fields": [
@@ -376,41 +376,6 @@ export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppP
    }
   ]
  },
- "Role": {
-  "source": "Role",
-  "fields": [
-   {
-    "name": "Description",
-    "type": "string",
-    "description": "Description of the role."
-   },
-   {
-    "name": "GrantedRoles",
-    "type": "array<string>",
-    "description": "Roles assigned to the Role."
-   },
-   {
-    "name": "EscalationOnly",
-    "type": "boolean",
-    "description": ""
-   },
-   {
-    "name": "Resources",
-    "type": "array<object>",
-    "description": "",
-    "itemFields": [
-     {
-      "name": "Name",
-      "type": "string"
-     },
-     {
-      "name": "Permissions",
-      "type": "string"
-     }
-    ]
-   }
-  ]
- },
  "User": {
   "source": "User",
   "fields": [
@@ -496,6 +461,101 @@ export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppP
    }
   ]
  },
+ "UserListItem": {
+  "source": "UserList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "FullName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Routine",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "Role": {
+  "source": "Role",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the role."
+   },
+   {
+    "name": "GrantedRoles",
+    "type": "array<string>",
+    "description": "Roles assigned to the Role."
+   },
+   {
+    "name": "EscalationOnly",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Resources",
+    "type": "array<object>",
+    "description": "",
+    "itemFields": [
+     {
+      "name": "Name",
+      "type": "string"
+     },
+     {
+      "name": "Permissions",
+      "type": "string"
+     }
+    ]
+   }
+  ]
+ },
+ "RoleListItem": {
+  "source": "RoleList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "CreatedBy",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EscalationOnly",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
  "Resource": {
   "source": "Resource",
   "fields": [
@@ -508,6 +568,214 @@ export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppP
     "name": "PublicPermission",
     "type": "string",
     "description": "Public permissions on the resource. Must be a string consisting only of 'R', 'W', and 'U'. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "ResourceListItem": {
+  "source": "ResourceList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "PublicPermission",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ResourceType",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "AllowDelete",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "Service": {
+  "source": "Service",
+  "fields": [
+   {
+    "name": "AutheEnabled",
+    "type": "integer",
+    "description": "Authentication methods enabled for the service. Bit 0 = AutheK5CCache, Bit 1 = AutheK5Prompt, Bit 2 = AutheK5API, Bit 3 = AutheK5KeyTab, Bit 4 = AutheOS, Bit 5 - AuthePassword, Bit 6 = AutheUnauthenticated, Bit 7 = AutheKB, Bit 8 = AutheKBEncryption, Bit 9 = AutheKBIntegrity, Bit 10 = AutheSystem, Bit 11 = AutheLDAP, Bit 13 = AutheDelegated, Bit 14 = AutheLoginToken, Bits 15-19 reserved, Bit 20 = TwoFactorSMS, Bit 21 = TwoFactorPW, Bits 22-24 reserved, Bit 25 = MutualTLS"
+   },
+   {
+    "name": "ClientSystems",
+    "type": "array<string>",
+    "description": "List of valid IP addresses allowed to connect for this service."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Full name of the service"
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Service enabled"
+   }
+  ]
+ },
+ "ServiceListItem": {
+  "source": "ServiceList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Public",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "AuthenticationMethods",
+    "type": "array<string>",
+    "description": "An array of strings like \"Password\" and \"Kerberos\""
+   },
+   {
+    "name": "AllowedConnections",
+    "type": "array<string>",
+    "description": "If empty, then there are no restrictions."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EnabledBoolean",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "HttpOnlyCookies",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "TwoFactorEnabled",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "PrivilegedRoutineApplication": {
+  "source": "PrivilegedRoutineApplication",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Application description."
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Application is enabled."
+   },
+   {
+    "name": "MatchRoles",
+    "type": "array<object>",
+    "description": "Mapping of MatchRole/TargetRoles pairs to assign to the application.",
+    "itemFields": [
+     {
+      "name": "MatchRole",
+      "type": "string"
+     },
+     {
+      "name": "TargetRoles",
+      "type": "array<object>"
+     }
+    ]
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": "The Resource name that controls access to this application. If no resource is defined, then it is a public application which anyone can run."
+   },
+   {
+    "name": "Routines",
+    "type": "array<object>",
+    "description": "List of Routines that can invoke this application",
+    "itemFields": [
+     {
+      "name": "RoutineOrClass",
+      "type": "string"
+     },
+     {
+      "name": "Db",
+      "type": "string"
+     },
+     {
+      "name": "Type",
+      "type": "string"
+     }
+    ]
+   }
+  ]
+ },
+ "PrivilegedRoutineApplicationListItem": {
+  "source": "PrivilegedRoutineApplicationList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Namespace",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "NamespaceDefault",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Class",
+     "Routine"
+    ]
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "IsSystemApp",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "DispatchClass",
+    "type": "string",
+    "description": ""
    }
   ]
  },
@@ -533,6 +801,1374 @@ export const SCHEMAS: Record<"Application" | "WebApplicationListItem" | "WebAppP
     "name": "AdminOption",
     "type": "boolean",
     "description": ""
+   }
+  ]
+ },
+ "SQLPrivilegeListItem": {
+  "source": "SQLPrivilegeList",
+  "fields": [
+   {
+    "name": "Type",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Name",
+    "type": "string",
+    "description": "Name of the object"
+   },
+   {
+    "name": "Privilege",
+    "type": "string",
+    "description": "Privilege granted"
+   },
+   {
+    "name": "GrantedBy",
+    "type": "string",
+    "description": "SQL user name who granted the privilege"
+   },
+   {
+    "name": "GrantOption",
+    "type": "boolean",
+    "description": "Privilege granted with grant option"
+   },
+   {
+    "name": "GrantedVia",
+    "type": "string",
+    "description": "Direct, SuperUser, Role, _PUBLIC - How was the user granted the priv"
+   },
+   {
+    "name": "HasColumnPriv",
+    "type": "boolean",
+    "description": "True if this table or view has any privileges defined at the column level, otherwise false."
+   }
+  ]
+ },
+ "SQLAdminPrivilegeListItem": {
+  "source": "SQLAdminPrivilegeList",
+  "fields": [
+   {
+    "name": "Privilege",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "GrantOption",
+    "type": "boolean",
+    "description": "Whether the privilege was granted with admin option"
+   },
+   {
+    "name": "GrantedVia",
+    "type": "string",
+    "description": "Direct, SuperUser, Role, _PUBLIC - How was the user granted the priv"
+   }
+  ]
+ },
+ "SQLColumnPrivilegeListItem": {
+  "source": "SQLColumnPrivilegeList",
+  "fields": [
+   {
+    "name": "Column",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Privilege",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "GrantedBy",
+    "type": "string",
+    "description": "Who granted the privilege"
+   },
+   {
+    "name": "GrantOption",
+    "type": "boolean",
+    "description": "Whether the privilege was granted with admin option"
+   },
+   {
+    "name": "GrantedVia",
+    "type": "string",
+    "description": "Direct, SuperUser, Role, _PUBLIC - How was the user granted the priv"
+   }
+  ]
+ },
+ "SSLConfig": {
+  "source": "SSLConfig",
+  "fields": [
+   {
+    "name": "AuthorizeCN",
+    "type": "boolean",
+    "description": "Authorize a backup failover member to join a mirror.\nNormally, mirroring with SSL requires the following steps:\n1. Add primary to mirror 2. Add backup to mirror 3. Authorize backup on primary \n4. This presents difficulties for declarative mirror configuration via CPF. When this property is set to 1, the Distinguished Name is extracted from this mirror's SSL certificates and used to pre-authorize the backup member to join."
+   },
+   {
+    "name": "CAFile",
+    "type": "string",
+    "description": "File containing X.509 certificate(s) of trusted Certificate Authorities.\nCan be an absolute pathname, a pathname relative to the manager's directory, or a special value \"%OSCertificateStore\" for OS-provided trusted CA certificate stores.\nClients:  Specify CAFile and/or CAPath\nServers:  Specify CAFile and/or CAServer if VerifyPeer > 0"
+   },
+   {
+    "name": "CAPath",
+    "type": "string",
+    "description": "Directory containing file(s) with X.509 certificate(s) of trusted Certificate Authorities.\nCan be an absolute pathname or a pathname relative to the manager's directory.\nClients:  Specify CAFile and/or CAPath\nServers:  Specify CAFile and/or CAServer if VerifyPeer > 0"
+   },
+   {
+    "name": "CertificateFile",
+    "type": "string",
+    "description": "File containing this configuration's X.509 certificate.\nCan be an absolute pathname or a pathname relative to the manager's directory. If not null, PrivateKeyFile must also be specified."
+   },
+   {
+    "name": "CipherList",
+    "type": "array<string>",
+    "description": "List of enabled ciphersuites for TLSv1.2 and below.\nBy default, disable anonymous, unencrypted, export, and SSLv2 ciphersuites."
+   },
+   {
+    "name": "Ciphersuites",
+    "type": "array<string>",
+    "description": "List of enabled ciphersuites for TLSv1.3."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the SSL configuration."
+   },
+   {
+    "name": "DiffieHellmanBits",
+    "type": "integer",
+    "description": "Size of Diffie Hellman key. Relevant for server configurations only. Default is 0 (Auto)"
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Configuration is enabled. Required on creation, optional on updates."
+   },
+   {
+    "name": "OCSP",
+    "type": "integer",
+    "description": "OCSP Stapling.\nClients: 0 = None, 1 = Require valid OCSP Stapling (continue only if OCSP verification succeeds).\nServers: 0 = None, 1 = Support OCSP Stapling"
+   },
+   {
+    "name": "OCSPIssuerCert",
+    "type": "string",
+    "description": "For Servers with OCSP Stapling support, this is issuer certificate to be used when requesting an OCSP response."
+   },
+   {
+    "name": "OCSPResponseFile",
+    "type": "string",
+    "description": "For Servers with OCSP Stapling support, this is the path to store the cached OCSP response file."
+   },
+   {
+    "name": "OCSPTimeout",
+    "type": "integer",
+    "description": "For Servers with OCSP Stapling support, this is the timeout (in seconds) when attempting to update the OCSP response."
+   },
+   {
+    "name": "OCSPURL",
+    "type": "string",
+    "description": "OCSPURL.\nFor Servers with OCSP Stapling support, this is the URL used to request an OCSP response\nNote: this is populated automatically based on the server certificate."
+   },
+   {
+    "name": "PrivateKeyFile",
+    "type": "string",
+    "description": "File containing this configuration's private key.\nCan be an absolute pathname or a pathname relative to the manager's directory. If not null, CertificateFile must also be specified."
+   },
+   {
+    "name": "PrivateKeyType",
+    "type": "integer",
+    "description": "Private key type, one of: 1 = DSA, 2 = RSA, 3 = ECDSA"
+   },
+   {
+    "name": "TLSMaxVersion",
+    "type": "integer",
+    "description": "Maximum TLS protocol version enabled.\n2 - SSLv3\n4 - TLSv1.0\n8 - TLSv1.1\n16 - TLSv1.2\n32 - TLSv1.3\nDefault = TLSv1.3. Requirement is TLSMaxVersion >= TLSMinVersion"
+   },
+   {
+    "name": "TLSMinVersion",
+    "type": "integer",
+    "description": "Minimum TLS protocol version enabled.\n2 - SSLv3\n4 - TLSv1.0\n8 - TLSv1.1\n16 - TLSv1.2\n32 - TLSv1.3\nDefault is TLSv1.2. Requirement is TLSMinVersion <= TLSMaxVersion"
+   },
+   {
+    "name": "Type",
+    "type": "integer",
+    "description": "Intended type for this configuration. 0 = client. 1 = server. Default is client (0). Required on creation, optional on updates."
+   },
+   {
+    "name": "VerifyDepth",
+    "type": "integer",
+    "description": "Maximum number of CA certificates allowed in peer certificate chain."
+   },
+   {
+    "name": "VerifyPeer",
+    "type": "integer",
+    "description": "Peer certificate verification level.\nClients:\n0 = None (continue even if certificate verification fails),\n1 = Require server certificate (continue only if certificate verification succeeds).\nServers:\n0 = None (do not request client certificate),\n1 = Request client certificate (terminate if certificate is provided and verification fails),\n3 = Require client certificate (continue only if certificate is provided and verification succeeds). Required on creation, optional on updates."
+   }
+  ]
+ },
+ "SSLConfigurationListItem": {
+  "source": "SSLConfigurationList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "Server",
+     "Client"
+    ]
+   }
+  ]
+ },
+ "X509Credential": {
+  "source": "X509Credential",
+  "fields": [
+   {
+    "name": "OwnerList",
+    "type": "array<string>",
+    "description": "Array of usernames which may access these credentials. If the OwnerList is empty, the credentials are available to any user."
+   },
+   {
+    "name": "CAFile",
+    "type": "string",
+    "description": "File containing X.509 certificate(s) of trusted Certificate Authorities. Can be an absolute pathname or a pathname relative to the manager's directory. When WS-Security validates a Signature where the certificate is not included in the SOAP message, the certificate is found in an %SYS.X509Credentials object. If the CAFile property is specified in the %SYS.X509Credentials object, CAFile gives the path of the CA file. If the CAFile property is not specified, then iris.cer in the mgr directory is used as the CA file."
+   },
+   {
+    "name": "PeerNames",
+    "type": "array<string>",
+    "description": "PeerNames is an optional array of peers which expect this certificate to be used. Each peer name will normally be a DNS name. However, any application defined name may be used."
+   }
+  ]
+ },
+ "X509CredentialsListItem": {
+  "source": "X509CredentialsList",
+  "fields": [
+   {
+    "name": "Alias",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "HasPrivateKey",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "OwnerList",
+    "type": "array<string>",
+    "description": "If empty, then the credentials are available to all users"
+   },
+   {
+    "name": "PeerNames",
+    "type": "array<string>",
+    "description": "Optional list of peers which expect this certificate to be used."
+   },
+   {
+    "name": "CAFile",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "X509CredentialCertificate": {
+  "source": "X509CredentialCertificate",
+  "fields": [
+   {
+    "name": "HasPrivateKey",
+    "type": "boolean",
+    "description": "Returns if a private key is present even if no privileges."
+   },
+   {
+    "name": "SerialNumber",
+    "type": "string",
+    "description": "SerialNumber of the certificate -- unique for the Issuer."
+   },
+   {
+    "name": "IssuerDN",
+    "type": "string",
+    "description": "Issuer DistinguishedName of the certificate."
+   },
+   {
+    "name": "SubjectDN",
+    "type": "string",
+    "description": "Subject DistinguishedName of the certificate."
+   },
+   {
+    "name": "ValidityNotBefore",
+    "type": "string",
+    "description": "X.509 ValidityNotBefore from the certificate."
+   },
+   {
+    "name": "ValidityNotAfter",
+    "type": "string",
+    "description": "X.509 ValidityNotAfter from the certificate."
+   }
+  ]
+ },
+ "WalletCollection": {
+  "source": "WalletCollection",
+  "fields": [
+   {
+    "name": "EditResource",
+    "type": "string",
+    "description": "Access to this resource is required to add secrets to, or to remove secrets from this collection, and to edit secrets in the collection. Specified as \"resource:permission\". If permission is omitted \"WRITE\" is used. Required on creation, optional on updates."
+   },
+   {
+    "name": "UseResource",
+    "type": "string",
+    "description": "Access to this resource is required to use secrets in this collection. Specified as \"resource:permission\". If permission is omitted \"READ\" is used. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "WalletCollectionListItem": {
+  "source": "WalletCollectionList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "EditResource",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "UseResource",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "WalletSecretListItem": {
+  "source": "WalletSecretList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Type",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2Client": {
+  "source": "OAuth2Client",
+  "fields": [
+   {
+    "name": "OAuth2ServerDefinition",
+    "type": "string",
+    "description": "Id of the corresponding Server Definition"
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "True if client application is enabled. Chosen by user during configuration."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the application. Chosen by user during configuration."
+   },
+   {
+    "name": "ClientType",
+    "type": "string",
+    "description": "The type of client configuration:\npublic - a public client.  See RFC 6749\nconfidential - a confidential client.  See RFC 6749\nresource - a resource server which is not also a client. Chosen by user during configuration.  Will usually be confidential client for an InterSystems IRIS application.",
+    "enum": [
+     "public",
+     "confidential",
+     "resource"
+    ]
+   },
+   {
+    "name": "SSLConfiguration",
+    "type": "string",
+    "description": "The name of the activated TLS/SSL configuration to use for authorization server requests. Chosen by user during configuration. Required on creation, optional on updates."
+   },
+   {
+    "name": "RedirectionEndpoint",
+    "type": "string",
+    "description": "The endpoint object for the URL to be used by the authorization server to return the response to an authorization request. Required if ClientType is public or confidential. Chosen by user during configuration. Required on creation, optional on updates."
+   },
+   {
+    "name": "DefaultScope",
+    "type": "string",
+    "description": "The default scope, as a blank separated list, for access token requests. Chosen by user during configuration."
+   },
+   {
+    "name": "JWTAudience",
+    "type": "string",
+    "description": "Defines the value to use for the aud claim in tokens generated for private_key_jwt and client_secret_jwt authentication methods, as well as for the JWT Authorization grant type. For new configurations this will be the authorization server's token endpoint by default. For backwards compatibility, if this is undefined the client will use the issuer endpoint."
+   },
+   {
+    "name": "ClientCredentials",
+    "type": "string",
+    "description": "ClientCredentials is the alias of the %SYS.X509Credentials object which contains the client's certificate and private key."
+   },
+   {
+    "name": "Metadata",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ClientsUsingServerItem": {
+  "source": "OAuth2ClientsUsingServer",
+  "fields": [
+   {
+    "name": "ApplicationName",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientType",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "DefaultScope",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ServerDefinition": {
+  "source": "OAuth2ServerDefinition",
+  "fields": [
+   {
+    "name": "IssuerEndpoint",
+    "type": "string",
+    "description": "The endpoint URL to be used to identify the authorization server. Required for all ClientTypes. Required on creation, optional on updates."
+   },
+   {
+    "name": "SSLConfiguration",
+    "type": "string",
+    "description": "The name of the activated TLS/SSL configuration to use for authorization server Discovery requests. Chosen by user during configuration. Required on creation, optional on updates."
+   },
+   {
+    "name": "ServerCredentials",
+    "type": "string",
+    "description": "ServerCredentials is the alias of the %SYS.X509Credentials object which contains the server's certificate."
+   },
+   {
+    "name": "Metadata",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2AuthorizationServerListItem": {
+  "source": "OAuth2AuthorizationServerList",
+  "fields": [
+   {
+    "name": "ID",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "IssuerEndpoint",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientCount",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "ResourceCount",
+    "type": "integer",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ServerConfiguration": {
+  "source": "OAuth2ServerConfiguration",
+  "fields": [
+   {
+    "name": "IssuerEndpoint",
+    "type": "string",
+    "description": "IssuerEndpoint is the endpoint for this authorization server. Required on creation, optional on updates."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description is a human readable description of this authorization server. Required on creation, optional on updates."
+   },
+   {
+    "name": "AccessTokenInterval",
+    "type": "integer",
+    "description": "AccessTokenInterval is the interval in seconds after which an access token issued by this server will expire. The default is 3600 seconds. Required on creation, optional on updates."
+   },
+   {
+    "name": "AuthorizationCodeInterval",
+    "type": "integer",
+    "description": "AuthorizationCodeInterval is the interval in seconds after which an authorization code issued by this server will expire. The default is 60 seconds. Required on creation, optional on updates."
+   },
+   {
+    "name": "RefreshTokenInterval",
+    "type": "integer",
+    "description": "RefreshTokenInterval is the interval in seconds after which a refresh token issued by this server will expire. The default is 24 hours = 86400 seconds. Required on creation, optional on updates."
+   },
+   {
+    "name": "SessionInterval",
+    "type": "integer",
+    "description": "SessionInterval is the interval in seconds after which a user session will be automatically terminated. The value 0 means the session will not be automatically terminated. The default is 24 hours = 86400 seconds. Required on creation, optional on updates."
+   },
+   {
+    "name": "ClientSecretInterval",
+    "type": "integer",
+    "description": "ClientSecretInterval is the interval in seconds after which a client secret will expire. The default value of 0 means the session will not be automatically terminated. Required on creation, optional on updates."
+   },
+   {
+    "name": "SupportedScopes",
+    "type": "array<object>",
+    "description": "SupportedScopes is an array which specifies all scopes supported by this Authorization Server. Required on creation, optional on updates.",
+    "itemFields": [
+     {
+      "name": "Scope",
+      "type": "string"
+     },
+     {
+      "name": "Description",
+      "type": "string"
+     }
+    ]
+   },
+   {
+    "name": "DefaultScope",
+    "type": "string",
+    "description": "DefaultScope is a blank separated list containing the default for access token scope if scope is not specified in the access token request or in the client configuration. Required on creation, optional on updates."
+   },
+   {
+    "name": "AllowUnsupportedScope",
+    "type": "boolean",
+    "description": "If AllowUnsupportedScope is true, then unsupported scope values will be ignored. Otherwise, an error will be returned. Required on creation, optional on updates."
+   },
+   {
+    "name": "ReturnRefreshToken",
+    "type": "string",
+    "description": "ReturnRefreshToken defines the conditions under which a refresh token is returned along with the access token. This property is a string of multiple condition characters which are OR'ed.\n\"\" means only return a RefreshToken as required by OpenID Connect.\n\"a\" - Always\n\"c\" - Confidential client\n\"f\" - if offline_access scope requested. Required on creation, optional on updates."
+   },
+   {
+    "name": "SupportSession",
+    "type": "boolean",
+    "description": "If SupportSession is true, then OAuth 2.0 user sessions will be supported using the specified SessionClass. Required on creation, optional on updates."
+   },
+   {
+    "name": "AudRequired",
+    "type": "boolean",
+    "description": "If AudRequired is true, then an authorization code and implicit requests require the aud property. Required on creation, optional on updates."
+   },
+   {
+    "name": "AllowPublicClientRefresh",
+    "type": "boolean",
+    "description": "If AllowPublicClientRefresh is true, then a clientSecret will NOT be required to process refresh tokens. Required on creation, optional on updates."
+   },
+   {
+    "name": "ForcePKCEForPublicClients",
+    "type": "boolean",
+    "description": "If ForcePKCEForPublicClients is true, then authorization and token requests from public clients MUST adhere to the Proof Key for Code Exchange (PKCE) specification. Required on creation, optional on updates."
+   },
+   {
+    "name": "ForcePKCEForConfidentialClients",
+    "type": "boolean",
+    "description": "If ForcePKCEForConfidentialClients is true, then authorization and token requests from confidential clients MUST adhere to the Proof Key for Code Exchange (PKCE) specification. Required on creation, optional on updates."
+   },
+   {
+    "name": "CustomizationRoles",
+    "type": "array<object>",
+    "description": "CustomizationRoles is a list of roles that are set for any call to user supplied customization code. Required on creation, optional on updates."
+   },
+   {
+    "name": "CustomizationNamespace",
+    "type": "string",
+    "description": "CustomizationNamespace is the namespace where the customization code is to be run. Required on creation, optional on updates."
+   },
+   {
+    "name": "AuthenticateClass",
+    "type": "string",
+    "description": "AuthenticateClass is the name of a subclass of %OAuth2.Server.Authenticate which will be used to allow override of the DirectLogin, DisplayLogin, and DisplayPermissions methods during user authorization. Required on creation, optional on updates."
+   },
+   {
+    "name": "SessionClass",
+    "type": "string",
+    "description": "SessionClass is the name of a class with the same signatures as OAuth2.Server.Session which includes GetUser, Login and Logout methods. These methods maintain an OAuth 2.0 session using any appropriate means. The default OAuth2.Session class uses an httpOnly cookie. Required on creation, optional on updates."
+   },
+   {
+    "name": "ValidateUserClass",
+    "type": "string",
+    "description": "ValidateUserClass is the name of a class with the same signatures as %OAuth2.Server.Validate which may override the ValidateUser method which validates a user and associates a set of properties with this user. Required on creation, optional on updates."
+   },
+   {
+    "name": "GenerateTokenClass",
+    "type": "string",
+    "description": "GenerateTokenClass is the name of a class with the same signatures as %OAuth2.Server.Generate which overrides the GenerateToken method. The GenerateToken method must generate an opaque token consisting of a random number. We will also supply a class matching the %OAuth2.Server.Generate interface - %OAuth2.Server.JWT, which will generate a signed JWT based on the token properties. Required on creation, optional on updates."
+   },
+   {
+    "name": "RevokeTokenClass",
+    "type": "string",
+    "description": "RevokeTokenClass is the name of a class with the same signatures as %OAuth2.Server.Revoke which overrides the OnRevokeToken method. Any custom handling on token revocation can be done in this method. Required on creation, optional on updates."
+   },
+   {
+    "name": "ServerCredentials",
+    "type": "string",
+    "description": "ServerCredentials is the alias of the %SYS.X509Credentials object which contains the authorization server's certificate and private key. Required on creation, optional on updates."
+   },
+   {
+    "name": "SigningAlgorithm",
+    "type": "string",
+    "description": "SigningAlgorithm specifies the default signing algorithm used to create JWSs or \"\" if JWTs are not to be signed. SigningAlgorithm is used for any client specific algorithm which is not specified. See the class %Net.JSON.JWA for the list of supported algorithms. Required on creation, optional on updates."
+   },
+   {
+    "name": "EncryptionAlgorithm",
+    "type": "string",
+    "description": "EncryptionAlgorithm specifies the default encryption algorithm used to create JWEs or \"\" if JWTs are not to be encrypted. EncryptionAlgorithm is used for any client specific algorithm which is not specified. See the class %Net.JSON.JWA for the list of supported algorithms. If EncryptionAlgorithm is specified, KeyAlgorithm must also be specified. Required on creation, optional on updates."
+   },
+   {
+    "name": "KeyAlgorithm",
+    "type": "string",
+    "description": "KeyAlgorithm specifies the default key management algorithm used to create JWEs or \"\" if JWTs are not to be encrypted. KeyAlgorithm is used for any client specific algorithm which is not specified. See the class %Net.JSON.JWA for the list of supported algorithms. If KeyAlgorithm is specified, EncryptionAlgorithm must also be specified. Required on creation, optional on updates."
+   },
+   {
+    "name": "SSLConfiguration",
+    "type": "string",
+    "description": "The name of the activated TLS/SSL configuration to use loading a request object. Chosen by user during configuration. Required on creation, optional on updates."
+   },
+   {
+    "name": "Metadata",
+    "type": "object",
+    "description": "Required on creation, optional on updates."
+   }
+  ]
+ },
+ "OAuth2ServerClient": {
+  "source": "OAuth2ServerClient",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": "The name of this client. When using dynamic registration the initial value will be the value of the \"client_name\" metadata field."
+   },
+   {
+    "name": "RedirectURL",
+    "type": "array<object>",
+    "description": "RedirectURL is the expected redirect URL for this client."
+   },
+   {
+    "name": "LaunchURL",
+    "type": "string",
+    "description": "LaunchURL is the URL used to launch this client. LaunchURL may be used in some circumstances to identify the client and as the value of the aud claim."
+   },
+   {
+    "name": "DefaultScope",
+    "type": "string",
+    "description": "A blank separated list containing the default for access token scope if scope is not specified in the access token request."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the client.\nChosen by user during configuration."
+   },
+   {
+    "name": "ClientType",
+    "type": "string",
+    "description": "The type of client configuration:\npublic - a public client.  See RFC 6749\nconfidential - a confidential client.  See RFC 6749\nresource - a resource server which is not also a client. Chosen by user during configuration. Will usually be confidential client for an InterSystems IRIS application.",
+    "enum": [
+     "public",
+     "confidential",
+     "resource"
+    ]
+   },
+   {
+    "name": "ClientCredentials",
+    "type": "string",
+    "description": "Alias of the %SYS.X509Credentials object which contains the client's certificate."
+   },
+   {
+    "name": "Metadata",
+    "type": "object",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ServerClientListItem": {
+  "source": "OAuth2ServerClientList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientId",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ClientType",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "RedirectURL",
+    "type": "array<object>",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ResourceServer": {
+  "source": "OAuth2ResourceServer",
+  "fields": [
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "True if this configuration is enabled."
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the application."
+   },
+   {
+    "name": "IssuerEndpoint",
+    "type": "string",
+    "description": "IssuerEndpoint of the ServerDefinition property"
+   },
+   {
+    "name": "ScopeRequiredToConnect",
+    "type": "string",
+    "description": "If specified, this scope must be included in the Access token claims."
+   },
+   {
+    "name": "Audiences",
+    "type": "array<string>",
+    "description": "A list of valid audiences. The aud claim must match one of the values in this list."
+   },
+   {
+    "name": "AccessTokenIsJWT",
+    "type": "boolean",
+    "description": "If true, the access token is expected to be a JWT."
+   },
+   {
+    "name": "AlwaysCallIntrospection",
+    "type": "boolean",
+    "description": "If true and AccessTokenIsJWT, then we will call the introspection endpoint after validating the token. This is useful if it is necessary to determine if the token has been revoked, or if the claims have changed since the token was first issued."
+   },
+   {
+    "name": "ClientId",
+    "type": "string",
+    "description": "If configured, this value will be used to authenticate to the Authorization Server when calling the introspection endpoint."
+   },
+   {
+    "name": "IntrospectionAuthMethod",
+    "type": "string",
+    "description": "This value specifies how to authenticate to the Authorization Server when calling the introspection endpoint. Valid values are: \"client_secret_post\", \"client_secret_basic\", \"none\". The ClientId and ClientSecret properties specify the values to use. This value is not relevant if the introspection endpoint is not used.",
+    "enum": [
+     "client_secret_post",
+     "client_secret_basic",
+     "none"
+    ]
+   },
+   {
+    "name": "UseOIDC",
+    "type": "boolean",
+    "description": "If true and the \"openid\" scope is included in the access token, then we will call the userinfo endpoint."
+   },
+   {
+    "name": "Authenticator",
+    "type": "object",
+    "description": "Implementation class used to determine the username and role mapping from the token claims. This object can contain other properties, corresponding to the properties of the specified class."
+   }
+  ]
+ },
+ "OAuth2ResourceServerListItem": {
+  "source": "OAuth2ResourceServerList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "ServerDefinition",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "OAuth2ResourceServerMapping": {
+  "source": "OAuth2ResourceServerMapping",
+  "fields": [
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": "The name of the OAuth2.ResourceServer to use for this Service and Key combination. Required."
+   }
+  ]
+ },
+ "LDAPConfig": {
+  "source": "LDAPConfig",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "LDAP description"
+   },
+   {
+    "name": "LDAPAttributes",
+    "type": "array<object>",
+    "description": "List of additional LDAP attributes to return from LDAP Server. This property contains a list of additional LDAP User attributes for which you want values returned when a user authenticates himself via LDAP. For example, you may want to return a user's mail address from the LDAP server. You would set one of the list values to \"mail\" which is an LDAP attribute for a user. The values for the set of attributes are written to the user's authentication record, and may be retrieved by using the Security.Users class, Attributes property."
+   },
+   {
+    "name": "LDAPAttributeComment",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Comment\" field is retrieved."
+   },
+   {
+    "name": "LDAPAttributeFullName",
+    "type": "string",
+    "description": "LDAP attribute name where the \"FullName\" field is retrieved."
+   },
+   {
+    "name": "LDAPAttributeMail",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Mail\" field is retrieved."
+   },
+   {
+    "name": "LDAPAttributeMobile",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Mobile\" field is retrieved"
+   },
+   {
+    "name": "LDAPAttributeMobileProvider",
+    "type": "string",
+    "description": "LDAP attribute name where the \"MobileProvider\" field is retrieved"
+   },
+   {
+    "name": "LDAPAttributeNameSpace",
+    "type": "string",
+    "description": "LDAP attribute name where the \"NameSpace\" field is retrieved"
+   },
+   {
+    "name": "LDAPAttributeRoutine",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Routine\" field is retrieved"
+   },
+   {
+    "name": "LDAPAttributeRoles",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Roles\" field is retrieved"
+   },
+   {
+    "name": "LDAPAttributeEscalationRoles",
+    "type": "string",
+    "description": "LDAP attribute name where the \"Roles\" field is retrieved"
+   },
+   {
+    "name": "LDAPBaseDN",
+    "type": "string",
+    "description": "Specifies the point in the directory tree from which searches begin. This typically consists of domain components, such as DC=intersystems,DC=com"
+   },
+   {
+    "name": "LDAPBaseDNForGroups",
+    "type": "string",
+    "description": "Specifies the point in the directory tree from which searches begin for Groups. This typically consists of domain components, such as DC=intersystems,DC=com"
+   },
+   {
+    "name": "LDAPCACertFile",
+    "type": "string",
+    "description": "Specifies the location of the file containing any TLS/SSL certificates (in PEM format) being used to authenticate the server certificate (Unix Only)."
+   },
+   {
+    "name": "LDAPClientTimeout",
+    "type": "integer",
+    "description": "Amount of time the client waits until a Server Down is returned."
+   },
+   {
+    "name": "LDAPFlags",
+    "type": "integer",
+    "description": "Flags for the LDAP connection. \nBit 0 - Active directory LDAP server\nBit 1 - Use SSL/TLS connection\nBit 2 - Unused\nBit 3 - Use Groups\nBit 4 - Use Nested Groups\nBit 5 - Use Universal Groups\nBit 6 - LDAP configuration enabled\nBit 7 - Kerberos Only"
+   },
+   {
+    "name": "LDAPGroupId",
+    "type": "string",
+    "description": "Used to filter roles returned by the LDAP server for a user"
+   },
+   {
+    "name": "LDAPHostNames",
+    "type": "array<object>",
+    "description": "Host name of the LDAP server. An optional port may be appended to the host name separated by a \":\" (name:port) if the LDAP server is using non standard ports. On a Windows client, if left blank, connection will be attempted to the default LDAP server for the domain."
+   },
+   {
+    "name": "LDAPInstanceId",
+    "type": "string",
+    "description": "Used to filter roles returned by the LDAP server for a user."
+   },
+   {
+    "name": "OrganizationId",
+    "type": "string",
+    "description": "Organization name used for group naming"
+   },
+   {
+    "name": "GroupId",
+    "type": "string",
+    "description": "Group Id used for group naming"
+   },
+   {
+    "name": "InstanceId",
+    "type": "string",
+    "description": "Instance Id used for group naming"
+   },
+   {
+    "name": "RoleId",
+    "type": "string",
+    "description": "Role Id used for group naming"
+   },
+   {
+    "name": "EscalationRoleId",
+    "type": "string",
+    "description": "Escalation Role Id used for group naming"
+   },
+   {
+    "name": "RoutineId",
+    "type": "string",
+    "description": "Routine Id used for group naming"
+   },
+   {
+    "name": "NamespaceId",
+    "type": "string",
+    "description": "Namespace Id used for group naming"
+   },
+   {
+    "name": "DelimiterId",
+    "type": "string",
+    "description": "Delimiter Id used for group naming"
+   },
+   {
+    "name": "LDAPSearchUsername",
+    "type": "string",
+    "description": "Username of the LDAP search user with enough privileges to search the LDAP database (Windows only)"
+   },
+   {
+    "name": "LDAPServerTimeout",
+    "type": "integer",
+    "description": "Amount of time the LDAP server will wait for a client message before the connection is terminated"
+   },
+   {
+    "name": "LDAPUniqueDNIdentifier",
+    "type": "string",
+    "description": "A unique identifying element of each user in the LDAP database. For Active Directory LDAP servers, usually sAMAccountName."
+   }
+  ]
+ },
+ "LDAPConfigurationListItem": {
+  "source": "LDAPConfigurationList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Description",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "LDAPCACertFile",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "MFTConnection": {
+  "source": "MFTConnection",
+  "fields": [
+   {
+    "name": "Service",
+    "type": "string",
+    "description": "Service is the name of the service that is accessed by this connection. Required on creation, optional on updates.",
+    "enum": [
+     "Box",
+     "Dropbox",
+     "Kiteworks"
+    ]
+   },
+   {
+    "name": "URL",
+    "type": "string",
+    "description": "URL is the base URL for REST access to this service including the final /. URL will default to the base URL for the remote file management service that is provided by the vendor. URL may be modified for locally hosted or private remote implementations. Required on creation, optional on updates."
+   },
+   {
+    "name": "SSLConfiguration",
+    "type": "string",
+    "description": "SSLConfiguration is the name of the SSL Configuration to be used to communicate with the file management API. Required on creation, optional on updates."
+   },
+   {
+    "name": "Username",
+    "type": "string",
+    "description": "Username is the name of the user on whose behalf the file access will take place. Required on creation, optional on updates."
+   },
+   {
+    "name": "ApplicationName",
+    "type": "string",
+    "description": "ApplicationName is the OAuth2 application name associated with this connection. The ConnectionId property will be used as the session id for the specific access token. Required on creation, optional on updates."
+   }
+  ]
+ },
+ "MFTConnectionListItem": {
+  "source": "MFTConnectionList",
+  "fields": [
+   {
+    "name": "Name",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Service",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "IsAuthorized",
+    "type": "string",
+    "description": ""
+   }
+  ]
+ },
+ "Superserver": {
+  "source": "Superserver",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the Server"
+   },
+   {
+    "name": "EnableCacheDirect",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableClients",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableCSP",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableDataCheck",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableECP",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableMirror",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableNodeJS",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableShadows",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableSharding",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableSNMP",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "EnableWebLink",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Server enabled"
+   },
+   {
+    "name": "SSLConfig",
+    "type": "string",
+    "description": "SSL configuration used for client connections."
+   },
+   {
+    "name": "SSLSupportLevel",
+    "type": "integer",
+    "description": "Use SSL/TLS for Client connections.\n0 = None\n1 = Accept\n2 = Require"
+   },
+   {
+    "name": "SystemDefault",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "SuperserverListItem": {
+  "source": "SuperserverList",
+  "fields": [
+   {
+    "name": "Port",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "BindAddress",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "SystemDefault",
+    "type": "boolean",
+    "description": ""
+   }
+  ]
+ },
+ "WebAuthenticationSettings": {
+  "source": "WebAuthenticationSettings",
+  "fields": [
+   {
+    "name": "AutheUnauthenticated",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheOS",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheOSDelegated",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheOSLDAP",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheCache",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheDelegated",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheAlwaysTryDelegated",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheKB",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheLDAP",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheLDAPCache",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheOAuth2",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheLoginToken",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheTwoFactorSMS",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "AutheTwoFactorPW",
+    "type": "boolean",
+    "description": ""
+   },
+   {
+    "name": "LoginCookieTimeout",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "SMTPServer",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "SMTPUsername",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TwoFactorFrom",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "TwoFactorTimeout",
+    "type": "integer",
+    "description": ""
+   },
+   {
+    "name": "JWTIssuer",
+    "type": "string",
+    "description": ""
+   },
+   {
+    "name": "JWTSigAlg",
+    "type": "string",
+    "description": "",
+    "enum": [
+     "RS256",
+     "RS384",
+     "RS512",
+     "ES256",
+     "ES384",
+     "ES512"
+    ]
+   }
+  ]
+ },
+ "EncryptionSettings": {
+  "source": "EncryptionSettings",
+  "fields": [
+   {
+    "name": "DBEncStartMode",
+    "type": "string",
+    "description": "Required.",
+    "enum": [
+     "None",
+     "Interactive",
+     "Unattended",
+     "KMIP"
+    ]
+   },
+   {
+    "name": "DBEncJournal",
+    "type": "boolean",
+    "description": "Encrypt journal files. Required."
+   },
+   {
+    "name": "DBEncIRISSecurity",
+    "type": "boolean",
+    "description": "Encrypt IRISSECURITY database. Required."
+   },
+   {
+    "name": "DBEncIRISTemp",
+    "type": "boolean",
+    "description": "Encrypt IRISTEMP database. Required."
+   },
+   {
+    "name": "AuditEncrypt",
+    "type": "boolean",
+    "description": "Encrypt the audit database. Required."
+   },
+   {
+    "name": "DBEncStartKMIPServer",
+    "type": "string",
+    "description": "KMIPServer instance name (for DBEncStartMode mode=3). Required."
+   },
+   {
+    "name": "DBEncStartKeyFile",
+    "type": "string",
+    "description": "Key file name (for DBEncStartMode mode=2). Required."
+   },
+   {
+    "name": "DBEncDefaultKeyID",
+    "type": "string",
+    "description": "Database encryption key ID to use for new encrypted databases"
+   },
+   {
+    "name": "DBEncJournalKeyID",
+    "type": "string",
+    "description": "Database encryption key ID to use for encrypting journal files"
+   }
+  ]
+ },
+ "AuditingEnabled": {
+  "source": "AuditingEnabled",
+  "fields": [
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Required."
+   }
+  ]
+ },
+ "AuditEvent": {
+  "source": "AuditEvent",
+  "fields": [
+   {
+    "name": "Description",
+    "type": "string",
+    "description": "Description of the event."
+   },
+   {
+    "name": "Enabled",
+    "type": "boolean",
+    "description": "Event enabled."
    }
   ]
  }

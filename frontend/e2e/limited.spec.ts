@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
   test.skip(session.capabilitySummary.unavailable === 0, "the instance offers every operation: nothing is limited");
 });
 
-type Entry = { operationId: string; available: boolean; reason: string | null };
+type Entry = { operationId: string; available: boolean; declined?: boolean; reason: string | null };
 
 test("sign-in succeeds in limited mode: the capability map marks what the instance does not offer, with reasons", async ({ page }) => {
   const result = await page.evaluate(async () => {
@@ -28,13 +28,17 @@ test("sign-in succeeds in limited mode: the capability map marks what the instan
     const map = await fetch("/api/flightdeck/v1/session/capabilities", { headers });
     return {
       status: session.status,
-      summary: ((await session.json()) as { capabilitySummary: { unavailable: number; total: number } }).capabilitySummary,
+      summary: ((await session.json()) as { capabilitySummary: { unavailable: number; declined: number; total: number } }).capabilitySummary,
       entries: ((await map.json()) as { entries: Entry[] }).entries,
     };
   });
   expect(result.status).toBe(200);
-  expect(result.summary).toMatchObject({ unavailable: 64, total: 273 });
-  expect(result.entries.filter((e) => !e.available)).toHaveLength(64);
+  // Two reasons make an operation unavailable, and they are counted apart (feature 003): what this
+  // instance does not offer is limited mode; what FlightDeck declines to offer is policy, on every
+  // version.
+  expect(result.summary).toMatchObject({ unavailable: 65, declined: 8, total: 273 });
+  expect(result.entries.filter((e) => !e.available && !e.declined)).toHaveLength(65);
+  expect(result.entries.filter((e) => e.declined)).toHaveLength(8);
   const byId = new Map(result.entries.map((e) => [e.operationId, e]));
   expect(byId.get("GET /v2/databases")).toMatchObject({ available: false, reason: VERSION_MESSAGE });
   expect(byId.get("GET /v2/namespaces")).toMatchObject({ available: true });
@@ -46,7 +50,7 @@ test("the glareshield shows a persistent limited-mode indicator, with icon and t
   await expect(indicator).toBeVisible();
   await expect(indicator).toContainText("Limited");
   await expect(indicator).not.toContainText("v1");
-  await expect(indicator).toHaveAccessibleDescription(/64 of 273 operations are not offered by this IRIS version/);
+  await expect(indicator).toHaveAccessibleDescription(/65 of 273 operations are not offered by this IRIS version/);
   for (const route of ["security/tls", "system", "logs"]) {
     await page.goto(route);
     await expect(page.getByTestId("limited-mode-indicator")).toBeVisible();
@@ -95,7 +99,7 @@ test("entity types the instance does not offer are named once with the version m
 });
 
 test("home counts exclude operations the instance does not offer, and the Disk vital reads natively", async ({ page }) => {
-  await expect(page.getByTestId("capability-summary")).toContainText("64 not offered by this IRIS version");
+  await expect(page.getByTestId("capability-summary")).toContainText("65 not offered by this IRIS version");
   await expect(page.getByTestId("vital-disk")).toContainText(/\d+%/);
 });
 
@@ -104,7 +108,7 @@ test("a user without any administrative privilege is refused for privileges, not
   await page.locator('input[name="username"]').fill(NO_PRIVILEGE.user);
   await page.locator('input[name="password"]').fill(NO_PRIVILEGE.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("alert")).toContainText("Requires Use on %Admin_");
+  await expect(page.getByRole("alert")).toContainText("refused to report this account's privileges");
   await expect(page.getByRole("alert")).not.toContainText("Requires IRIS");
   await expect(page.getByTestId("glareshield")).toHaveCount(0);
 });
@@ -177,5 +181,62 @@ test("one web application write goes through the shared dry-run when the capabil
     expect(after.result.Description).toBe("Edited in limited mode");
   } finally {
     await adminRequest("DELETE", "/web-app", { name: APP });
+  }
+});
+
+// Feature 003 on IRIS 2026.1 (SC-013): permissions and security follow the capability map like every
+// other domain, and the one write below is decided by the map, never by the version.
+test("permissions and security are read on the limited instance as the capability map offers them", async ({ page }) => {
+  const users = await capability(page, "GET /v2/security/users");
+  await page.goto("permissions/users");
+  if (!users.available) {
+    await expect(page.getByTestId("domain-list")).toContainText(users.reason!);
+  } else {
+    await expect(page.getByTestId("list-row").first()).toBeVisible();
+    await page.goto(`permissions/roles?inspect=${encodeURIComponent("permissions/role:FD_Demo_L1")}`);
+    await expect(page.getByTestId("links-group-effective-privileges")).toContainText("FD_Demo_Billing");
+  }
+  const wallet = await capability(page, "GET /v2/wallet/collections");
+  await page.goto("security/wallet");
+  if (!wallet.available) {
+    await expect(page.getByTestId("domain-list")).toContainText(wallet.reason!);
+  } else {
+    await expect(page.getByTestId("domain-list")).toBeVisible();
+  }
+  // Encryption is declined by FlightDeck on every version, with its own reason, not the version one.
+  await page.goto("security/encryption");
+  await expect(page.getByTestId("encryption-policy-note")).toBeVisible();
+  const declined = await capability(page, "PUT /v2/security/encryption/settings");
+  expect(declined.available).toBe(false);
+  expect(declined.reason).toContain("System Administration > Encryption");
+});
+
+test("one permissions write on the limited instance goes through the shared confirmation", async ({ page }) => {
+  const put = await capability(page, "PUT /v2/security/role");
+  const ROLE = "FD_LIMITED_Role";
+  await adminRequest("DELETE", "/security/role", { name: ROLE });
+  const created = await adminRequest("PUT", "/security/role", { name: ROLE }, { Description: "FlightDeck limited-mode fixture" });
+  test.skip(created.status >= 300, `the official API refused the fixture role: HTTP ${created.status}`);
+  try {
+    await page.goto(`permissions/roles?inspect=${encodeURIComponent(`permissions/role:${ROLE}`)}`);
+    const edit = page.getByTestId("action-PUT-v2-security-role-edit");
+    if (!put.available) {
+      await expect(edit).toHaveAttribute("aria-disabled", "true");
+      await expect(page.getByText(put.reason!).first()).toBeVisible();
+      return;
+    }
+    await disarm(page);
+    await edit.click();
+    const form = page.getByTestId("object-form");
+    await form.locator("#f-Description").fill("Edited in limited mode");
+    await form.getByTestId("form-submit").click();
+    const dryRun = page.getByTestId("dry-run");
+    await expect(dryRun.getByTestId("dry-run-row-Description")).toHaveAttribute("data-changed", "true");
+    await dryRun.getByTestId("dry-run-apply").click();
+    await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+    const after = (await adminRequest("GET", "/security/role", { name: ROLE })).json as { result: { Description: string } };
+    expect(after.result.Description).toBe("Edited in limited mode");
+  } finally {
+    await adminRequest("DELETE", "/security/role", { name: ROLE });
   }
 });

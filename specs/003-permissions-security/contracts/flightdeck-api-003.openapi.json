@@ -1,0 +1,319 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FlightDeck API additions for feature 003",
+    "version": "1.2.0",
+    "description": "Merged into the served FlightDeck OpenAPI document during implementation, like the feature 002 additions; the served document stays the single source. Paths are relative to /api/flightdeck/v1. Every request carries X-FlightDeck-Tab; mutating requests carry X-FlightDeck-Safe-Mode. This feature adds one read-only endpoint (the home panel's attention items) and extends three shapes that already exist: the links query takes provider parameters, a mutation may be an action, and a trail record may carry the last-administrator check mode."
+  },
+  "paths": {
+    "/attention": {
+      "get": {
+        "operationId": "getAttentionItems",
+        "summary": "Items that need attention on the home panel: credentials expiring or expired (RN-FD-15).",
+        "responses": {
+          "200": {
+            "description": "The items the session may read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttentionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session may not read any source; the body states which."
+          }
+        }
+      }
+    },
+    "/domains/{domain}/{entityType}/links": {
+      "get": {
+        "operationId": "getEntityLinksParameterised",
+        "summary": "Existing endpoint, extended: a provider may take parameters (for example the namespace of the SQL privileges panel). Unknown parameters are ignored by providers that do not declare them.",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Restricts the answer to one provider, so a panel can refresh alone."
+          },
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Parameter of the sql-privileges provider."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Link groups, each with its state and reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinksResponseWithParameters"
+                }
+              }
+            }
+          }
+        },
+        "x-refines": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AttentionItem": {
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "band",
+          "target"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "expiring-credential",
+              "expired-credential"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "band": {
+            "type": "string",
+            "enum": [
+              "expiring",
+              "expired"
+            ]
+          },
+          "daysRemaining": {
+            "type": "integer",
+            "description": "Negative when already expired."
+          },
+          "target": {
+            "type": "object",
+            "description": "Where the item opens: domain, entity type and keys.",
+            "properties": {
+              "domain": {
+                "type": "string"
+              },
+              "entityType": {
+                "type": "string"
+              },
+              "keys": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AttentionResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "degraded"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttentionItem"
+            }
+          },
+          "degraded": {
+            "type": "boolean",
+            "description": "True when a source was refused or capped."
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the answer is partial, verbatim from the official API when it refused."
+          }
+        }
+      },
+      "LinkGroupParameter": {
+        "type": "object",
+        "required": [
+          "name",
+          "required",
+          "values"
+        ],
+        "description": "A parameter the provider needs before it can answer, so the panel can render a control for it.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "namespace"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Known values when the session may list them; empty when it may not, and the group's reason says so."
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "description": "The value used for this answer."
+          }
+        }
+      },
+      "LinksResponseWithParameters": {
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "provider",
+                "state"
+              ],
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "none",
+                    "undetermined",
+                    "needs-parameter"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "parameters": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LinkGroupParameter"
+                  }
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "truncated": {
+                  "type": "boolean",
+                  "description": "True when a cap or a refused read stopped the traversal."
+                }
+              }
+            }
+          }
+        }
+      },
+      "ActionPreviewRequest": {
+        "type": "object",
+        "required": [
+          "operationId"
+        ],
+        "description": "PreviewRequest extended for kind=action: the operation's path parameters and options instead of a proposed object.",
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "example": "POST /v2/security/sql-privilege/revoke"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Path parameters the official operation declares."
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Query modifiers the official operation declares (withGrant, cascade, asGrantor, ...)."
+          }
+        }
+      },
+      "TrailRecordCheckFields": {
+        "type": "object",
+        "description": "Optional fields added to TrailRecord for operations that run the last-administrator predicate (spec FR-010c).",
+        "properties": {
+          "checkMode": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "partial"
+            ],
+            "description": "complete: every read the predicate needed succeeded. partial: a read was refused or capped, so the portal did not assert."
+          },
+          "checkResult": {
+            "type": "string",
+            "enum": [
+              "held",
+              "would-remove-last",
+              "not-determined"
+            ]
+          },
+          "checkUnread": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What could not be read, named, when the mode is partial."
+          }
+        }
+      },
+      "PreviewResponseImpactStates": {
+        "type": "object",
+        "description": "No shape change: this feature only adds providers. Recorded here so the three states stay explicit.",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "none",
+              "undetermined"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

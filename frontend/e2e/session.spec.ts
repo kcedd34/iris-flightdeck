@@ -17,7 +17,8 @@ test("1. Given the user authenticates successfully, when the initial dashboard i
 
 test("2. Given the user lacks the privilege an API operation requires, when the screen renders, then the action is disabled and the required resource and permission are shown", async ({ page }) => {
   await signIn(page, OPERATOR);
-  await expect(page.getByTestId("capability-summary")).toContainText("58 of 273");
+  // The number depends on what this install offers; the shape and the total are the claim.
+  await expect(page.getByTestId("capability-summary")).toContainText(/\d+ of 273 operations available to you/);
   await page.keyboard.press("Control+k");
   await page.getByTestId("palette-input").fill("delete a role");
   const row = page.locator('[cmdk-item][data-disabled="true"][aria-disabled="true"]', { hasText: "Delete a role" });
@@ -108,7 +109,11 @@ test("7. Given a user without any administrative privilege, when they sign in, t
   await page.locator('input[name="username"]').fill(NO_PRIVILEGE.user);
   await page.locator('input[name="password"]').fill(NO_PRIVILEGE.password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByRole("alert")).toContainText("Requires Use on %Admin_");
+  // Feature 003 corrected this message: the instance refused to report the account's privileges,
+  // which is about the account, not the version. It still names the privileges FlightDeck uses.
+  await expect(page.getByRole("alert")).toContainText("refused to report this account's privileges");
+  await expect(page.getByRole("alert")).toContainText("%Admin_Secure");
+  await expect(page.getByRole("alert")).not.toContainText("Requires IRIS");
   await expect(page.getByRole("alert")).toContainText("Ask your instance administrator for access.");
   await expect(page.getByTestId("glareshield")).toHaveCount(0);
 });

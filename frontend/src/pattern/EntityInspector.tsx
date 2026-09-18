@@ -14,8 +14,25 @@ const OWNING_SECTION: Record<string, string> = {
 const LABELS: Record<string, string> = {
   "web-apps/web-application": "Web application",
   "web-apps/pct-access": "Percent class access",
-  "permissions/role": "Role",
   "permissions/user": "User",
+  "permissions/role": "Role",
+  "permissions/resource": "Resource",
+  "permissions/service": "Service",
+  "permissions/privileged-routine": "Privileged routine application",
+  "security/tls-configuration": "TLS configuration",
+  "security/x509-credential": "X.509 credential",
+  "security/wallet-collection": "Wallet collection",
+  "security/ldap-configuration": "LDAP configuration",
+  "security/mft-connection": "MFT connection",
+  "security/superserver": "Superserver",
+  "security/oauth2-server-definition": "OAuth 2.0 server definition",
+  "security/oauth2-server-client": "OAuth 2.0 client",
+  "security/oauth2-resource-server": "OAuth 2.0 resource server",
+  "security/oauth2-client": "OAuth 2.0 client configuration",
+  "security/audit-settings": "Auditing",
+  "security/encryption-settings": "Encryption",
+  "security/web-authentication": "Web authentication",
+  "security/oauth2-server": "OAuth 2.0 authorization server",
 };
 
 /**

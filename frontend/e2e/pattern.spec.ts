@@ -1,13 +1,24 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { disarm, setTheme, signIn } from "./setup/helpers";
-import { setFixtures } from "./setup/iris";
+import { DOCKER_SKIP_REASON, dockerAvailable, setFixtures } from "./setup/iris";
 
 // Feature 002, User Story 4: the pattern catalog exercises the shipped pattern where web
 // applications do not (scenarios 1, 2 and 4; scenario 3 is the build gate, T081).
 
-test.beforeAll(() => setFixtures(true));
-test.afterAll(() => setFixtures(false));
+// The catalog exists only while the test install has the fixtures flag, which has no HTTP surface on
+// purpose and is set through the container. Without Docker every test here skips with the reason.
+const DOCKER = dockerAvailable();
+
+test.skip(!DOCKER, DOCKER_SKIP_REASON);
+
+test.beforeAll(() => {
+  if (DOCKER) setFixtures(true);
+});
+
+test.afterAll(() => {
+  if (DOCKER) setFixtures(false);
+});
 
 async function openItem(page: Page, name: string) {
   await page.goto("__fixtures__/pattern");
@@ -141,6 +152,34 @@ test("4. With reduced motion the dry-run appears in its final state instantly", 
     return { opacity: style.opacity, transition: style.transitionDuration, flash: getComputedStyle(el, "::after").animationName };
   });
   expect(motion).toEqual({ opacity: "1", transition: "0s", flash: "none" });
+});
+
+test("5. An action-kind mutation shows the affected set before and after, with the grade its descriptor declares", async ({ page }) => {
+  await openItem(page, "plain-item");
+  await disarm(page);
+  const dryRun = page.getByTestId("dry-run");
+  // Adding: simple, and the row moves from absent to present.
+  await page.getByTestId("action-POST-fixture-catalog-tag-grant-add-a-tag").click();
+  await expect(dryRun.getByTestId("dry-run-row-tag reviewed-again")).toContainText("not granted");
+  await expect(dryRun.getByTestId("dry-run-confirm-input")).toHaveCount(0);
+  await dryRun.getByTestId("dry-run-apply").click();
+  await expect(dryRun.getByTestId("dry-run-applied")).toBeVisible();
+  await dryRun.getByRole("button", { name: "Close" }).click();
+  // Removing: reinforced, and the row is present today.
+  await page.getByTestId("action-POST-fixture-catalog-tag-revoke-remove-a-tag").click();
+  await expect(dryRun.getByTestId("dry-run-row-tag reviewed")).toContainText("granted");
+  await expect(dryRun.getByTestId("dry-run-confirm-input")).toBeVisible();
+  await dryRun.getByRole("button", { name: "Cancel" }).click();
+});
+
+test("6. A parameterised panel answers nothing until it has its parameter, and says which it used", async ({ page }) => {
+  await openItem(page, "plain-item");
+  const tags = page.getByTestId("links-group-catalog-tags");
+  await expect(tags).toHaveAttribute("data-state", "needs-parameter");
+  await expect(tags).toContainText("Choose a scope");
+  await tags.getByTestId("links-group-catalog-tags-parameter-scope").selectOption("all");
+  await expect(tags).toHaveAttribute("data-state", "ok");
+  await expect(tags).toContainText("reviewed");
 });
 
 for (const theme of ["dark", "light"] as const) {

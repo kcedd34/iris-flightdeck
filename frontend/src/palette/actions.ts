@@ -39,6 +39,10 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
         ),
       ),
     ),
+    // The family has no list of its own: the official listings answer per grantee and namespace
+    // (feature 003 FR-006a). These two open the list that chooses the grantee, with the panel open.
+    nav("nav:sql-privileges-user", "SQL privileges of a user", "permissions", "Users", "/permissions/users?panel=sql-privileges"),
+    nav("nav:sql-privileges-role", "SQL privileges of a role", "permissions", "Roles", "/permissions/roles?panel=sql-privileges"),
     shell("shell:theme-dark", "Switch to dark theme", { type: "theme", theme: "dark" }),
     shell("shell:theme-light", "Switch to light theme", { type: "theme", theme: "light" }),
     shell("shell:safe-mode-disarm", "Turn off safe mode in this tab", { type: "safe-mode", to: "disarmed" }),

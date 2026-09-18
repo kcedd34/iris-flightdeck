@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Feature 002 SC-003 and SC-004: the server, not the UI, refuses
-#  - every mutation from an armed tab (mutation service and the REST executor's mutating methods);
+# Feature 002 SC-003 and SC-004, extended by feature 003 SC-005: the server, not the UI, refuses
+#  - every mutation from an armed tab (mutation service, permissions writes, and the REST executor's
+#    mutating methods);
 #  - any change that would disable, delete or make unreachable FlightDeck's own web applications;
-#  - an apply whose typed confirmation does not match.
+#  - an apply whose typed confirmation does not match;
+#  - and, for a permissions change that is not the last administrative access, previews it without
+#    a block and without an incomplete-check notice.
 # Requests go straight to FlightDeck's API with a CSP session cookie; no UI is involved. Nothing is
 # changed in IRIS (checked at the end through the official API). Needs a running install.
 # Usage: scripts/dev/check-mutation-enforcement.sh [base-url]   (default http://localhost:52780)
@@ -45,7 +48,11 @@ for req in \
   '{"operationId":"DELETE /v2/web-app","keys":{"name":"/csp/fd-demo"},"fingerprint":"any","confirmation":"/csp/fd-demo"}' \
   '{"operationId":"PUT /v2/web-app/pct-access","keys":{"name":"/csp/fd-demo","allowType":"AllowClass","class":"%X"},"proposed":{"AllowAccess":true},"fingerprint":"any"}' \
   '{"operationId":"DELETE /v2/web-app/pct-access","keys":{"name":"all-applications","allowType":"AllowClass","class":"%SYS.Python.WSGI"},"fingerprint":"any"}' \
-  '{"operationId":"FLIGHTDECK REST execute","request":{"method":"DELETE","path":"/api/flightdeck/v1/session"},"fingerprint":"any"}'; do
+  '{"operationId":"FLIGHTDECK REST execute","request":{"method":"DELETE","path":"/api/flightdeck/v1/session"},"fingerprint":"any"}' \
+  '{"operationId":"PUT /v2/security/user","keys":{"name":"Admin"},"proposed":{"Enabled":false},"fingerprint":"any"}' \
+  '{"operationId":"DELETE /v2/security/role","keys":{"name":"FD_Demo_Operator"},"fingerprint":"any","confirmation":"FD_Demo_Operator"}' \
+  '{"operationId":"POST /v2/security/user/password","keys":{"name":"Admin"},"params":{"name":"Admin","newPassword":"never-sent"},"fingerprint":"any"}' \
+  '{"operationId":"POST /v2/security/sql-privilege/revoke","keys":{},"params":{"namespace":"USER","grantee":"FD_Demo_Operator","type":"TABLE","object":"FDT.Nothing","action":"SELECT"},"fingerprint":"any"}'; do
   for safe in NONE armed bogus; do
     post /mutations/apply "$safe" "$req"
     expect "apply $(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["operationId"])' "$req") safe=$safe" 403 SAFE_MODE_ON
@@ -81,10 +88,41 @@ expect "reinforced grade with a wrong typed name" 422 CONFIRMATION_REQUIRED
 post /mutations/apply disarmed '{"operationId":"PUT /v2/web-app","keys":{"name":"/csp/fd-demo"},"proposed":{"Description":"x"},"fingerprint":"stale"}'
 expect "stale fingerprint" 409 STATE_CHANGED
 
+# The affirmative block and the partial-mode notice change roles, so they live in the last-admin and
+# security Playwright projects. Here, where nothing may change, the checked claim is the other half:
+# a role deletion that is not the last administrative access previews with a grade and a fingerprint,
+# blocks nothing and raises no incomplete-check notice.
+echo "Disarmed tab, permissions: a deletion that is not the last administrative access:"
+req='{"operationId":"DELETE /v2/security/role","keys":{"name":"FD_Demo_Operator"}}'
+post /mutations/preview NONE "$req"
+read -r ok detail <<<"$(python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+problems = []
+if d.get("grade") != "reinforced": problems.append("grade=%s" % d.get("grade"))
+if not d.get("fingerprint"): problems.append("no fingerprint")
+if d.get("blocked") is not None: problems.append("blocked=%s" % d.get("blocked"))
+if d.get("notice") is not None: problems.append("notice=%s" % d.get("notice"))
+print("no" if problems else "ok", ", ".join(problems) or "grade=reinforced, not blocked, no notice")
+' <<<"$body")"
+if [ "$got" = "200" ] && [ "$ok" = "ok" ]; then
+  printf '  ok    %-62s -> %s\n' "preview of a role deletion" "$detail"
+else
+  printf '  FAIL  %-62s -> HTTP %s %s\n' "preview of a role deletion" "$got" "$detail"; fail=1
+fi
+
 echo "Nothing changed in IRIS (official API):"
-state=$(curl -s -u "$user:$pass" "$root/api/admin/v2/web-app?name=/api/flightdeck" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["NameSpace"], r["DispatchClass"], r["AutheEnabled"], len(r["MatchRoles"]))')
-spa=$(curl -s -u "$user:$pass" "$root/api/admin/v2/web-app?name=/flightdeck" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["AutheEnabled"])')
-demo=$(curl -s -u "$user:$pass" "$root/api/admin/v2/web-app?name=/csp/fd-demo" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["Description"])')
+# The same object reads on either dialect: these paths are the same under /v1 and /v2, so only the
+# version segment changes. Asking a v1 instance for /v2 answers 404 and would report, wrongly, that
+# the state changed.
+adminv="v$(curl -s -u "$user:$pass" "$root/api/admin/info" | python3 -c 'import json,sys; print(2 if json.load(sys.stdin)["result"]["apiVersion"] >= 2 else 1)')"
+state=$(curl -s -u "$user:$pass" "$root/api/admin/$adminv/web-app?name=/api/flightdeck" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["NameSpace"], r["DispatchClass"], r["AutheEnabled"], len(r["MatchRoles"]))')
+spa=$(curl -s -u "$user:$pass" "$root/api/admin/$adminv/web-app?name=/flightdeck" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["AutheEnabled"])')
+demo=$(curl -s -u "$user:$pass" "$root/api/admin/$adminv/web-app?name=/csp/fd-demo" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], r["Description"])')
+admin=$(curl -s -u "$user:$pass" "$root/api/admin/$adminv/security/user?name=Admin" | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print(r["Enabled"], ",".join(r["Roles"]))')
+role=$(curl -s -u "$user:$pass" "$root/api/admin/$adminv/security/role?name=FD_Demo_Operator" -o /dev/null -w '%{http_code}')
+echo "  Admin: $admin"; echo "  FD_Demo_Operator: HTTP $role"
+[ "${admin%% *}" = "True" ] && [ "$role" = "200" ] || { echo "  FAIL  permissions state changed"; fail=1; }
 echo "  /api/flightdeck: $state"; echo "  /flightdeck: $spa"; echo "  /csp/fd-demo: $demo"
 [ "$state" = "True USER FlightDeck.API.Router 32 1" ] && [ "$spa" = "True 64" ] && [ "${demo%% *}" = "True" ] || { echo "  FAIL  IRIS state changed"; fail=1; }
 

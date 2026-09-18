@@ -16,7 +16,7 @@ interface Props {
   onOpenTrail: () => void;
 }
 
-const VERB = { create: "Create", edit: "Apply changes to", delete: "Delete", request: "Send test request to" } as const;
+const VERB = { create: "Create", edit: "Apply changes to", delete: "Delete", request: "Send test request to", action: "Apply to" } as const;
 
 /**
  * The only confirmation view in the product (Constitution V, docs/design.md §6,
@@ -68,12 +68,24 @@ export function DryRun(props: Props) {
             <div id="dryrun-summary" className="dsub">
               {state.phase === "previewing"
                 ? "Reading the current state from the instance."
-                : preview?.kind === "request"
-                  ? preview.requestMode?.reason
-                  : `${changedCount} of ${preview?.rows.length ?? 0} fields change. Nothing is sent until you apply.`}
+                : preview?.requestMode
+                  ? preview.requestMode.reason
+                  : preview?.kind === "action"
+                    ? `${changedCount === 0 ? "Nothing changes" : "One change"} in what the instance reports today. Nothing is sent until you apply.`
+                    : `${changedCount} of ${preview?.rows.length ?? 0} fields change. Nothing is sent until you apply.`}
             </div>
           </div>
 
+          {preview?.notice && (
+            <div className="dmessage" role="status" data-testid="dry-run-notice">
+              {preview.notice}
+            </div>
+          )}
+          {state.phase === "applying" && (
+            <div className="dmessage" role="status" data-testid="dry-run-applying">
+              Applying. The instance is working on it{preview?.applyNotice ? `. ${preview.applyNotice}` : "; nothing else is sent until it answers."}
+            </div>
+          )}
           {state.message && (
             <div className="dmessage" role={state.phase === "failed" ? "alert" : "status"} data-testid="dry-run-message">
               {state.message}
@@ -115,6 +127,12 @@ export function DryRun(props: Props) {
                 <div className="impact-b">{preview.impact.summary}</div>
                 {preview.impact.state === "undetermined" && <div className="impact-u">{preview.impact.reason}</div>}
                 {preview.impact.users && preview.impact.users.length > 0 && <div className="impact-u mono">{preview.impact.users.join(" · ")}</div>}
+                {/* What becomes unreachable, not only who loses access (RN-FD-11). */}
+                {preview.impact.objects && preview.impact.objects.length > 0 && (
+                  <div className="impact-u mono" data-testid="dry-run-impact-objects">
+                    {preview.impact.objects.map((o) => `${o.displayName}${o.detail ? ` (${o.detail})` : ""}`).join(" · ")}
+                  </div>
+                )}
               </div>
           )}
 
@@ -156,6 +174,13 @@ export function DryRun(props: Props) {
                     <span>{preview?.consequence}</span>
                   </label>
                 )}
+                {/* A consequence is stated whenever the rule declared one; the maximum grade also
+                    asks the user to acknowledge it. */}
+                {ready && grade !== "maximum" && preview?.consequence && (
+                  <span className="dack" data-testid="dry-run-consequence">
+                    {preview.consequence}
+                  </span>
+                )}
                 <span className="dsp">
                   <button className="btn" type="button" onClick={props.onCancel}>
                     Cancel
@@ -169,11 +194,12 @@ export function DryRun(props: Props) {
                       ref={applyRef}
                       className="btn btn-primary"
                       type="button"
-                      disabled={!canApply}
+                      disabled={!canApply || state.phase === "applying"}
                       onClick={props.onApply}
                       data-testid="dry-run-apply"
+                      aria-busy={state.phase === "applying" ? "true" : undefined}
                     >
-                      Apply
+                      {state.phase === "applying" ? "Applying…" : "Apply"}
                     </button>
                   )}
                 </span>

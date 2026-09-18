@@ -12,6 +12,11 @@ official **SysAdmin API** (`/api/admin/v2`).
 - **Your IRIS identity, nothing stored.** You sign in with your IRIS account. FlightDeck keeps no
   password or token anywhere. What you can do comes from the privileges the SysAdmin API declares
   for each operation.
+- **Permissions you can follow.** Users, roles, resources, services and privileged routines, with the
+  chain that grants each privilege: which role, through which inherited roles, granting which
+  resource. Before a removal, FlightDeck says who loses access and what becomes unreachable.
+- **Security and secrets.** TLS, X.509, OAuth 2.0 in its three roles, wallet, LDAP, MFT, auditing,
+  web authentication and superservers. Secrets are set or replaced, never shown.
 - **Web applications and REST APIs.** Web applications are listed with graded exposure markers,
   edited through a field-by-field dry run, and linked to the roles and REST services behind them.
   Every REST service the instance serves is discovered, with its OpenAPI specification when it has
@@ -19,10 +24,9 @@ official **SysAdmin API** (`/api/admin/v2`).
 - **Real host telemetry.** CPU and memory come from the host; IRIS shared memory and database usage
   come from the SysAdmin API.
 
-> This release adds **web applications and the REST API explorer** to the foundation (sign-in, safe
-> mode, command palette, instance telemetry, installation and the navigation shell). The remaining
-> domain screens (permissions, security, tasks, system, logs) are built on the same pattern; their
-> routes already exist and explain what is coming.
+> This release adds **permissions and security** to the foundation and to web applications and the
+> REST explorer. The remaining domain screens (tasks, system, logs) are built on the same pattern;
+> their routes already exist and explain what is coming.
 
 Related idea on the InterSystems Ideas Portal: _link pending publication by the author_
 
@@ -161,6 +165,38 @@ SysAdmin API, and re-running creates no duplicates.
   does **not** replace IRIS auditing.
 - **Users without administrative privileges** cannot open a session. FlightDeck lists the
   privileges they would need.
+
+## What the permissions screens claim, and what they do not
+
+- **Every privilege comes with its origin.** A privilege is never shown without the chain of roles
+  that grants it, and a chain FlightDeck could not expand is reported as not expanded, not omitted.
+- **Delegated access and LDAP are not enumerated.** The official API does not report which roles an
+  account receives from them, so FlightDeck marks the account and says it does not manage them there.
+- **SQL privileges are read as the platform reports them.** The official listing already resolves
+  provenance through roles (`Role:<name>`, `Owner Privilege`), so FlightDeck renders that and does
+  not compute a second answer.
+- **Before a change that could remove administrative access**, FlightDeck checks whether any enabled,
+  unexpired account would still hold `%Admin_Secure:USE` or the `%All` role. If it can read what it
+  needs and the answer is none, the change is refused, and the reason says what was counted. If it
+  cannot read what it needs, it does not refuse and does not pretend: it says the check was
+  incomplete, names what it could not read, and asks for the reinforced confirmation. The session
+  trail records which of the two happened.
+
+## Secrets, and what FlightDeck declines to do
+
+- **Secret material is write-only** everywhere: wallet secrets, private keys, client secrets,
+  passwords and tokens are set, replaced or deleted. No screen, API answer, session trail or log of
+  FlightDeck carries a value, and the wallet has no operation that reads one back.
+- **Encryption is read-only in FlightDeck.** Creating an encryption key file, administering one,
+  activating or deactivating a key and changing the encryption settings can make an instance's data
+  permanently unreadable, with no recovery through the portal. Those eight operations appear in the
+  interface as disabled controls, each stating that reason and pointing at
+  "System Administration > Encryption" in the platform's own management portal. They are listed in
+  `docs/api-coverage.md` as declined, not missing.
+- **Auditing**: FlightDeck changes the setting and performs the two writes that touch the audit trail
+  — copying records to another namespace, and purging them. A purge asks for the maximum
+  confirmation and states that it erases the instance's own audit trail. Reading audit records
+  belongs to the logs screens.
 
 ## REST API explorer: what a test request can and cannot do
 

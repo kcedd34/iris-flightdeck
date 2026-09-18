@@ -23,6 +23,9 @@ export interface MutationStart {
   keys?: Keys;
   proposed?: Record<string, unknown>;
   request?: TestRequest;
+  /** kind=action: the official operation's declared parameters and option modifiers. */
+  params?: Record<string, string>;
+  options?: Record<string, string>;
   /** What the dry-run title calls the target, for example "web application". */
   noun: string;
 }
@@ -69,7 +72,7 @@ export function MutationProvider({ children }: { children: ReactNode }) {
     try {
       const preview = await request<PreviewResponse>("/mutations/preview", {
         method: "POST",
-        body: { operationId: start.operationId, keys: start.keys, proposed: start.proposed, request: start.request },
+        body: { operationId: start.operationId, keys: start.keys, proposed: start.proposed, request: start.request, params: start.params, options: start.options },
       });
       if (preview.blocked && preview.trail && !recordedBlocks.current.has(start)) {
         recordedBlocks.current.add(start);
@@ -126,6 +129,8 @@ export function MutationProvider({ children }: { children: ReactNode }) {
           keys: s.keys,
           proposed: s.proposed,
           request: s.request,
+          params: s.params,
+          options: s.options,
           fingerprint: preview.fingerprint,
           confirmation: state.confirmation,
           acknowledged: state.acknowledged,

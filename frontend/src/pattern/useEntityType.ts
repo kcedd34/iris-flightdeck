@@ -31,11 +31,16 @@ export function useEntityItem(ref: EntityRef | null) {
   });
 }
 
-export function useEntityLinks(ref: EntityRef | null) {
+export function useEntityLinks(ref: EntityRef | null, options: { provider?: string; params?: Record<string, string> } = {}) {
+  const { provider, params } = options;
   return useQuery({
-    queryKey: ["links", ref?.domain, ref?.entityType, ref?.keys],
+    queryKey: ["links", ref?.domain, ref?.entityType, ref?.keys, provider, params],
     enabled: ref !== null,
-    queryFn: ({ signal }) => request<LinksResponse>(`${entityPath(ref!)}/links`, { query: ref!.keys, signal }),
+    queryFn: ({ signal }) =>
+      request<LinksResponse>(`${entityPath(ref!)}/links`, {
+        query: { ...ref!.keys, ...(provider ? { provider } : {}), ...(params ?? {}) },
+        signal,
+      }),
   });
 }
 

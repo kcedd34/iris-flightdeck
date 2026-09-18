@@ -106,14 +106,77 @@ const ROLE: Presentation = {
 
 const USER: Presentation = {
   schema: "User",
-  sections: [{ title: "User", fields: ["FullName", "Enabled", "Roles", "EscalationRoles", "NameSpace", "Routine", "Comment", "ExpirationDate", "AccountNeverExpires", "PasswordNeverExpires", "ChangePassword"] }],
+  sections: [
+    { title: "Account", fields: ["FullName", "Enabled", "Comment", "EmailAddress", "PhoneNumber", "PhoneProvider"] },
+    { title: "Access", fields: ["Roles", "EscalationRoles", "NameSpace", "Routine"] },
+    { title: "Password and expiry", fields: ["ChangePassword", "PasswordNeverExpires", "ExpirationDate", "AccountNeverExpires", "AutheEnabled", "HOTPKeyDisplay"] },
+  ],
+  mono: ["NameSpace", "Routine"],
+  format: { AutheEnabled: (value) => authenticationMethods(value).join(", ") || "None" },
 };
 
+const RESOURCE: Presentation = {
+  schema: "Resource",
+  sections: [{ title: "Resource", fields: ["Description", "PublicPermission", "ResourceType", "AllowDelete"] }],
+};
+
+const SERVICE: Presentation = {
+  schema: "Service",
+  sections: [{ title: "Service", fields: ["Description", "Enabled", "AutheEnabled", "ClientSystems"] }],
+  format: { AutheEnabled: (value) => authenticationMethods(value).join(", ") || "None" },
+};
+
+const PRIVILEGED_ROUTINE: Presentation = {
+  schema: "PrivilegedRoutineApplication",
+  sections: [{ title: "Application", fields: ["Description", "Enabled", "Resource", "MatchRoles", "Routines"] }],
+  mono: ["Resource", "Routines"],
+};
+
+const TLS_CONFIGURATION: Presentation = {
+  schema: "SSLConfig",
+  sections: [
+    { title: "Configuration", fields: ["Description", "Enabled", "Type", "TLSMinVersion", "TLSMaxVersion", "CipherList", "Ciphersuites", "DiffieHellmanBits"] },
+    { title: "Certificates", fields: ["CAFile", "CertificateFile", "PrivateKeyFile", "PrivateKeyType", "VerifyPeer", "VerifyDepth", "AuthorizeCN"] },
+    { title: "OCSP", fields: ["OCSP", "OCSPURL", "OCSPIssuerCert", "OCSPResponseFile", "OCSPTimeout"] },
+  ],
+  mono: ["CAFile", "CertificateFile", "PrivateKeyFile", "OCSPURL"],
+};
+
+const X509_CREDENTIAL: Presentation = {
+  schema: "X509Credential",
+  sections: [{ title: "Credential", fields: ["OwnerList", "PeerNames", "CAFile"] }],
+  mono: ["CAFile"],
+};
+
+const WALLET_COLLECTION: Presentation = {
+  schema: "WalletCollection",
+  sections: [{ title: "Collection", fields: ["UseResource", "EditResource"] }],
+  mono: ["UseResource", "EditResource"],
+};
+
+const SUPERSERVER: Presentation = {
+  schema: "Superserver",
+  sections: [
+    { title: "Superserver", fields: ["Description", "Enabled", "SSLConfig", "SSLSupportLevel", "SystemDefault"] },
+    { title: "Protocols", fields: ["EnableCacheDirect", "EnableClients", "EnableCSP", "EnableDataCheck", "EnableECP", "EnableMirror", "EnableNodeJS", "EnableShadows", "EnableSharding", "EnableSNMP", "EnableWebLink"] },
+  ],
+};
+
+const AUDIT_SETTINGS: Presentation = { schema: "AuditingEnabled", sections: [{ title: "Auditing", fields: ["Enabled"] }] };
+
 export const PRESENTATIONS: Record<string, Presentation> = {
+  "security/tls-configuration": TLS_CONFIGURATION,
+  "security/x509-credential": X509_CREDENTIAL,
+  "security/wallet-collection": WALLET_COLLECTION,
+  "security/superserver": SUPERSERVER,
+  "security/audit-settings": AUDIT_SETTINGS,
   "web-apps/web-application": WEB_APPLICATION,
   "web-apps/pct-access": PCT_ACCESS,
   "permissions/role": ROLE,
   "permissions/user": USER,
+  "permissions/resource": RESOURCE,
+  "permissions/service": SERVICE,
+  "permissions/privileged-routine": PRIVILEGED_ROUTINE,
 };
 
 /** Formats a value for display wherever it appears (inspector, dry-run, trail), by field name. */

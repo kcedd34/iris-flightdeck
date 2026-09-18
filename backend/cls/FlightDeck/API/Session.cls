@@ -36,6 +36,17 @@ ClassMethod Respond(isSignIn As %Boolean) As %Status
 	quit ##class(FlightDeck.API.Response).WriteJSON(session)
 }
 
+/// "%Admin_Manage, %Admin_Operate and %Admin_Secure" from the privilege list.
+ClassMethod PrivilegeList(requires As %DynamicArray) As %String
+{
+	set text = "", iter = requires.%GetIterator()
+	while iter.%GetNext(, .requirement) {
+		set name = $piece(requirement, ":", 1)
+		set text = text _ $select(text="":"", 1:", ") _ name
+	}
+	quit text
+}
+
 /// Builds the Session body from /info (FR-012). On refusal returns "" and sets error.
 ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 {
@@ -50,9 +61,14 @@ ClassMethod Build(Output error As %DynamicObject) As %DynamicObject
 		set error = {"status":500, "code":"UPSTREAM_ERROR", "message":"The instance information could not be read.", "raw":($system.Status.GetErrorText(sc)), "requires":"", "detectedVersion":""}
 		quit ""
 	}
-	if status = 403 {
+	if (status = 403) || (status = 404) {
+		// The instance refused FlightDeck's one identity read. It is not a version problem: the API
+		// answered. It is not always a missing privilege either — an account holding %Admin_Wallet
+		// only is refused here while its own operations answer (verification/README.md) — so the
+		// message states what happened and what to ask for, and lists the privileges FlightDeck uses.
 		set requires = ##class(FlightDeck.Capability.Map).AllRequiredPrivileges()
-		set error = {"status":403, "code":"NO_ADMIN_PRIVILEGE", "message":(##class(FlightDeck.API.Response).RequiresMessage(requires)), "raw":(##class(FlightDeck.Admin.Client).ErrorText(json, raw)), "requires":(requires), "detectedVersion":""}
+		set message = ##class(FlightDeck.API.Response).#MSGNOINFO _ " FlightDeck uses these privileges across the portal: " _ ..PrivilegeList(requires) _ "."
+		set error = {"status":403, "code":"NO_ADMIN_PRIVILEGE", "message":(message), "raw":(##class(FlightDeck.Admin.Client).ErrorText(json, raw)), "requires":(requires), "detectedVersion":""}
 		quit ""
 	}
 	if (status '= 200) || '$isobject(json) {

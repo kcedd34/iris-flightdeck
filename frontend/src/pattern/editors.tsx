@@ -1,7 +1,8 @@
-import type { FieldEditorProps } from "../../pattern/ObjectForm";
-import { AUTHENTICATION_BITS } from "../presentation";
+import type { FieldEditorProps } from "./ObjectForm";
+import { AUTHENTICATION_BITS } from "../domains/presentation";
 
-/** AutheEnabled as labeled checkboxes over the official bit mask (schema description). */
+/** AutheEnabled as labeled checkboxes over the official bit mask (schema description).
+ * Shared by every domain whose objects carry the field: web applications and services today. */
 export function AuthenticationEditor({ value, readOnly, onChange }: FieldEditorProps) {
   const mask = Number(value) || 0;
   return (

@@ -17,3 +17,20 @@ OS
 )"
 echo "$out" | grep -aE "FD-CASE|FD-TEST|\(failed\)" || true
 echo "$out" | grep -qE "FD-TEST-METHODS=[1-9][0-9]* FD-TEST-FAILED=0" || exit 1
+
+# Without a filter, every test class in the repository must have run on this instance. A reduced
+# set is how FlightDeck.Test.CapabilityMap went unrun on IRIS 2026.1 through all of feature 001,
+# hiding a real failure; a class missing here also means the container copy is stale.
+if [ -z "$case_filter" ]; then
+  missing=""
+  for file in "$here/../../backend/test/FlightDeck/Test"/*.cls; do
+    grep -q "Method Test" "$file" || continue   # abstract support classes have no test methods
+    name="FlightDeck.Test.$(basename "$file" .cls)"
+    grep -qa "FD-CASE $name " <<<"$out" || missing="$missing $name"
+  done
+  if [ -n "$missing" ]; then
+    echo "test-backend: these test classes did not run on this instance:$missing"
+    echo "test-backend: load them first (scripts/dev/load-backend.sh, or docker cp backend/. <container>:/opt/flightdeck/backend/)"
+    exit 1
+  fi
+fi

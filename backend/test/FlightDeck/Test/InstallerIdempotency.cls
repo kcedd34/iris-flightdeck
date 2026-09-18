@@ -13,16 +13,26 @@ Method TestSecondRunCreatesNothing()
 	do $$$AssertEquals(count, 3, "exactly three demo tasks")
 }
 
-Method TestWalletCollectionHasNoSecrets()
+/// Feature 003 gave the demo collection one secret, so the wallet screens have something that is
+/// never displayed. The listing must carry names and types only: no value, in any field.
+Method TestWalletSecretIsListedWithoutItsValue()
 {
 	set secrets = ##class(FlightDeck.Admin.Client).Get("/v2/wallet/secrets", {"collection":"FD_Demo_Vault"}, .status, .raw)
 	if status = 404 {
-		// Wallet API absent: the collection is skipped, which is also "no secrets".
-		do $$$AssertTrue(1)
+		do $$$AssertTrue(1, "Wallet API absent on this instance")
 		quit
 	}
 	do $$$AssertEquals(status, 200, raw)
-	do $$$AssertEquals($select($isobject(secrets):secrets.%Size(), 1:0), 0, "no secrets in FD_Demo_Vault")
+	quit:'$isobject(secrets)
+	set text = secrets.%ToJSON()
+	// The demo secret exists where the version's API accepts the configuration FlightDeck sends;
+	// IRIS 2026.1 wants a different shape and the installer skips it with the platform's message
+	// (verification/README.md). Either way, the listing carries names and types only.
+	if secrets.%Size() > 0 {
+		do $$$AssertTrue(text [ "FD_Demo_Vault.FD_Demo_Token", "the secret is listed by name")
+	}
+	do $$$AssertNotTrue(text [ "flightdeck-demonstration-value", "no value in the listing")
+	do $$$AssertNotTrue(text [ "WalletSecretConfig", "no secret configuration in the listing")
 }
 
 Method TestRuntimeRoleGrantsOnlyCodeDatabaseRead()
