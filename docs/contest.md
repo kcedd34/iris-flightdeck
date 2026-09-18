@@ -254,7 +254,7 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
 | Link da ideia | Publicar no `ideas.intersystems.com` e passar a URL | Antes da submissão |
 | Vídeo | Gravar seguindo `docs/demo-script.md` e publicar | Antes da submissão |
 | Leitura fria humana | Um leitor que conhece IRIS e não conhece o FlightDeck, cronometrado | Antes da submissão |
-| URL de clone no README | O repositório ainda não tem remote configurado, então nada nele sabe o próprio endereço publicado. Hoje o README manda copiar a URL do botão **Code** do GitHub ou da listagem no Open Exchange, o que funciona para quem chega pela página; com a URL real, vira um comando copiável | Antes da submissão |
+| ~~URL de clone no README~~ | **Fechado em 18/09.** O repositório foi publicado em `https://github.com/kcedd34/iris-flightdeck` (privado por enquanto) e o README traz o `git clone` real e copiável. Quando o repositório virar público, nada muda; se mudar de dono ou de nome, a linha do README acompanha | — |
 | Publicar o pacote no registry | Conta de publicador em `pm.community.intersystems.com`. Com ela: `zpm "repo -n registry -r -url https://pm.community.intersystems.com/ -user <usuário> -pass <senha>"` e depois `zpm "iris-flightdeck publish"`. **Decidir antes o nome publicado**: o módulo hoje se chama `iris-flightdeck`, então o comando do avaliador é `zpm "install iris-flightdeck"`. Para que seja `zpm "install flightdeck"`, renomear `<Name>` em `module.xml` antes de publicar — depois de publicado o nome não se troca. Ambos estão livres no registry | Antes da submissão |
 
 Nenhuma delas bloqueia as demais linhas: todas as outras fecham sem elas. São de minutos cada, e

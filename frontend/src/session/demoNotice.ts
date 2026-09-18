@@ -1,0 +1,27 @@
+/**
+ * The public-demo notice, read from the meta tag the server injects (feature 007).
+ *
+ * It exists for one deployment: the published online demo, whose instance is thrown away and rebuilt
+ * every hour and whose credentials are meant to be read by anyone who opens it. A normal install has
+ * no such tag, so this answers null and nothing renders — which is the property that matters, and the
+ * one the tests check on both sides.
+ *
+ * The values are supplied by the operator through the environment, never read from the instance's
+ * security tables, so nothing here reaches the wallet, the mutation layer or the session trail.
+ */
+export interface DemoNotice {
+  username: string;
+  password: string;
+  /** How often the instance is rebuilt, in the operator's own words. */
+  reset: string;
+}
+
+export function readDemoNotice(): DemoNotice | null {
+  if (typeof document === "undefined") return null;
+  const meta = document.querySelector('meta[name="fd-demo-notice"]');
+  const content = meta?.getAttribute("content");
+  if (!content) return null;
+  const [username, password, reset] = content.split("\t");
+  if (!username || !password) return null;
+  return { username, password, reset: reset || "regularly" };
+}

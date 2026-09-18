@@ -21,11 +21,8 @@ IRIS account is allowed to see and do, and your password is never stored by any 
 
 **One command, after cloning**
 
-Copy this repository's clone URL from its **Code** button on GitHub, or from its Open Exchange
-listing, then:
-
 ```bash
-git clone <that URL> iris-flightdeck
+git clone https://github.com/kcedd34/iris-flightdeck.git
 cd iris-flightdeck
 docker compose up -d      # the install
 docker compose logs -f iris
@@ -133,6 +130,36 @@ what you want on a shared one. Without the flag, nothing of the sort is created.
 
 The installer creates the role and every demonstration object through the SysAdmin API. The
 installing user needs `%All`, or equivalent rights for the web applications and the `%SYS` routine.
+
+## Try it without installing anything
+
+There is a public demo at **http://109.123.244.170/**. Its credentials are printed on its own
+sign-in form, and they are also here:
+
+| | |
+|---|---|
+| User | `demo` |
+| Password | *printed on the demo's sign-in form* |
+
+**These are not the credentials above.** The local Docker install signs in with `_SYSTEM` / `SYS`,
+the InterSystems Community image's own default. The demo instance has a different administrative
+password that exists only on that machine, and the account you are given there is a separate one.
+
+Four things are true of that demo and are worth knowing before you judge it:
+
+- **It is rebuilt every hour**, from nothing. Anything you change is discarded, and that is
+  deliberate: the account you are given holds `%All`, because permissions and security are the part
+  of this portal worth looking at — the impact analysis, the last-administrator predicate, the
+  dry-run with provenance — and a read-only account would hide exactly that. Recovery replaces
+  restriction: a watchdog checks every five minutes that a visitor can still sign in, and rebuilds
+  immediately if not.
+- **It is shared.** Someone else may be looking at the same instance while you are.
+- **It is plain HTTP**, with no certificate. Treat anything you type there as public. Do not use a
+  password of yours on it.
+- **It is a disposable machine** that runs nothing else.
+
+If you want an instance that is yours, with nothing shared and nothing reset, the one-command install
+above takes a couple of minutes.
 
 ## The six domains
 

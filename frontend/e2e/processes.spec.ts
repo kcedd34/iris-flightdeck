@@ -12,6 +12,9 @@ test("PRD UC08-3. A process the API reports as not terminable shows the control 
   await expect(list).toBeVisible();
   // The capability fields arrive on the list, so the row's controls are decided without opening it.
   const rows = page.getByTestId("domain-list").getByRole("button");
+  // count() does not wait. The container being visible is not the rows being rendered, and on a link
+  // with real latency the first ask returns 0 (found running this suite against the deployed VM).
+  await expect(rows.first()).toBeVisible();
   const count = await rows.count();
   expect(count).toBeGreaterThan(0);
 

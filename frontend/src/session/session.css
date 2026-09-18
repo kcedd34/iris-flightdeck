@@ -97,3 +97,42 @@
 .reauth-signout {
   margin-top: 12px;
 }
+
+/* The public-demo credential block (feature 007). Present only on the published demo, where the
+   server injects the notice; a normal install renders nothing at all. Deliberately quiet: it is
+   information a visitor needs in order to get in, not an alarm. */
+.credentials-demo {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  background: var(--surface-float);
+  font-size: 12px;
+}
+
+.credentials-demo-h {
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.credentials-demo-pair {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+}
+
+.credentials-demo-pair dt {
+  color: var(--text-secondary);
+}
+
+.credentials-demo-pair dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.credentials-demo-note {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 52ch;
+}

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ApiError, MESSAGES } from "../api/client";
+import { readDemoNotice } from "./demoNotice";
 import "./session.css";
 
 interface Props {
@@ -89,6 +90,35 @@ export function CredentialsForm({ initialUsername = "", submitLabel, onSubmit, a
       <button className="btn btn-primary credentials-submit" type="submit" disabled={busy || !username || !password}>
         {busy ? "Signing in" : submitLabel}
       </button>
+      <DemoCredentials />
     </form>
+  );
+}
+
+/**
+ * The published credentials of the online demo, and what is true about that instance.
+ *
+ * Renders only where the server injected the notice, which is the demo deployment and nothing else.
+ * On any normal install this is absent and nothing is shown — nobody who installs FlightDeck at home
+ * finds a password printed under the sign-in form.
+ */
+function DemoCredentials() {
+  const notice = readDemoNotice();
+  if (!notice) return null;
+  return (
+    <div className="credentials-demo" data-testid="demo-credentials">
+      <div className="credentials-demo-h">This is the public demo. Sign in with:</div>
+      <dl className="credentials-demo-pair">
+        <dt>User</dt>
+        <dd className="mono">{notice.username}</dd>
+        <dt>Password</dt>
+        <dd className="mono">{notice.password}</dd>
+      </dl>
+      <p className="credentials-demo-note">
+        {`Everything you change here is discarded: the instance is rebuilt ${notice.reset}, and it is
+        shared with whoever else is looking. The connection is plain HTTP, so treat anything you type
+        as public — these credentials are published, and no other account of yours belongs here.`}
+      </p>
+    </div>
   );
 }

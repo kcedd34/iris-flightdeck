@@ -1,0 +1,62 @@
+# The published online demo (feature 007). Not the install path in the README: that one is
+# docker-compose.yml at the repository root, and an evaluator running it at home must get the plain
+# local install with none of what is here.
+#
+# What differs from the root compose, and why each one:
+#   - the port is bound to 127.0.0.1, so the only way in is the reverse proxy on 80;
+#   - the container is unprivileged, drops every capability and cannot gain new ones;
+#   - there is no bind mount of any kind: whoever administers IRIS through the portal can read and
+#     write anything mounted into it, and on a public demo that is everyone;
+#   - the demo prints its credentials on the sign-in form, which only happens where these variables
+#     are set.
+#
+# What does NOT differ: the demonstration objects, including the unauthenticated /csp/fd-demo. See
+# the note on FD_DEMO_NO_OPEN_WEBAPP below.
+services:
+  iris:
+    build:
+      context: ../..
+      args:
+        IRIS_IMAGE: ${IRIS_IMAGE:-intersystemsdc/iris-community:2026.2-zpm}
+    image: iris-flightdeck:demo
+    container_name: flightdeck-demo
+    environment:
+      FLIGHTDECK_PORT: 52780
+      # Printed under the sign-in form. Published on purpose: this instance is thrown away hourly.
+      FD_DEMO_USER: ${FD_DEMO_USER:?set FD_DEMO_USER in deploy/vm/.env}
+      FD_DEMO_PASSWORD: ${FD_DEMO_PASSWORD:?set FD_DEMO_PASSWORD in deploy/vm/.env}
+      FD_DEMO_RESET: ${FD_DEMO_RESET:-every hour}
+      # The open demo application IS created here, deliberately. The exposure marker is a real
+      # feature and one of the more concrete Applicability arguments this portal has; with nothing
+      # unauthenticated on the instance it has nothing to point at. On an instance whose
+      # administrative credential is published and whose state is destroyed hourly, one more
+      # unauthenticated CSP application adds no risk worth the loss — and the proxy answers 404 for
+      # /csp/* from outside in any case, so the marker reports a fact about the instance rather than
+      # an opening into it. Set FD_DEMO_NO_OPEN_WEBAPP=1 to install without it.
+      FD_DEMO_NO_OPEN_WEBAPP: ""
+      # The instance's own administrative account, which is NOT the published demo account.
+      FD_SYSTEM_PASSWORD: ${FD_SYSTEM_PASSWORD:?set FD_SYSTEM_PASSWORD in deploy/vm/.env}
+    ports:
+      # Localhost only. The proxy on 80 is the entire public surface.
+      - "127.0.0.1:52780:52773"
+    volumes:
+      # Named volume, never a host path.
+      - flightdeck-demo-data:/durable
+    restart: unless-stopped
+    privileged: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      # IRIS needs these to start: it sets resource limits and runs its daemons as irisowner.
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
+      - IPC_LOCK
+      - SYS_RESOURCE
+
+volumes:
+  flightdeck-demo-data:

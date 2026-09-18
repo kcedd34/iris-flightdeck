@@ -71,9 +71,13 @@ test("PRD UC05-3. With one administrator left, the change that would remove it i
   await expect(dryRun.getByTestId("dry-run-apply")).toBeDisabled();
 
   // The same change straight to the server, with no interface involved.
-  const direct = await page.evaluate(async () => {
+  // The account is the one this run kept, not a literal: on an install whose administrator is not
+  // _SYSTEM the literal named a user the loop above had already disabled, so the server answered
+  // "nothing would change" (422) and the self-protection rule was never reached. Found by running
+  // this suite against a real deployment whose admin account is the demo user.
+  const direct = await page.evaluate(async (keep) => {
     const headers = { "X-FlightDeck-Tab": "e2e-last-admin", "X-FlightDeck-Safe-Mode": "disarmed", "Content-Type": "application/json" };
-    const body = { operationId: "PUT /v2/security/user", keys: { name: "_SYSTEM" }, proposed: { Enabled: false } };
+    const body = { operationId: "PUT /v2/security/user", keys: { name: keep }, proposed: { Enabled: false } };
     const preview = (await (await fetch("/api/flightdeck/v1/mutations/preview", { method: "POST", headers, body: JSON.stringify(body) })).json()) as { fingerprint: string; confirmText: string };
     const apply = await fetch("/api/flightdeck/v1/mutations/apply", {
       method: "POST",
@@ -81,7 +85,7 @@ test("PRD UC05-3. With one administrator left, the change that would remove it i
       body: JSON.stringify({ ...body, fingerprint: preview.fingerprint, confirmation: preview.confirmText }),
     });
     return { status: apply.status, body: (await apply.json()) as { error?: { code?: string }; trail?: { result?: string; checkMode?: string; checkResult?: string } } };
-  });
+  }, KEEP);
   expect(direct.status).toBe(403);
   expect(direct.body.error?.code).toBe("SELF_PROTECTION");
   expect(direct.body.trail?.result).toBe("Blocked");

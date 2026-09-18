@@ -65,13 +65,23 @@ ClassMethod RoleChain() As %Status
 /// grant that resource (feature 002, UC03 scenario 2).
 ClassMethod WebApp() As %Status
 {
-	set sc = ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo", {
-		"Description": "FlightDeck demo: intentionally unauthenticated",
-		"NameSpace": ($namespace),
-		"Enabled": true,
-		"AutheEnabled": 64
-	})
-	quit:$$$ISERR(sc) sc
+	// A deployment that would rather not create the unauthenticated one can say so (feature 007).
+	// The published demo does NOT set this, deliberately: the exposure marker is a real feature, and
+	// with nothing unauthenticated on the instance it has nothing to point at. What the marker
+	// reports is a fact about the instance's own web application list, not an opening into it — the
+	// demo's proxy answers 404 for /csp/* from outside regardless. The switch exists for anyone
+	// installing the demonstration objects somewhere they would rather keep clean.
+	if $system.Util.GetEnviron("FD_DEMO_NO_OPEN_WEBAPP") '= "" {
+		write !, "FlightDeck: demo web application /csp/fd-demo skipped (FD_DEMO_NO_OPEN_WEBAPP)"
+	} else {
+		set sc = ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo", {
+			"Description": "FlightDeck demo: intentionally unauthenticated",
+			"NameSpace": ($namespace),
+			"Enabled": true,
+			"AutheEnabled": 64
+		})
+		quit:$$$ISERR(sc) sc
+	}
 	quit ..Ensure("web-app", "/v2/web-app", "/csp/fd-demo-reports", {
 		"Description": "FlightDeck demo: protected by FD_Demo_Reports",
 		"NameSpace": ($namespace),
