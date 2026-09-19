@@ -13,8 +13,12 @@ function basic(u: { user: string; password: string }): string {
   return "Basic " + Buffer.from(`${u.user}:${u.password}`).toString("base64");
 }
 
-/** The SysAdmin API version the install exposes: v2 on IRIS 2026.2+, v1 on IRIS 2026.1 (limited mode). */
-async function adminVersion(): Promise<number> {
+/**
+ * The SysAdmin API version the install exposes: v2 on IRIS 2026.2+, v1 on IRIS 2026.1 (limited mode).
+ * Exported so that `setup/dialect.ts` can ask it without repeating the probe: this file is the one
+ * declared exception for the dialect gate, and keeping the question here keeps it the only one.
+ */
+export async function adminVersion(): Promise<number> {
   const info = await fetch(`${IRIS}/api/admin/info`, { headers: { Authorization: basic(ADMIN) } });
   return ((await info.json()) as { result: { apiVersion: number } }).result.apiVersion;
 }

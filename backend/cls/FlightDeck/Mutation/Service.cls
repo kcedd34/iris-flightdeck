@@ -62,23 +62,36 @@ ClassMethod Context(request As %DynamicObject, Output descriptor As %DynamicObje
 	set typeId = descriptor.entityType
 	set type = ##class(FlightDeck.Domain.Descriptor).EntityType($piece(typeId, "/", 1), $piece(typeId, "/", 2))
 	set keys = $select($isobject(request.keys):request.keys, 1:{})
-	set k = type.keys.%GetIterator()
-	while k.%GetNext(, .key) {
-		if keys.%Get(key.param) = "" {
-			set failure = {"status":400, "code":"MISSING_KEY", "message":("Key '"_key.param_"' is required.")}
-			quit
+	// A creation whose key the instance assigns has no key to require yet. Four operations are shaped
+	// that way — a new task, a new database directory and the two OAuth 2.0 creates — and their
+	// descriptors say so by naming no {key} in their target. Requiring the key regardless made all
+	// four unreachable through the only path FlightDeck has to them: they answered "Key 'id' is
+	// required" for an id that cannot exist until the operation has run. Found by feature 008, which
+	// executed them for the first time.
+	set assignsKey = (descriptor.target '[ "{")
+	if 'assignsKey {
+		set k = type.keys.%GetIterator()
+		while k.%GetNext(, .key) {
+			if keys.%Get(key.param) = "" {
+				set failure = {"status":400, "code":"MISSING_KEY", "message":("Key '"_key.param_"' is required.")}
+				quit
+			}
 		}
 	}
 	quit:$isobject(failure) ""
-	// Current state through the official read operation.
-	set sc = ##class(FlightDeck.Domain.Upstream).Call("GET", ##class(FlightDeck.Domain.Entity).Path(descriptor.readOperation), keys, "", .status, .json, .raw)
-	if $$$ISERR(sc) set status = 500, raw = $system.Status.GetErrorText(sc)
-	set current = ""
-	if status = 200 {
-		set current = $select($isobject(json) && $isobject(json.result):json.result, 1:{})
-	} elseif status '= 404 {
-		set failure = {"status":(status), "code":($select(status=403:"FORBIDDEN", status=501:"UNAVAILABLE", 1:"UPSTREAM_REJECTED")), "message":(##class(FlightDeck.Admin.Client).ErrorText(json, raw)), "raw":(raw)}
-		quit ""
+	// Current state through the official read operation. A creation with no key yet has none to read:
+	// asking would send the read operation a request without its key, and its complaint would be
+	// reported as though the create had failed.
+	set current = "", status = 404, json = "", raw = ""
+	if 'assignsKey {
+		set sc = ##class(FlightDeck.Domain.Upstream).Call("GET", ##class(FlightDeck.Domain.Entity).Path(descriptor.readOperation), keys, "", .status, .json, .raw)
+		if $$$ISERR(sc) set status = 500, raw = $system.Status.GetErrorText(sc)
+		if status = 200 {
+			set current = $select($isobject(json) && $isobject(json.result):json.result, 1:{})
+		} elseif status '= 404 {
+			set failure = {"status":(status), "code":($select(status=403:"FORBIDDEN", status=501:"UNAVAILABLE", 1:"UPSTREAM_REJECTED")), "message":(##class(FlightDeck.Admin.Client).ErrorText(json, raw)), "raw":(raw)}
+			quit ""
+		}
 	}
 	set kind = $case(descriptor.kind, "upsert":$select($isobject(current):"edit", 1:"create"), :descriptor.kind)
 	if (kind '= "create") && '$isobject(current) {

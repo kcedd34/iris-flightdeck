@@ -1639,7 +1639,7 @@ XData EntityTypes [ MimeType = application/json ]
   "keys": [
    {
     "param": "id",
-    "field": "SessionId"
+    "field": "ID"
    }
   ],
   "displayName": "{id}",

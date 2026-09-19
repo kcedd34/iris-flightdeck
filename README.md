@@ -249,6 +249,12 @@ scoped to one tab.)
 
 IRIS for Health Community Edition 2026.2 reports the same numbers as IRIS 2026.2.
 
+**Implemented is not the same as exercised.** Of the 268 operations across the six domains, 138 are
+executed by a test that then reads the result back from the instance through the official API, 91 are
+exempt by name with a written reason, and 39 have no such test yet — which is why
+`check-functional-coverage` is red. The breakdown, operation by operation, is in
+[`verification/functional-coverage.md`](verification/functional-coverage.md).
+
 **IRIS 2026.1 runs in limited mode.** That release — still the `latest` tag of the Community images —
 exposes API v1 only. FlightDeck translates what v1 offers, shows a persistent **Limited** indicator,
 and disables the rest with the reason on each control. Namespaces are still browsable, read through a
@@ -452,6 +458,7 @@ Every assertion here is enforced somewhere, because a claim nobody can check is 
 | Claim | Where it is enforced |
 |---|---|
 | The operation counts, and that every operation is implemented or declined for a stated reason | `scripts/build/check-coverage.py`, in the build: it fails naming any operation of a shipped domain that no code reaches and no policy declines, and it keeps no list of tolerated gaps |
+| That an implemented operation has actually been executed, with its effect read back from the instance | `scripts/build/check-functional-coverage.py`, run after the end-to-end suite: it reads the record those tests write and fails naming every operation no test executed with an independent read-back. It is red today, on purpose — see [`verification/functional-coverage.md`](verification/functional-coverage.md) |
 | This README's own structure and numbers | `scripts/build/check-readme.py`, in the build |
 | No credential stored, cached or logged; no secret in any response, trail or export | `frontend/e2e/audit.spec.ts` and `secrets.spec.ts` sweep the responses and the exports; `scripts/build/check-secrets.py` fails on an undeclared secret field |
 | Safe mode is enforced by the server, not the interface | `scripts/dev/check-safe-mode-enforcement.sh` sends every mutating route directly, bypassing the interface, and requires each to be refused |

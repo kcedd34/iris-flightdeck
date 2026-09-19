@@ -1,0 +1,366 @@
+{
+  "DELETE /v2/database": {
+    "category": "declined",
+    "reason": "Declined by policy: deletion removes data with no recovery from the portal."
+  },
+  "DELETE /v2/database-dir": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "DELETE /v2/ecp/application-server-ssl-connection": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "DELETE /v2/ecp/data-server": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "DELETE /v2/lock": {
+    "category": "no safe target",
+    "reason": "A lock is transient and belongs to whatever process took it; there is no lock a test may create and then remove."
+  },
+  "DELETE /v2/namespace": {
+    "category": "declined",
+    "reason": "Declined by policy: deletion detaches mappings and data with no recovery from the portal."
+  },
+  "DELETE /v2/security/audit/event": {
+    "category": "no safe target",
+    "reason": "Deleting an audit event definition removes part of the platform's own catalogue, which the test cannot put back."
+  },
+  "DELETE /v2/security/encryption/file/admin": {
+    "category": "declined",
+    "reason": "Declined by policy: removing the last administrator of a key file can make its keys unusable."
+  },
+  "DELETE /v2/security/encryption/file/key": {
+    "category": "declined",
+    "reason": "Declined by policy: a deleted key cannot decrypt what it encrypted."
+  },
+  "DELETE /v2/security/mft/connection": {
+    "category": "infrastructure",
+    "reason": "MFT needs a managed file transfer provider (Box, Dropbox, Kiteworks) and its credentials."
+  },
+  "DELETE /v2/security/mft/connection/token": {
+    "category": "infrastructure",
+    "reason": "MFT needs a managed file transfer provider (Box, Dropbox, Kiteworks) and its credentials."
+  },
+  "DELETE /v2/security/oauth2/client/client-configuration": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/oauth2/client/server-definition": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/oauth2/resource-server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/oauth2/resource-server/mapping": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/oauth2/server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/oauth2/server/client": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "DELETE /v2/security/superserver": {
+    "category": "no safe target",
+    "reason": "Deleting a superserver removes a listening port the instance serves on."
+  },
+  "DELETE /v2/security/x509-credential": {
+    "category": "no safe target",
+    "reason": "Needs a certificate and its private key on the instance; there is none to load and none that may be invented."
+  },
+  "GET /v2/ecp/data-server": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "GET /v2/ecp/data-server/databases": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "GET /v2/monitor/dashboard/ecp": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "GET /v2/security/encryption/data-element-keys": {
+    "category": "no safe target",
+    "reason": "Needs an encryption key file, which this instance does not have and which FlightDeck declines to create."
+  },
+  "GET /v2/security/encryption/file/admins": {
+    "category": "no safe target",
+    "reason": "Needs an encryption key file, which this instance does not have and which FlightDeck declines to create."
+  },
+  "GET /v2/security/encryption/file/keys": {
+    "category": "no safe target",
+    "reason": "Needs an encryption key file, which this instance does not have and which FlightDeck declines to create."
+  },
+  "GET /v2/security/encryption/keys": {
+    "category": "no safe target",
+    "reason": "Needs an encryption key file, which this instance does not have and which FlightDeck declines to create."
+  },
+  "GET /v2/security/mft/connection": {
+    "category": "infrastructure",
+    "reason": "MFT needs a managed file transfer provider (Box, Dropbox, Kiteworks) and its credentials."
+  },
+  "GET /v2/security/mft/connection/auth-code-url": {
+    "category": "infrastructure",
+    "reason": "MFT needs a managed file transfer provider (Box, Dropbox, Kiteworks) and its credentials."
+  },
+  "GET /v2/security/oauth2/client/client-configuration": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/client/client-configurations": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/client/server-definition": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/resource-server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/resource-server/mapping": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/resource-server/mappings": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/oauth2/server/client": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "GET /v2/security/x509-credential": {
+    "category": "no safe target",
+    "reason": "Needs a certificate and its private key on the instance; there is none to load and none that may be invented."
+  },
+  "GET /v2/security/x509-credential/certificate": {
+    "category": "no safe target",
+    "reason": "Needs a certificate and its private key on the instance; there is none to load and none that may be invented."
+  },
+  "POST /v2/async-result/cancel": {
+    "category": "no safe target",
+    "reason": "Needs a long-running asynchronous operation in flight to pause, resume or cancel; the operations that produce one are themselves exempt."
+  },
+  "POST /v2/async-result/pause": {
+    "category": "no safe target",
+    "reason": "Needs a long-running asynchronous operation in flight to pause, resume or cancel; the operations that produce one are themselves exempt."
+  },
+  "POST /v2/async-result/resume": {
+    "category": "no safe target",
+    "reason": "Needs a long-running asynchronous operation in flight to pause, resume or cancel; the operations that produce one are themselves exempt."
+  },
+  "POST /v2/database-dir": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/compact": {
+    "category": "no safe target",
+    "reason": "Rewrites a live database file; a test instance has no database that may be rewritten and no way back if it goes wrong."
+  },
+  "POST /v2/database-dir/defragment": {
+    "category": "no safe target",
+    "reason": "Rewrites a live database file; a test instance has no database that may be rewritten and no way back if it goes wrong."
+  },
+  "POST /v2/database-dir/dismount": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/expand-volume": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/integrity-check": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/modify-size": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/mount": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "POST /v2/database-dir/truncate": {
+    "category": "declined",
+    "reason": "Declined by policy: truncation returns space to the file system with no recovery from the portal."
+  },
+  "POST /v2/ecp/application-server-ssl-connection/authorize": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "POST /v2/ecp/application-server-ssl-connection/reject": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "POST /v2/ecp/data-server/action": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "POST /v2/namespace/copy-mappings": {
+    "category": "no safe target",
+    "reason": "Creating or copying a namespace changes the instance's storage layout."
+  },
+  "POST /v2/namespace/enable-interop": {
+    "category": "no safe target",
+    "reason": "Creating or copying a namespace changes the instance's storage layout."
+  },
+  "POST /v2/process/broadcast": {
+    "category": "no safe target",
+    "reason": "Suspending or resuming another process interferes with the instance while the suite is running."
+  },
+  "POST /v2/process/resume": {
+    "category": "no safe target",
+    "reason": "Suspending or resuming another process interferes with the instance while the suite is running."
+  },
+  "POST /v2/process/suspend": {
+    "category": "no safe target",
+    "reason": "Suspending or resuming another process interferes with the instance while the suite is running."
+  },
+  "POST /v2/process/terminate": {
+    "category": "no safe target",
+    "reason": "Terminating a process needs a disposable process; every process on a test instance is either the session itself or a daemon the instance needs."
+  },
+  "POST /v2/security/audit/event/clear-count": {
+    "category": "no safe target",
+    "reason": "Destroys the instance's own audit history or its counters, with nothing to restore them from."
+  },
+  "POST /v2/security/audit/record/purge": {
+    "category": "no safe target",
+    "reason": "Destroys the instance's own audit history or its counters, with nothing to restore them from."
+  },
+  "POST /v2/security/encryption/file": {
+    "category": "declined",
+    "reason": "Declined by policy: FlightDeck does not create encryption key files. There is no code path to execute, so there is nothing a test could call."
+  },
+  "POST /v2/security/encryption/file/activate": {
+    "category": "declined",
+    "reason": "Declined by policy: activation decides which key the instance uses to read and write encrypted data."
+  },
+  "POST /v2/security/encryption/file/admin": {
+    "category": "declined",
+    "reason": "Declined by policy: FlightDeck does not administer encryption key files."
+  },
+  "POST /v2/security/encryption/file/key": {
+    "category": "declined",
+    "reason": "Declined by policy: FlightDeck does not add keys to an encryption key file."
+  },
+  "POST /v2/security/encryption/key/deactivate": {
+    "category": "declined",
+    "reason": "Declined by policy: deactivation decides which key the instance uses."
+  },
+  "POST /v2/security/ldap/test": {
+    "category": "infrastructure",
+    "reason": "Authenticates against a directory server. The other three LDAP operations are verified; standing up OpenLDAP would prove only that IRIS can reach a container."
+  },
+  "POST /v2/security/oauth2/client/client-configuration/register-client": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/client/client-configuration/rotate-keys": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/client/client-configuration/secrets": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/client/server-definition": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/client/server-definition/initial-access-token": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/resource-server/secret": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/revoke": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/server/client": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/server/client/secret": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "POST /v2/security/oauth2/server/password": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/database": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "PUT /v2/database-dir": {
+    "category": "no safe target",
+    "reason": "Creating, mounting, dismounting or resizing a database directory changes storage the instance is using."
+  },
+  "PUT /v2/ecp/data-server": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "PUT /v2/ecp/settings": {
+    "category": "infrastructure",
+    "reason": "ECP needs a second IRIS instance joined as an application or data server."
+  },
+  "PUT /v2/namespace": {
+    "category": "no safe target",
+    "reason": "Creating or copying a namespace changes the instance's storage layout."
+  },
+  "PUT /v2/security/encryption/settings": {
+    "category": "declined",
+    "reason": "Declined by policy: a wrong value is discovered at the next restart."
+  },
+  "PUT /v2/security/mft/connection": {
+    "category": "infrastructure",
+    "reason": "MFT needs a managed file transfer provider (Box, Dropbox, Kiteworks) and its credentials."
+  },
+  "PUT /v2/security/oauth2/client/client-configuration": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/oauth2/client/server-definition": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/oauth2/resource-server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/oauth2/resource-server/mapping": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/oauth2/server": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/oauth2/server/client": {
+    "category": "infrastructure",
+    "reason": "OAuth 2.0 needs a real authorization server or client on the other side. A stub would prove FlightDeck can talk to a stub."
+  },
+  "PUT /v2/security/x509-credential": {
+    "category": "no safe target",
+    "reason": "Needs a certificate and its private key on the instance; there is none to load and none that may be invented."
+  }
+}
