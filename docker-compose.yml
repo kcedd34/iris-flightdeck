@@ -11,7 +11,17 @@ services:
     environment:
       FLIGHTDECK_PORT: ${FLIGHTDECK_PORT:-52780}
     ports:
-      - "${FLIGHTDECK_PORT:-52780}:52773"
+      # Bound to localhost by default. FlightDeck is an administration portal and this install signs
+      # in with the Community image's documented default account, so publishing it on every interface
+      # puts that on whatever network the machine can reach — which is harmless on a laptop and is
+      # not harmless on a machine with a public address. Local use is unchanged: the portal is at
+      # http://localhost:52780/flightdeck/ either way.
+      #
+      # To publish deliberately, set the bind address:
+      #   FLIGHTDECK_BIND=0.0.0.0 docker compose up -d
+      # and read "Putting it on a network" in the README first: change the password, and put it
+      # behind something that terminates TLS.
+      - "${FLIGHTDECK_BIND:-127.0.0.1}:${FLIGHTDECK_PORT:-52780}:52773"
     volumes:
       - flightdeck-data:/durable
     restart: unless-stopped

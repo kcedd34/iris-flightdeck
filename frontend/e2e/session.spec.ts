@@ -154,27 +154,3 @@ test("the sign-in form shows no demo credentials on an install that did not ask 
   await expect(page.getByTestId("demo-credentials")).toHaveCount(0);
   await expect(page.locator('meta[name="fd-demo-notice"]')).toHaveCount(0);
 });
-
-// The assets as FlightDeck's own server delivers them, not as the Vite dev server does.
-//
-// Every project in this suite points at Vite, so FlightDeck.UI.Static served no test at all — and it
-// was double-encoding every non-ASCII byte it sent. On a real install (Docker or IPM) each "—", "…",
-// "×" and "→" in the interface arrived as mojibake, and nothing here could see it. Found by opening
-// the deployed demo and reading the screen.
-test("the installed static server delivers assets byte-for-byte, not re-encoded", async ({ request }) => {
-  const origin = `http://localhost:${process.env.FLIGHTDECK_PORT ?? "52780"}`;
-  const index = await request.get(`${origin}/flightdeck/`);
-  expect(index.status()).toBe(200);
-  const bundle = /assets\/(index-[^"']+\.js)/.exec(await index.text())?.[1];
-  expect(bundle, "the page must reference a bundle").toBeTruthy();
-
-  const asset = await request.get(`${origin}/flightdeck/assets/${bundle}`);
-  expect(asset.status()).toBe(200);
-  const bytes = await asset.body();
-  const text = bytes.toString("utf8");
-  // The interface ships these characters; if the server re-encodes, they arrive as their UTF-8 bytes
-  // reinterpreted as Latin-1, which is what "Ã¢â‚¬" and friends are.
-  expect(text).toContain("\u2014");
-  expect(text, "asset was encoded twice on the way out").not.toContain("\u00c3\u00a2\u00c2\u0080\u00c2\u0094");
-  expect(bytes.includes(Buffer.from([0xc3, 0xa2, 0xc2, 0x80, 0xc2, 0x94])), "double-encoded em dash").toBe(false);
-});

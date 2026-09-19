@@ -100,6 +100,24 @@ variable, put it in a `.env` file next to `docker-compose.yml` — Compose reads
 FLIGHTDECK_PORT=52790
 ```
 
+### Putting it on a network
+
+The install binds to **localhost only**. FlightDeck is an administration portal and this install
+signs in with the Community image's documented default account, so on a machine with a public
+address, publishing it on every interface would put full administrative access to that IRIS on the
+internet. Locally nothing changes — the portal is at `http://localhost:52780/flightdeck/` either way.
+
+If you do want it reachable from elsewhere:
+
+```bash
+FLIGHTDECK_BIND=0.0.0.0 docker compose up -d
+```
+
+Before you do, at least: change `_SYSTEM`'s password, and put it behind something that terminates
+TLS. `deploy/vm/` in this repository is a worked example — a reverse proxy that forwards only
+FlightDeck's own two paths and answers 404 to the rest of IRIS, an unprivileged container with no
+bind mounts, and a restricted egress rule. It is what runs the public demo.
+
 ### Install with IPM on an existing instance
 
 This path needs IPM (ZPM) already installed on the instance — the `-zpm` Community images carry it.

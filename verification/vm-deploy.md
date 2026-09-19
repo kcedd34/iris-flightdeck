@@ -226,15 +226,58 @@ and were found the same way — by running somewhere slower). Fixed by waiting f
 | On the VM, loopback | **4 ms** |
 | From here, through the public proxy | 435 ms (of which 214 ms is TCP connect) |
 | Through the SSH tunnel the suite used | 426 ms |
-| The JS bundle, from here | **1.50 s for 573 KB** |
 
-So the budget is not violated by the server; it is violated by ~210 ms of round-trip latency and a
-573 KB bundle. The assertion is a product claim measured on a local install and it still holds there.
-**The actionable number is the bundle**: for an evaluator on another continent it is the dominant
-cost of the first screen.
+So the budget is not violated by the server; it is violated by ~210 ms of round-trip latency. The
+assertion is a product claim measured on a local install and it still holds there.
+
+**A correction to this document's first version**, which said the bundle was 573 KB and called it the
+dominant cost. That figure was a measurement error: `curl` sends no `Accept-Encoding` unless told to,
+so it was fetching the file uncompressed, which no browser does. Measured the way a browser asks:
+
+| The JS bundle, from here | |
+|---|---|
+| as a browser fetches it (`Accept-Encoding: gzip`) | **160 KB, 1.09 s** |
+| as the first measurement fetched it (no encoding offered) | 573 KB, 1.55 s |
+
+Compression was already working end to end — IRIS gzips and the proxy passes it through. The
+conclusion stands in weaker form: at 210 ms round trip, 160 KB still costs about a second, and that
+second is the first screen. But the number to quote is 160 KB, not 573 KB.
 
 Not changed, deliberately: the claim is about a local install, and weakening it to accommodate
 transatlantic latency would make it mean nothing.
+
+## What a first load actually costs, and what was reduced
+
+Measured after the correction above, the way a browser fetches:
+
+| Asset | What a browser downloads |
+|---|---|
+| JS bundle | **160 KB** (559 KB on disk, gzipped in transit) |
+| CSS | **5.7 KB** (27 KB on disk) |
+| Fonts | only the `woff2` weights the page uses |
+
+Three things were looked at, and only one of them was worth changing:
+
+**Compression — already correct, no change.** IRIS gzips when the client offers it and the proxy
+passes it through untouched. This was the finding that turned out to be a measurement error rather
+than a defect.
+
+**Unused dependencies — two removed, no effect on what anyone downloads.**
+`@radix-ui/react-tabs` (the section tabs are plain elements) and `@radix-ui/react-visually-hidden`
+(the class of that name in the stylesheet is unrelated; Radix pulls the package in transitively where
+it needs it) were declared and never imported. Removing them left the bundle **byte-identical, same
+hash** — the build had already tree-shaken them. The gain is a smaller dependency surface to audit
+and install, not a faster page. Worth doing, worth not overstating.
+
+**Fonts — left alone, deliberately.** The build ships five `woff2` files and five `woff` fallbacks,
+104 KB of the latter. A browser never fetches them: `@font-face` lists `woff2` first, and anything
+that cannot read `woff2` cannot run this application either. Dropping them would mean patching the
+font package's own stylesheet, and a stale `url()` would turn a harmless unused file into a 404 on
+every page load. They cost package size, not latency. **The serving project now asserts this** rather
+than leaving it as a claim: it loads the page in a real browser and fails if any `.woff` is requested.
+
+What remains is 160 KB of JavaScript, which at 210 ms round trip is about a second of first paint.
+Reducing it further means splitting the bundle, which is a code change and out of scope here.
 
 ## 5. One intermittent failure, not diagnosed
 

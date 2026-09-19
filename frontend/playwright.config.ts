@@ -14,6 +14,10 @@ export default defineConfig({
   globalSetup: "./e2e/setup/global.ts",
   use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, trace: "retain-on-failure" },
   projects: [
+    // The only project that talks to FlightDeck's own server instead of the Vite dev server. Every
+    // other project here proxies through Vite, so the class that serves every real install was
+    // covered by nothing until feature 007 (verification/vm-deploy.md).
+    { name: "serving", testMatch: /serving\.spec\.ts/, use: { baseURL: `http://localhost:${irisPort}/flightdeck/` } },
     { name: "session", testMatch: /session\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "palette", testMatch: /palette\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
     { name: "shell", testMatch: /shell\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
