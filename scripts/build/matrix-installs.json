@@ -1,0 +1,39 @@
+{
+  "_comment": [
+    "The three installs the matrix must cover, identified by what the instance says about itself.",
+    "A port is not an identity and a docker tag is not an identity: both were read as one, and the",
+    "result was a matrix reported for three releases that had run against two products",
+    "(verification/functional-coverage.md). Every field here is compared against /api/admin/info.",
+    "Adding or changing an entry is a decision about what FlightDeck claims to support, so it belongs",
+    "in this file and in the README's compatibility table together."
+  ],
+  "installs": [
+    {
+      "id": "iris-2026.2",
+      "label": "IRIS Community Edition 2026.2 (latest-cd)",
+      "image": "intersystemsdc/iris-community:2026.2-zpm",
+      "product": "iris",
+      "apiVersion": 2,
+      "release": "2026.2",
+      "why": "The release the README leads with, and the one the full portal is described against."
+    },
+    {
+      "id": "iris-2026.1",
+      "label": "IRIS Community Edition 2026.1 (latest, limited mode)",
+      "image": "intersystemsdc/iris-community:2026.1-zpm",
+      "product": "iris",
+      "apiVersion": 1,
+      "release": "2026.1",
+      "why": "The v1 dialect. Still the latest tag of the Community image, so it is what an evaluator gets by accident."
+    },
+    {
+      "id": "irisforhealth-2026.2",
+      "label": "IRIS for Health Community Edition 2026.2",
+      "image": "intersystemsdc/irishealth-community:2026.2-zpm",
+      "product": "irisforhealth",
+      "apiVersion": 2,
+      "release": "2026.2",
+      "why": "The second Community image the contest asks the portal to run on."
+    }
+  ]
+}

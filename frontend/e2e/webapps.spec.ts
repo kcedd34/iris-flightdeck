@@ -53,6 +53,8 @@ test("3. Filters for namespace, state, REST and no authentication are applied an
   await page.getByTestId("filter-auth").selectOption("none");
   await expect(page).toHaveURL(/auth=none/);
   const rows = page.getByTestId("list-row");
+  // The URL changing is not the filtered list having re-rendered; count() does not wait for it.
+  await expect(rows.first()).toBeVisible();
   const count = await rows.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) await expect(rows.nth(i).locator(".marker-warning, .marker-caution").first()).toBeVisible();

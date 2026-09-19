@@ -1,6 +1,10 @@
 import { CHAIN, EXPIRED, NO_PRIVILEGE, OPERATOR, WALLET_ONLY, ensureRole, ensureUser } from "./users";
+import { recordInstanceIdentity } from "./identity";
 
 export default async function globalSetup() {
+  // First, and before any fixture can change the instance: what this run is actually running
+  // against, and which bundle that instance serves (frontend/e2e/setup/identity.ts).
+  await recordInstanceIdentity();
   await ensureUser(OPERATOR.user, OPERATOR.password, ["%Operator"]);
   await ensureUser(NO_PRIVILEGE.user, NO_PRIVILEGE.password, []);
   // Feature 003: the account that holds the demo role chain, the wallet-only administrator that

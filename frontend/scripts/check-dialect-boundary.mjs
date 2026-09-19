@@ -33,6 +33,7 @@ const DECLARED_EXCEPTIONS = [
   ["backend/cls/FlightDeck/API/Session.cls", "reports instance.dialect and apiVersion as diagnostics only; no decision reads them"],
   ["backend/cls/FlightDeck/API/OpenAPI.cls", "generated verbatim from the contract, which documents the diagnostic fields"],
   ["frontend/e2e/setup/users.ts", "test infrastructure: creates e2e users through whichever admin API the install exposes"],
+  ["frontend/e2e/setup/identity.ts", "records what the run ran against for check-matrix-identity: it reports product and apiVersion, it does not decide anything from them — a port and a docker tag proved unable to identify an install, and only the instance's own answer can"],
   ["backend/test/FlightDeck/Test/CapabilityPolicy.cls", "tests the policy mechanism, which is its object"],
   ["frontend/src/api/types.ts", "types the field the capability map sends; no decision is taken here"],
   ["frontend/src/session/SessionProvider.tsx", "the one place that separates limited mode (what the instance lacks) from a declined operation (what FlightDeck does not offer)"],

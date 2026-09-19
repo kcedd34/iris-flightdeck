@@ -1,6 +1,8 @@
 # Node / frontend
 node_modules/
 frontend/test-results/
+# What each matrix run ran against; evidence of a local run, never committed (check-matrix-identity).
+frontend/.matrix/
 frontend/playwright-report/
 frontend/.vite/
 coverage/

@@ -21,6 +21,10 @@ test("PRD UC07-1. The recent-history band is visible in the list, without openin
   test.skip(!history?.available, `this install does not offer the run history: ${history?.reason ?? "no entry in the capability map"}`);
   // The band is in the row itself: a failure is visible without opening anything. A task that has
   // never run says so rather than showing an empty rectangle.
+  // count() does not wait, and the container being visible is not the rows being rendered: under a
+  // full-suite run this asked before the first row existed and reported none (third occurrence of
+  // this, after shell.spec.ts and processes.spec.ts).
+  await expect(list.getByTestId("list-row").first()).toBeVisible();
   const bands = await list.getByTestId("history-band").count();
   const empties = await list.getByText("no runs recorded").count();
   expect(bands + empties, "every row states its run history").toBeGreaterThan(0);

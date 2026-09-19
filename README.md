@@ -466,6 +466,7 @@ Every assertion here is enforced somewhere, because a claim nobody can check is 
 | The REST executor opens no outbound connection | `frontend/e2e/rest-confinement.spec.ts` |
 | A 100 MB log pages at constant cost | Measured and recorded in `verification/feature-005-signoff.md` |
 | It runs on both Community images, from clean | `verification/install-runs.md`, one entry per install |
+| That the three installs in the compatibility table above really were three products, each serving this build | `scripts/build/check-matrix-identity.py`, run after the end-to-end matrix: each run records what `/api/admin/info` says it is and the hash of the bundle that instance served, and the gate fails naming any install that never ran or answered with different assets. A port does not identify a product and neither does a docker tag |
 
 ## Troubleshooting
 

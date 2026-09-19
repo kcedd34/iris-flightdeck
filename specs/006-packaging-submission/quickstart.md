@@ -77,6 +77,68 @@ reading the version and the capability summary from the portal rather than from 
 
 Expected: each reaches a signed-in portal; every domain screen shows content on first access.
 
+### Why `down -v` is not optional, and what happens without it
+
+`docker compose up -d --build` on an **existing** volume rebuilds the image and changes nothing the
+user can see. Two mechanisms, both by design, combine into one trap:
+
+- `docker/first-start.sh` exits early if `$ISC_DATA_DIRECTORY/flightdeck.installed` is present. It
+  prints `FlightDeck already installed.` and the ready line, which read like success.
+- `FlightDeck.UI.Static` serves from `<ManagerDirectory>/flightdeck/web`, inside the durable volume —
+  not from `/opt/flightdeck/frontend/dist` in the image. The image's copy is only the source the
+  installer reads once.
+
+So a rebuilt image on a kept volume **keeps serving the previous bundle**, and every check in this
+quickstart passes against assets that are not the ones in the working tree. That is how a full matrix
+ran green across three installs while all three served a bundle four UX fixes older than the working
+tree — and nothing in the run could have said so, because every UI project addresses the Vite dev
+server and the two that address the IRIS origin test delivery and the API, not the screen.
+
+Two consequences for anyone verifying:
+
+1. **Every verification install starts from an empty volume.** `docker compose -p <project> down -v`
+   before `up -d --build`, per install, every time. The `-v` is the whole instruction; without it the
+   run measures history.
+2. **Confirm what was served, not what was built.** The bundle the instance answers with is the
+   evidence:
+
+   ```bash
+   curl -s http://localhost:52780/flightdeck/ | grep -o '/flightdeck/assets/index-[^"]*\.js'
+   curl -s http://localhost:52780/flightdeck/assets/index-XXXX.js | sha256sum
+   sha256sum frontend/dist/assets/index-*.js      # must match
+   ```
+
+   `scripts/build/check-matrix-identity.py` does exactly this for all three installs and fails when
+   any of them served something else. Run it after the matrix.
+
+This is not a defect to fix in the installer: re-running an install over a live instance would
+destroy state a user may want. It is a fact about the install path that has to be written down,
+because the failure it produces looks like success.
+
+### Proving the three installs were three products
+
+The port does not identify the product and the docker tag does not either: `iris-flightdeck:local` is
+a single tag, and building for IRIS for Health overwrites it, after which a container created from it
+answers on whatever port compose gave it. Ask the instance:
+
+```bash
+for p in 52780 52791 52792; do
+  curl -s -u _SYSTEM:SYS "http://localhost:$p/api/admin/info" \
+    | python3 -c "import sys,json;r=json.load(sys.stdin)['result'];print(r['product'], r['apiVersion'], r['serverVersion'][:60])"
+done
+```
+
+Expected: three distinct answers matching `scripts/build/matrix-installs.json`. Build each with its
+own base image and tag it, so the next reader can tell them apart:
+
+```bash
+IRIS_IMAGE=intersystemsdc/iris-community:2026.2-zpm     docker compose -p iris-flightdeck up -d --build
+IRIS_IMAGE=intersystemsdc/iris-community:2026.1-zpm     docker compose -p fd-v1     up -d --build
+IRIS_IMAGE=intersystemsdc/irishealth-community:2026.2-zpm docker compose -p fd-health up -d --build
+```
+
+`scripts/build/check-matrix-identity.py` fails naming any install that did not run.
+
 ## 5. The port-conflict path
 
 ```bash
