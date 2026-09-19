@@ -107,13 +107,38 @@ function DemoCredentials() {
   if (!notice) return null;
   return (
     <div className="credentials-demo" data-testid="demo-credentials">
-      <div className="credentials-demo-h">This is the public demo. Sign in with:</div>
-      <dl className="credentials-demo-pair">
-        <dt>User</dt>
-        <dd className="mono">{notice.username}</dd>
-        <dt>Password</dt>
-        <dd className="mono">{notice.password}</dd>
-      </dl>
+      <div className="credentials-demo-h">This is the public demo.</div>
+      {/* Said plainly, because it cannot be told apart from the outside: the portal is driving a real
+          instance, and every operation is performed against it. That is also the reason the instance
+          is thrown away on a timer. */}
+      <p className="credentials-demo-real" data-testid="demo-real-instance">
+        {`It is talking to a real InterSystems IRIS Community instance, not a simulator: every
+        operation you run is executed against the platform, which is why the instance is rebuilt
+        ${notice.reset}.`}
+      </p>
+      <div className="credentials-demo-account">
+        <dl className="credentials-demo-pair">
+          <dt>User</dt>
+          <dd className="mono">{notice.username}</dd>
+          <dt>Password</dt>
+          <dd className="mono">{notice.password}</dd>
+        </dl>
+        <p className="credentials-demo-shows">Full administrator: every domain and every operation this IRIS offers.</p>
+      </div>
+      {notice.reduced && (
+        <div className="credentials-demo-account" data-testid="demo-credentials-reduced">
+          <dl className="credentials-demo-pair">
+            <dt>User</dt>
+            <dd className="mono">{notice.reduced.username}</dd>
+            <dt>Password</dt>
+            <dd className="mono">{notice.reduced.password}</dd>
+          </dl>
+          <p className="credentials-demo-shows">
+            Reduced privileges: the same portal with most controls disabled, each naming the privilege it needs, and
+            whole sections it cannot open.
+          </p>
+        </div>
+      )}
       <p className="credentials-demo-note">
         {`Everything you change here is discarded: the instance is rebuilt ${notice.reset}, and it is
         shared with whoever else is looking. The connection is plain HTTP, so treat anything you type

@@ -151,26 +151,30 @@ installing user needs `%All`, or equivalent rights for the web applications and 
 
 ## Try it without installing anything
 
-There is a public demo at **http://109.123.244.170/**. Its credentials are printed on its own
-sign-in form, and they are also here:
+There is a public demo at **http://109.123.244.170/**.
 
-| | |
-|---|---|
-| User | `demo` |
-| Password | *printed on the demo's sign-in form* |
+**It runs against a real InterSystems IRIS Community instance, not a simulator**: every operation you
+perform there is executed against the platform, which is why the instance is rebuilt every hour.
+
+Two accounts are published, and both are printed on the demo's own sign-in form:
+
+| User | Password | What it shows |
+|---|---|---|
+| `demo` | *printed on the demo's sign-in form* | Full administrator: every domain and every operation this IRIS offers. |
+| `demo_reduced` | *printed on the demo's sign-in form* | Reduced privileges — the stock `%Operator` role and nothing else. 57 of the 273 operations are offered; the rest are disabled naming the privilege they need, and Permissions and Web applications cannot be opened at all. It is the capability map with something to show, which the first account cannot do because an administrator holding `%All` never sees a disabled control. |
 
 **These are not the credentials above.** The local Docker install signs in with `_SYSTEM` / `SYS`,
 the InterSystems Community image's own default. The demo instance has a different administrative
-password that exists only on that machine, and the account you are given there is a separate one.
+password that exists only on that machine, and both accounts you are given there are separate ones.
 
 Four things are true of that demo and are worth knowing before you judge it:
 
 - **It is rebuilt every hour**, from nothing. Anything you change is discarded, and that is
-  deliberate: the account you are given holds `%All`, because permissions and security are the part
+  deliberate: the first account holds `%All`, because permissions and security are the part
   of this portal worth looking at — the impact analysis, the last-administrator predicate, the
   dry-run with provenance — and a read-only account would hide exactly that. Recovery replaces
-  restriction: a watchdog checks every five minutes that a visitor can still sign in, and rebuilds
-  immediately if not.
+  restriction: a watchdog checks every five minutes that a visitor can still sign in with both
+  accounts, and rebuilds immediately if not.
 - **It is shared.** Someone else may be looking at the same instance while you are.
 - **It is plain HTTP**, with no certificate. Treat anything you type there as public. Do not use a
   password of yours on it.

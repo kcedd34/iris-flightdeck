@@ -136,3 +136,20 @@
   color: var(--text-secondary);
   max-width: 52ch;
 }
+
+/* The public demo's second account, and the sentence that says the instance behind it is real. */
+.credentials-demo-real {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  max-width: 52ch;
+}
+
+.credentials-demo-account {
+  margin-bottom: 10px;
+}
+
+.credentials-demo-shows {
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 52ch;
+}

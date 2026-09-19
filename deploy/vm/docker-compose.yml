@@ -25,6 +25,10 @@ services:
       # Printed under the sign-in form. Published on purpose: this instance is thrown away hourly.
       FD_DEMO_USER: ${FD_DEMO_USER:?set FD_DEMO_USER in deploy/vm/.env}
       FD_DEMO_PASSWORD: ${FD_DEMO_PASSWORD:?set FD_DEMO_PASSWORD in deploy/vm/.env}
+      # The reduced account, printed beside the first one so the capability map is visible to a
+      # visitor: an administrator holding %All never sees a disabled control.
+      FD_DEMO_REDUCED_USER: ${FD_DEMO_REDUCED_USER:?set FD_DEMO_REDUCED_USER in deploy/vm/.env}
+      FD_DEMO_REDUCED_PASSWORD: ${FD_DEMO_REDUCED_PASSWORD:?set FD_DEMO_REDUCED_PASSWORD in deploy/vm/.env}
       FD_DEMO_RESET: ${FD_DEMO_RESET:-every hour}
       # The open demo application IS created here, deliberately. The exposure marker is a real
       # feature and one of the more concrete Applicability arguments this portal has; with nothing

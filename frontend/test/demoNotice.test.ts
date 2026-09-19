@@ -24,7 +24,19 @@ describe("readDemoNotice", () => {
 
   it("reads the user, the password and the reset cadence the deployment declared", () => {
     setMeta("demo\tS0me-Str0ng-Pass\tevery hour");
-    expect(readDemoNotice()).toEqual({ username: "demo", password: "S0me-Str0ng-Pass", reset: "every hour" });
+    expect(readDemoNotice()).toEqual({ username: "demo", password: "S0me-Str0ng-Pass", reset: "every hour", reduced: null });
+  });
+
+  it("reads the reduced account when the deployment declares one", () => {
+    setMeta("demo\tS0me-Str0ng-Pass\tevery hour\tdemo_reduced\tAn0ther-Pass");
+    expect(readDemoNotice()?.reduced).toEqual({ username: "demo_reduced", password: "An0ther-Pass" });
+  });
+
+  it("answers no reduced account rather than half of one", () => {
+    setMeta("demo\tS0me-Str0ng-Pass\tevery hour\tdemo_reduced\t");
+    expect(readDemoNotice()?.reduced).toBeNull();
+    setMeta("demo\tS0me-Str0ng-Pass\tevery hour\t\tAn0ther-Pass");
+    expect(readDemoNotice()?.reduced).toBeNull();
   });
 
   it("falls back to a neutral cadence when the deployment did not state one", () => {

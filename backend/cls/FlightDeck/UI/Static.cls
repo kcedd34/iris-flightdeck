@@ -77,7 +77,13 @@ ClassMethod DemoNotice() As %String
 	set user = $system.Util.GetEnviron("FD_DEMO_USER")
 	set password = $system.Util.GetEnviron("FD_DEMO_PASSWORD")
 	if (user = "") || (password = "") quit ""
+	// The second account is optional: a deployment that declares only the first one still works, and
+	// a local install still shows nothing at all. Tab-separated, in the order the form reads them.
+	set reduced = $system.Util.GetEnviron("FD_DEMO_REDUCED_USER")
+	set reducedPassword = $system.Util.GetEnviron("FD_DEMO_REDUCED_PASSWORD")
+	if (reduced = "") || (reducedPassword = "") set reduced = "", reducedPassword = ""
 	quit user _ $char(9) _ password _ $char(9) _ $system.Util.GetEnviron("FD_DEMO_RESET")
+		_ $char(9) _ reduced _ $char(9) _ reducedPassword
 }
 
 /// index.html, with the demo notice injected as a meta tag when this deployment declares one.
