@@ -89,6 +89,7 @@ export function WorkQueueCategories() {
         </>
       )}
       empty={{ title: "No category matches", cause: "The filters exclude every work queue category on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No work queue category", cause: "This instance defines no work queue category.", nextAction: "The platform creates its default category the first time work is queued." }}
     />
   );
 }

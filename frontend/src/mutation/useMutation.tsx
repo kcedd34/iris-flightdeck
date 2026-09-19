@@ -64,6 +64,9 @@ export function MutationProvider({ children }: { children: ReactNode }) {
   const resolver = useRef<((outcome: MutationOutcome) => void) | null>(null);
   const pendingOutcome = useRef<MutationOutcome | null>(null);
   const epoch = useRef(computationEpoch);
+  // The control that opened the confirmation, so closing it puts the user back where they were
+  // instead of at the top of the document (verification/ux-review.md, D2).
+  const openedFrom = useRef<HTMLElement | null>(null);
   // One Blocked record per requested mutation, however many times its preview is recomputed.
   const recordedBlocks = useRef(new WeakSet<MutationStart>());
 
@@ -94,6 +97,8 @@ export function MutationProvider({ children }: { children: ReactNode }) {
     (next: MutationStart) =>
       new Promise<MutationOutcome>((resolve) => {
         resolver.current?.({ status: "cancelled" });
+        // Only the outermost open records the origin: a re-preview must not overwrite it.
+        if (!resolver.current) openedFrom.current = document.activeElement as HTMLElement | null;
         resolver.current = resolve;
         pendingOutcome.current = null;
         void runPreview(next);
@@ -115,6 +120,11 @@ export function MutationProvider({ children }: { children: ReactNode }) {
     resolver.current = null;
     pendingOutcome.current = null;
     setState(null);
+    // After the dialog unmounts. Radix cancels its own restore for a controlled dialog, so without
+    // this focus lands on <body> and the next Tab restarts at the top of the page.
+    const origin = openedFrom.current;
+    openedFrom.current = null;
+    if (origin?.isConnected) window.setTimeout(() => origin.focus?.(), 0);
   }, []);
 
   const apply = useCallback(async () => {

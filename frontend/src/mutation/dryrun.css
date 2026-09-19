@@ -241,3 +241,10 @@
 .trail-detail .impact-u {
   padding: 0 20px;
 }
+
+/* An impact block that reports nothing to analyse is information, not a caution: it keeps the block
+   so the absence is never silent, and drops the caution colour and the glyph so it does not read as
+   a warning (verification/ux-review.md, A4). */
+.impact[data-state="none"] .impact-h {
+  color: var(--text-secondary);
+}

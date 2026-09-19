@@ -77,6 +77,11 @@ export function PercentClassAccess() {
             cause: "The filters exclude every configuration on this instance.",
             nextAction: "Clear the filters or the search text.",
           }}
+          emptyUnfiltered={{
+            title: "No percent class access configuration",
+            cause: "This instance grants no web application access to a percent class.",
+            nextAction: "Create one with New.",
+          }}
         />
       }
       inspector={

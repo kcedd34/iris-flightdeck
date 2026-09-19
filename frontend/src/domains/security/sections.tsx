@@ -70,6 +70,7 @@ export function TlsConfigurations() {
         </>
       )}
       empty={{ title: "No TLS configuration matches", cause: "The filters exclude every configuration on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No TLS configuration", cause: "This instance defines no TLS configuration.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -113,6 +114,7 @@ export function X509Credentials() {
         </>
       )}
       empty={{ title: "No X.509 credential matches", cause: "The filters exclude every credential on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No X.509 credential", cause: "This instance holds no X.509 credential.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -162,6 +164,7 @@ export function Wallet() {
         </>
       )}
       empty={{ title: "No wallet collection matches", cause: "The filters exclude every collection on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No wallet collection", cause: "This instance defines no wallet collection.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -228,6 +231,7 @@ export function Ldap() {
         </>
       )}
       empty={{ title: "No LDAP configuration matches", cause: "The filters exclude every configuration on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No LDAP configuration", cause: "This instance defines no LDAP configuration.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -284,6 +288,7 @@ export function Mft() {
         </>
       )}
       empty={{ title: "No MFT connection matches", cause: "The filters exclude every connection on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No MFT connection", cause: "This instance defines no MFT connection.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -327,6 +332,7 @@ export function Superservers() {
         </>
       )}
       empty={{ title: "No superserver matches", cause: "The filters exclude every superserver on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No superserver", cause: "This instance defines no superserver.", nextAction: "Create one with New." }}
     />
   );
 }

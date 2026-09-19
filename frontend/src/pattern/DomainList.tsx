@@ -25,7 +25,19 @@ interface Props {
   onSelect: (item: EntityListItem) => void;
   meta?: (item: EntityListItem) => ReactNode;
   toolbar?: ReactNode;
-  empty: { title: string; cause: string; nextAction: string };
+  /** Shown when filters or search text exclude everything the instance does have. */
+  empty: EmptyCopy;
+  /**
+   * Shown when the instance holds none of these at all. Without it a clean instance is told to clear
+   * filters it never set, which is the state an evaluator sees most (verification/ux-review.md, D1).
+   */
+  emptyUnfiltered?: EmptyCopy;
+}
+
+export interface EmptyCopy {
+  title: string;
+  cause: string;
+  nextAction: string;
 }
 
 /**
@@ -77,7 +89,9 @@ export function DomainList(props: Props) {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState {...props.empty} />
+        // `total` is what the instance answered before any filtering, and it is the same number the
+        // count above shows: 0 of 0 means there is nothing to filter.
+        <EmptyState {...(props.total === 0 && props.emptyUnfiltered ? props.emptyUnfiltered : props.empty)} />
       ) : (
         <div className="dlist-rows" role="list" aria-label={props.label}>
           {items.map((item) => {

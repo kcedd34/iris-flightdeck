@@ -44,6 +44,7 @@ export function PrivilegedRoutines() {
         </>
       )}
       empty={{ title: "No privileged routine application matches", cause: "The filters exclude every application this instance has.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No privileged routine application", cause: "This instance defines no privileged routine application.", nextAction: "Create one with New." }}
     />
   );
 }

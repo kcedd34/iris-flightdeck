@@ -34,15 +34,28 @@ instance, and the instance afterwards reported the state the operation claimed t
 
 ## The matrix
 
-Run on 2026-09-19, one full Playwright suite per install, each against its own container.
+Run on 2026-09-19, one full Playwright suite per install, each against its own container, each
+container built from the committed `frontend/dist` and clean-installed from an empty volume.
 
 | Install | Port | Result | Operations effect-verified |
 |---|---|---|---|
-| IRIS Community Edition 2026.2 (`latest-cd`) | 52780 | 267 passed, 36 skipped, 0 failed | **138** |
+| IRIS Community Edition 2026.2 (`latest-cd`) | 52780 | 265 passed, 38 skipped, 0 failed | **138** |
 | IRIS for Health Community Edition 2026.2 | 52792 | 265 passed, 38 skipped, 0 failed | **138** |
-| IRIS Community Edition 2026.1 (`latest`, limited mode) | 52791 | 151 passed, 152 skipped, 0 failed | — |
+| IRIS Community Edition 2026.1 (`latest`, limited mode) | 52791 | 149 passed, 154 skipped, 0 failed | — |
 
 The backend suite (189 methods) passes on all three.
+
+**A correction to an earlier version of this table.** It reported the install on port 52780 as IRIS
+Community Edition 2026.2. It was not: the compose image tag `iris-flightdeck:local` had been
+overwritten by an IRIS for Health build, and the container pinned to it. So the matrix that produced
+the numbers above had in fact been IRIS for Health twice and IRIS 2026.1 once, and **IRIS Community
+Edition 2026.2 — the release the README leads with — had never been in it.** Nothing was ever asked
+about the image behind the port; the version shown in FlightDeck's own glareshield said
+"IRIS for Health 2026.2 CE" on that port throughout, and it went unread.
+
+The three installs are now built from distinct bases and tagged accordingly
+(`iris-flightdeck:ce-2026.2`, `:ce-2026.1`, `:health-2026.2`), and each one's product and API version
+was read back from `/api/admin/info` before the run rather than assumed.
 
 **Why 2026.1 records no effect number.** The functional tests prove an effect by reading back through
 the official API *directly*, deliberately not through FlightDeck. On 2026.1 the official API is v1,

@@ -57,6 +57,7 @@ export function Users() {
         </>
       )}
       empty={{ title: "No user matches", cause: "The filters exclude every account this instance has.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No user", cause: "This instance holds no user account.", nextAction: "Create one with New." }}
     />
   );
 }

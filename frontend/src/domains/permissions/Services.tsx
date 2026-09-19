@@ -28,6 +28,7 @@ export function Services() {
         />
       )}
       empty={{ title: "No service matches", cause: "The filters exclude every service this instance has.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No service", cause: "This instance reports no service.", nextAction: "Services come from the platform and are not created here; if you expected some, check this account's privileges." }}
     />
   );
 }

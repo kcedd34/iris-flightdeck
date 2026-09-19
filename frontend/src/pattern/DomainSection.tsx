@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { EntityDetailResponse, EntityListItem } from "../api/types";
 import { useCapability } from "../session/SessionProvider";
-import { DomainList, type FilterDef } from "./DomainList";
+import { DomainList, type EmptyCopy, type FilterDef } from "./DomainList";
 import { EntityInspector } from "./EntityInspector";
 import { ListInspector } from "./ListInspector";
 import { useAddressFilters, useEntityList, useInspectTarget } from "./useEntityType";
@@ -35,7 +35,8 @@ export interface DomainSectionProps {
   actions?: (detail: EntityDetailResponse, openForm: (form: NonNullable<FormState>) => void) => ReactNode;
   /** One extra panel in the inspector, beside the links (feature 004: a task's recent runs). */
   inspectorExtra?: (detail: EntityDetailResponse) => ReactNode;
-  empty: { title: string; cause: string; nextAction: string };
+  empty: EmptyCopy;
+  emptyUnfiltered?: EmptyCopy;
   /** State filter options; omitted when the entity has no enabled/disabled notion. */
   stateFilter?: { label: string; options: { value: string; label: string }[]; matches: (item: EntityListItem, value: string) => boolean };
 }
@@ -99,6 +100,7 @@ export function DomainSection(props: DomainSectionProps) {
             ) : undefined
           }
           empty={props.empty}
+          emptyUnfiltered={props.emptyUnfiltered}
         />
       }
       inspector={

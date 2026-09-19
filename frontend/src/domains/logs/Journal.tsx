@@ -114,6 +114,7 @@ export function Journal() {
           />
         )}
         empty={{ title: "No journal file matches", cause: "The filters exclude every journal file this instance keeps.", nextAction: "Clear the filters or the search text." }}
+        emptyUnfiltered={{ title: "No journal file", cause: "This instance keeps no journal file.", nextAction: "One appears as soon as journalling writes; switching the journal file starts a new one." }}
       />
     </div>
   );

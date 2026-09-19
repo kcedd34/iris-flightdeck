@@ -44,6 +44,7 @@ export function Databases() {
         </>
       )}
       empty={{ title: "No database matches", cause: "The filters exclude every database this instance configures.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No database", cause: "This instance configures no database.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -89,6 +90,7 @@ export function Directories() {
         </>
       )}
       empty={{ title: "No directory matches", cause: "The filters exclude every database directory on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No database directory", cause: "This instance reports no database directory.", nextAction: "A directory appears here once a database uses it." }}
     />
   );
 }
@@ -123,6 +125,7 @@ export function Namespaces() {
         </>
       )}
       empty={{ title: "No namespace matches", cause: "The filters exclude every namespace on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No namespace", cause: "This instance defines no namespace.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -143,6 +146,7 @@ export function Devices() {
         </>
       )}
       empty={{ title: "No device matches", cause: "The filters exclude every device this instance defines.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No device", cause: "This instance defines no device.", nextAction: "Create one with New." }}
     />
   );
 }
@@ -289,6 +293,7 @@ export function LanguageServers() {
         </>
       )}
       empty={{ title: "No language server matches", cause: "The filters exclude every external language server on this instance.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No external language server", cause: "This instance defines no external language server.", nextAction: "Create one with New." }}
     />
   );
 }

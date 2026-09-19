@@ -1,5 +1,6 @@
 import type { CapabilityEntry, DomainId } from "../api/types";
 import { DOMAINS } from "../shell/domains";
+import { SECTION_ALIASES } from "./aliases";
 
 export interface ActionEntry {
   id: string;
@@ -8,6 +9,8 @@ export interface ActionEntry {
   domain: DomainId;
   context: string;
   mono: boolean;
+  /** Extra search keys, never displayed: the words the native portal uses for the same place. */
+  aliases: string[];
   mutating: boolean;
   enabled: boolean;
   disabledReason: string | null;
@@ -36,6 +39,7 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
           d.id,
           s.label,
           `/${d.id}/${s.id}`,
+          SECTION_ALIASES[`${d.id}/${s.id}`],
         ),
       ),
     ),
@@ -60,6 +64,7 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
       domain: c.domain,
       context: `${c.method} ${c.path}`,
       mono: true,
+      aliases: [],
       mutating: true,
       enabled: c.available && c.allowed,
       disabledReason: c.reason,
@@ -69,12 +74,12 @@ export function buildActions(capabilities: CapabilityEntry[]): ActionEntry[] {
   return actions;
 }
 
-function nav(id: string, label: string, domain: DomainId, context: string, to: string): ActionEntry {
-  return { id, kind: "action", label, domain, context, mono: false, mutating: false, enabled: true, disabledReason: null, run: { type: "navigate", to } };
+function nav(id: string, label: string, domain: DomainId, context: string, to: string, aliases: string[] = []): ActionEntry {
+  return { id, kind: "action", label, domain, context, mono: false, aliases, mutating: false, enabled: true, disabledReason: null, run: { type: "navigate", to } };
 }
 
 function shell(id: string, label: string, run: ActionEntry["run"]): ActionEntry {
-  return { id, kind: "action", label, domain: "shell", context: "FlightDeck", mono: false, mutating: false, enabled: true, disabledReason: null, run };
+  return { id, kind: "action", label, domain: "shell", context: "FlightDeck", mono: false, aliases: [], mutating: false, enabled: true, disabledReason: null, run };
 }
 
 function sentence(summary: string): string {
@@ -95,7 +100,10 @@ export function matchActions(actions: ActionEntry[], query: string): ActionEntry
     .map((a) => {
       const label = normalize(a.label);
       const context = normalize(a.context);
-      const rank = label === needle ? 0 : label.startsWith(needle) ? 1 : label.includes(needle) ? 2 : context.includes(needle) ? 3 : -1;
+      // Aliases rank below everything the user can see, so a destination named in the interface always
+      // wins over one found through a synonym.
+      const alias = a.aliases.some((x) => normalize(x).includes(needle)) ? 4 : -1;
+      const rank = label === needle ? 0 : label.startsWith(needle) ? 1 : label.includes(needle) ? 2 : context.includes(needle) ? 3 : alias;
       return { a, rank };
     })
     .filter((x) => x.rank >= 0);

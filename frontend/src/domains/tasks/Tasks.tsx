@@ -151,6 +151,7 @@ export function Tasks() {
         </>
       )}
       empty={{ title: "No task matches", cause: "The filters exclude every task this instance schedules.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No task", cause: "This instance schedules no task.", nextAction: "A fresh instance ships with its own housekeeping tasks; if none is listed, check this account's privileges." }}
     />
   );
 }

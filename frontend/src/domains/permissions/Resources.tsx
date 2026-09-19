@@ -46,6 +46,7 @@ export function Resources() {
         </>
       )}
       empty={{ title: "No resource matches", cause: "The filters exclude every resource this instance has.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No resource", cause: "This instance defines no resource.", nextAction: "Create one with New." }}
     />
   );
 }

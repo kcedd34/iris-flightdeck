@@ -18,6 +18,11 @@ interface Props {
 
 const VERB = { create: "Create", edit: "Apply changes to", delete: "Delete", request: "Send test request to", action: "Apply to" } as const;
 
+/** What the impact block says when the platform answered but there was nothing to analyse. */
+const NO_IMPACT_NONE =
+  "Nothing beyond the difference above. FlightDeck reports impact where a change to one object reaches others, and this operation does not.";
+const NO_IMPACT_CREATE = "Nothing is affected yet: this object does not exist until you apply.";
+
 /**
  * The only confirmation view in the product (Constitution V, docs/design.md §6,
  * contracts/ui-pattern.md §4): CURRENT against COMMANDED, impact, graded confirmation, one reveal.
@@ -35,6 +40,16 @@ export function DryRun(props: Props) {
     const frame = requestAnimationFrame(() => setRevealed(true));
     return () => cancelAnimationFrame(frame);
   }, [preview?.fingerprint, preview?.rows]);
+
+  // The confirmation field and an enabled Apply only exist once the preview has landed, which is
+  // after the dialog opened. Focus follows them, so a keyboard user does not have to discover by
+  // tabbing that the thing they must do has appeared. A recomputed preview moves focus again,
+  // because it clears the typed confirmation and asks for it afresh (RN-FD-31).
+  useEffect(() => {
+    if (state.phase !== "ready") return;
+    if (inputRef.current) inputRef.current.focus();
+    else if (applyRef.current && !applyRef.current.disabled) applyRef.current.focus();
+  }, [state.phase, preview?.fingerprint]);
 
   const grade = preview?.grade ?? "simple";
   const needsText = grade !== "simple";
@@ -57,8 +72,15 @@ export function DryRun(props: Props) {
           data-testid="dry-run"
           aria-describedby="dryrun-summary"
           onOpenAutoFocus={(e) => {
+            // At mount the preview is still in flight, so the confirmation field does not exist and
+            // Apply is disabled. Focusing a disabled button is a no-op, and preventing the default
+            // as well used to leave focus outside the dialog, on a control the overlay had just
+            // hidden from assistive technology (verification/ux-review.md, D2). When there is
+            // nothing better to aim at, let the focus scope take its own first element.
+            const target = needsText ? inputRef.current : applyRef.current?.disabled === false ? applyRef.current : null;
+            if (!target) return;
             e.preventDefault();
-            (needsText ? inputRef.current : applyRef.current)?.focus();
+            target.focus();
           }}
         >
           <div className="dhead">
@@ -116,15 +138,22 @@ export function DryRun(props: Props) {
               )
             )}
           </div>
-          {preview?.impact && preview.impact.state !== "none" && (
-              <div className="impact" data-testid="dry-run-impact">
+          {/* Always rendered. A missing impact block reads as an impact that failed to compute, which
+              is the same defect as a log severity of "unknown" or a duration that quietly becomes
+              zero: the absence is indistinguishable from the failure. When a provider ran and found
+              nothing it already says so in its own words; when no analysis applies, say that
+              (verification/ux-review.md, A4). */}
+          {preview?.impact && (
+              <div className="impact" data-testid="dry-run-impact" data-state={preview.impact.state}>
                 <div className="impact-h">
-                  <svg className="glyph" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
-                    <path d="M5 0l5 9H0z" />
-                  </svg>
+                  {preview.impact.state !== "none" && (
+                    <svg className="glyph" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
+                      <path d="M5 0l5 9H0z" />
+                    </svg>
+                  )}
                   <span>Impact</span>
                 </div>
-                <div className="impact-b">{preview.impact.summary}</div>
+                <div className="impact-b">{preview.impact.summary ?? (preview.kind === "create" ? NO_IMPACT_CREATE : NO_IMPACT_NONE)}</div>
                 {preview.impact.state === "undetermined" && <div className="impact-u">{preview.impact.reason}</div>}
                 {preview.impact.users && preview.impact.users.length > 0 && <div className="impact-u mono">{preview.impact.users.join(" · ")}</div>}
                 {/* What becomes unreachable, not only who loses access (RN-FD-11). */}

@@ -82,6 +82,11 @@ export function Services() {
                   }
                 : { title: "No REST service matches", cause: "The filters exclude every discovered service.", nextAction: "Clear the filters or the search text." }
             }
+            emptyUnfiltered={{
+              title: "No REST service",
+              cause: "This instance serves no REST application you can see.",
+              nextAction: "A REST application appears here once it is defined in Web applications and APIs, Web applications.",
+            }}
           />
         </>
       }

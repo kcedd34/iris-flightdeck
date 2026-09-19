@@ -75,6 +75,11 @@ export function WebApplications() {
             cause: "The filters exclude every web application on this instance.",
             nextAction: "Clear the filters or the search text.",
           }}
+          emptyUnfiltered={{
+            title: "No web application",
+            cause: "This instance defines no web application.",
+            nextAction: "Create one with New.",
+          }}
         />
       }
       inspector={

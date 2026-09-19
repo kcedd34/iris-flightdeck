@@ -48,6 +48,7 @@ export function AuditEvents() {
         </>
       )}
       empty={{ title: "No audit event matches", cause: "The filters exclude every audit event this instance defines.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No audit event definition", cause: "This instance reports no audit event definition.", nextAction: "Check that auditing is switched on in Security and secrets, Auditing." }}
     />
   );
 }

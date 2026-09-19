@@ -98,6 +98,7 @@ export function Processes() {
         </>
       )}
       empty={{ title: "No process matches", cause: "The filters exclude every process the instance reports.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No process", cause: "The instance reported no process at all.", nextAction: "Reload the section; a running instance always reports at least its own daemons." }}
     />
   );
 }

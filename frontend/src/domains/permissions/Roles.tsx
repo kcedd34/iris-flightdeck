@@ -44,6 +44,7 @@ export function Roles() {
         </>
       )}
       empty={{ title: "No role matches", cause: "The filters exclude every role this instance has.", nextAction: "Clear the filters or the search text." }}
+      emptyUnfiltered={{ title: "No role", cause: "This instance defines no role.", nextAction: "Create one with New." }}
     />
   );
 }
