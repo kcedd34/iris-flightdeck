@@ -121,11 +121,14 @@ def check_install(readme, problems):
         return None
     body = readme.section("Install")
     container = body.find("docker compose up")
-    package = body.find('zpm "load')
+    # The published package name, which does not change once it is on the registry: the evaluator's
+    # command is `zpm "install iris-flightdeck"`. `zpm "load <path>"` is the from-a-clone variant and
+    # is not what the README must lead the package path with.
+    package = body.find('zpm "install iris-flightdeck"')
     if container < 0:
         problems.append("element 3 (installation) — the one-command container path is not in the installation section")
     if package < 0:
-        problems.append("element 3 (installation) — the package (IPM) path is not in the installation section")
+        problems.append('element 3 (installation) — the package path does not give `zpm "install iris-flightdeck"`, which is the published command')
     if container >= 0 and package >= 0 and package < container:
         problems.append("element 3 (installation) — the package path comes before the one-command path; the order is required")
     if not re.search(r"port .*(already )?(in use|allocated)|FLIGHTDECK_PORT", body, re.I):

@@ -122,7 +122,14 @@ bind mounts, and a restricted egress rule. It is what runs the public demo.
 
 This path needs IPM (ZPM) already installed on the instance — the `-zpm` Community images carry it.
 On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want
-FlightDeck, from a clone of this repository:
+FlightDeck:
+
+```objectscript
+zpm "install iris-flightdeck"
+```
+
+`iris-flightdeck` is the package name; the portal it installs is FlightDeck. From a clone of this
+repository rather than the registry, the same install runs from the working copy:
 
 ```objectscript
 zpm "load /path/to/iris-flightdeck"
@@ -139,7 +146,7 @@ refuses with the version it detected rather than half-working.
 **Demonstration objects are off by default** on this path. To add them:
 
 ```objectscript
-zpm "load /path/to/iris-flightdeck -DDemo=1"
+zpm "install iris-flightdeck -DDemo=1"
 ```
 
 ⚠️ **`-DDemo=1` creates `/csp/fd-demo`, a deliberately unauthenticated web application**, so that the
@@ -328,10 +335,10 @@ SysAdmin API, and re-running creates no duplicates.
 | Kind | Name |
 |---|---|
 | Resources | `FD_Demo_Reports`, `FD_Demo_Billing` |
-| Roles | `FD_Demo_Operator`, `FD_Demo_Auditor` |
-| Web application | `/csp/fd-demo`, intentionally unauthenticated so the exposure warning has something to show |
+| Roles | `FD_Demo_Operator`, `FD_Demo_Auditor`, and the chain `FD_Demo_L1` → `FD_Demo_L2` → `FD_Demo_L3`, so a privilege can be shown with the roles that grant it |
+| Web applications | `/csp/fd-demo`, intentionally unauthenticated so the exposure warning has something to show, and `/csp/fd-demo-reports` |
 | Tasks | `FD Demo daily no-op`, `FD Demo nightly no-op`, `FD Demo failing task` (fails on purpose) |
-| Wallet collection | `FD_Demo_Vault` (no secrets) |
+| Wallet collection | `FD_Demo_Vault`, holding one secret, `FD_Demo_Token` — set on install and never readable afterwards |
 
 ## How sign-in and safe mode work
 
