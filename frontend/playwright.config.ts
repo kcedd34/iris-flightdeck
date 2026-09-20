@@ -41,7 +41,11 @@ export default defineConfig({
     // Feature 006. Artifact producers, not gates: both skip with a stated reason unless asked for,
     // so a capture or demo failure is legible on its own rather than buried in the sweep.
     { name: "docs", testMatch: /(^|\/)docs\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
-    { name: "demo", testMatch: /(^|\/)demo\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
+    // The demo records the product, so it drives the bundle IRIS serves rather than the dev
+    // server, at the resolution the recording is made in. A demonstration filmed against Vite
+    // would show assets no installed user ever receives — the gap that let the double-encoded
+    // bundle ship from feature 001 to 007.
+    { name: "demo", testMatch: /(^|\/)demo\.spec\.ts/, use: { baseURL: `http://localhost:${irisPort}/flightdeck/`, viewport: { width: 1920, height: 1080 }, acceptDownloads: true } },
     // Reduced IRIS 2026.1 matrix (FR-012a limited mode); skipped on a 2026.2 install.
     { name: "limited", testMatch: /(^|\/)limited\.spec\.ts/, use: { baseURL: "http://127.0.0.1:5173/flightdeck/" } },
   ],

@@ -23,6 +23,11 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# The demo driver's timed script. Written fresh on every run, for the author to narrate or
+# subtitle over a screen recording; personal working material, not a record of the project.
+verification/demo-run.md
+demo-run*.md
+
 # Local scratch
 scratch/
 .claude/state/
