@@ -217,11 +217,13 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
 - [x] **Docker** — `docker compose up -d` como caminho de instalação principal, imagem construída
   sobre `intersystemsdc/iris-community:2026.2-zpm`. Verificado limpo nas duas imagens Community
   (`verification/install-runs.md`, feature 006).
-- [ ] **Pacote IPM/ZPM publicado** — o pacote **constrói e instala**, mas **não está publicado**.
-  Verificado: `zpm "iris-flightdeck package"` gera `iris-flightdeck-0.1.0.tgz` (532 KB, com o bundle
-  do frontend), e esse artefato instala numa instância limpa sem FlightDeck — duas web applications,
-  o papel de runtime, `demo=0`, portal 200, 262/0/11/273 capacidades, vitals lendo. O nome
-  `iris-flightdeck` está livre no registry (552 pacotes, nenhum `flight*`).
+- [ ] **Pacote IPM/ZPM publicado** — `iris-flightdeck` **0.1.0 foi publicado em 19/09 19:48** com a
+  documentação duas commits atrasada: o código era o atual, o README não. Substituído por **1.0.0**,
+  construído a partir de `HEAD`, mesmo código e README corrigido, alinhado ao número de release que
+  o Open Exchange exibe. O registro completo, incluindo como a diferença foi encontrada, está em
+  [`verification/package-publication.md`](../verification/package-publication.md).
+  **Ação do autor:** publicar a 1.0.0 — precisa da credencial de publicador, que não está neste
+  repositório nem em container nenhum.
   **Ação do autor:** publicar exige conta de publicador em `pm.community.intersystems.com`, que não
   está neste ambiente. Ver "As ações do autor" abaixo.
 - [ ] **Vídeo no YouTube** — roteiro e driver prontos (`docs/demo-script.md`,
