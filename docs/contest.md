@@ -217,13 +217,22 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
 - [x] **Docker** — `docker compose up -d` como caminho de instalação principal, imagem construída
   sobre `intersystemsdc/iris-community:2026.2-zpm`. Verificado limpo nas duas imagens Community
   (`verification/install-runs.md`, feature 006).
-- [ ] **Pacote IPM/ZPM publicado** — `iris-flightdeck` **0.1.0 foi publicado em 19/09 19:48** com a
-  documentação duas commits atrasada: o código era o atual, o README não. Substituído por **1.0.0**,
-  construído a partir de `HEAD`, mesmo código e README corrigido, alinhado ao número de release que
-  o Open Exchange exibe. O registro completo, incluindo como a diferença foi encontrada, está em
-  [`verification/package-publication.md`](../verification/package-publication.md).
-  **Ação do autor:** publicar a 1.0.0 — precisa da credencial de publicador, que não está neste
-  repositório nem em container nenhum.
+- [x] **Pacote IPM/ZPM publicado** — `iris-flightdeck` **0.1.0 está no registry desde 19/09 19:48**,
+  publicado pelo próprio Open Exchange ao aceitar a submissão com a caixa *"Publish in Package
+  Manager"* marcada. **Ninguém rodou `zpm publish`, e ninguém poderia**: a documentação diz que o
+  Open Exchange é o único caminho para o registry público, e não existe credencial de publicador a
+  obter. O código dessa 0.1.0 é o atual; o README dentro dela estava duas commits atrasado.
+  `module.xml` já está em **1.0.1** no repositório. Registro completo, com o diff do artefato baixado
+  do registry, em [`verification/package-publication.md`](../verification/package-publication.md).
+- [ ] **Release 1.0.1 no Open Exchange** — **ação do autor, depois da aprovação da submissão.**
+  O caminho é: `module.xml` no GitHub com a versão nova (feito) e então, na página da aplicação,
+  **Release app** em vez de *Send edits* — é a release que dispara o pacote no registry. O número é
+  `1.0.1` porque a página já exibe uma release `1.0.0` enquanto o registry serve `0.1.0`; `1.0.1`
+  está livre dos dois lados e alinha os dois números pela primeira vez.
+  **Por que esperar a aprovação:** a submissão está em moderação agora, e no Open Exchange uma edição
+  só vale depois de revisada. Criar a release antes empilharia uma segunda alteração pendente sobre
+  uma que ainda está sendo lida, e a release ainda dispara notas para os inscritos — coisa que não se
+  manda duas vezes enquanto a listagem é provisória.
   **Ação do autor:** publicar exige conta de publicador em `pm.community.intersystems.com`, que não
   está neste ambiente. Ver "As ações do autor" abaixo.
 - [ ] **Vídeo no YouTube** — roteiro e driver prontos (`docs/demo-script.md`,

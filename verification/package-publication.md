@@ -1,4 +1,4 @@
-# The published package: 0.1.0, and why 1.0.0 replaced it
+# The published package: 0.1.0, and why 1.0.1 replaces it
 
 **2026-09-21.** `iris-flightdeck` was published to the community registry with documentation two
 commits out of date. The code in it was current; the README in it was not. This records what was
@@ -49,7 +49,7 @@ minutes before the publication. The two documentation commits that followed — 
 `6bf2574` — never reached the registry.
 
 **One other thing the comparison showed**: the 0.1.0 tarball contains a copy of a `.tgz` at its own
-root, so the artefact carried a previous package inside itself. The 1.0.0 tarball is 550 300 bytes
+root, so the artefact carried a previous package inside itself. The rebuilt tarball is 550 300 bytes
 against 0.1.0's 1 802 662.
 
 ## Why this happened, and what would have caught it
@@ -65,20 +65,26 @@ the tree that produced it.** It is the same failure as the double-encoded assets
 fetched from the server that serves them, and as the matrix that ran twice against IRIS for Health
 while reporting three products.
 
-## What replaced it
+## What replaces it
 
-`1.0.0`, built from `HEAD`, aligned with the release number the Open Exchange listing shows.
+`1.0.1`, built from `HEAD`.
+
+The number is `1.0.1` and not `1.0.0` because the Open Exchange listing **already shows a release
+1.0.0**, dated 19 September, while the registry still serves the package `0.1.0`. The page advertises
+one number and hands out another. `1.0.1` is free on both sides, so the release and the package can
+finally read the same.
 
 | | |
 |---|---|
-| Version | `1.0.0` (from `0.1.0`; the registry accepts only a higher version) |
+| Version | `1.0.1` (from `0.1.0`; the registry accepts only a higher version, and 1.0.0 is taken as a release) |
 | Built from | the `HEAD` tree, exported with `git archive` so nothing untracked could enter |
-| Size | 550 300 bytes |
+| Size | 550 300 bytes (measured on the 1.0.0 build; the version bump does not change it materially) |
 | Bundle | `index-C0RnJ0s0.js`, `628e0cc6a55bd5a5` — identical to 0.1.0 and to the working tree |
 | Code | unchanged from 0.1.0 |
 | Documentation | current |
 
-The embedded README was checked **before** publishing, on the three points that were wrong:
+The embedded README was checked on the three points that were wrong, from a package built locally
+before any release is created:
 
 ```
 Ideas Portal mentions: 0
@@ -87,39 +93,63 @@ FD_Demo_L1 → FD_Demo_L2 → FD_Demo_L3 README.md:338
 FD_Demo_Token                        README.md:341
 ```
 
-## Status of the publication
+## How this registry is actually fed
 
-**Not yet published at the time of writing.** `zpm "iris-flightdeck publish"` answers:
+`zpm "iris-flightdeck publish"` answers `ERROR! Publishing module, authorization required.`, and the
+first version of this record read that as a missing credential and gave two commands to obtain one.
+**That was wrong, and the commands could not have worked.** The Open Exchange documentation is
+explicit:
 
-```
-Publish to: https://pm.community.intersystems.com
-[iris-flightdeck]	Publish FAILURE
-ERROR! Publishing module, authorization required.
-```
+> "Open exchange is **the only place** to publish applications to the public IPM registry
+> (pm.community.intersystems.com)."
+> — [Publishing IPM applications](https://docs.openexchange.intersystems.com/apps/ipm/)
 
-The registry is configured as a read source with no publisher credential, and the credential belongs
-to the author's InterSystems account. It is not stored in this repository, in any container, or in
-this record — the same rule the portal itself follows about credentials.
+There is no publisher credential to obtain for the public registry. `zpm publish` is documented only
+for testing, against your own registry or `https://test.pm.community.intersystems.com/registry/`.
 
-The author publishes it with:
+**This also explains how 0.1.0 got there without anyone running publish.** The submission form
+carries a checkbox:
 
-```objectscript
-zpm "repo -n registry -r -url https://pm.community.intersystems.com/ -user <user> -pass <password>"
-zpm "iris-flightdeck publish"
-```
+> "Publish in Package Manager : if you use IPM (former ZPM) module in your app you can publish it to
+> public IPM registry checking this box"
+> — [Submit an application](https://docs.openexchange.intersystems.com/apps/submit/)
 
-and it is confirmed afterwards by installing on an instance that has never had FlightDeck:
+With it ticked, Open Exchange reads `module.xml` from the repository and pushes the package itself.
+The version comes from `<Version>` at that moment — which was `0.1.0` — and **not** from the release
+number on the listing, which is why the page shows a 1.0.0 release beside a 0.1.0 package.
 
-```objectscript
-zpm "install iris-flightdeck"
-```
+## The real path, and why it waits
 
-which must report `1.0.0`.
+1. `module.xml` carries the new version and is pushed to GitHub. **Done**: `1.0.1` is on the default
+   branch.
+2. On Open Exchange, edit the application and choose **Release app** rather than **Send edits**.
+   That is what triggers the package: "Release app : will guide you through filling out a release
+   form where you can specify the release number"
+   ([Update an application](https://docs.openexchange.intersystems.com/apps/update/)).
+3. Afterwards, confirm on an instance that has never had FlightDeck:
+
+   ```objectscript
+   zpm "install iris-flightdeck"
+   ```
+
+   which must report `1.0.1`.
+
+**Step 2 waits until the submission is approved.** The submission is in moderation now, and on Open
+Exchange an edit is not live until it is reviewed: "As soon as you send your edits for approval and
+they are approved, you will no longer see these signs"
+([Update an application](https://docs.openexchange.intersystems.com/apps/update/)). Creating a
+release while the original submission is still under review would put a second pending change on top
+of one already being read, so the moderator would be reviewing a moving target — and a release also
+publishes release notes to subscribers, which is not something to send twice while the listing is
+still provisional. That last part is reasoning rather than a quotation: the documentation states that
+edits require approval, not what happens when they overlap a pending submission.
+
+**Nothing is published by this repository.** Releasing is the author's action, after approval.
 
 ## What to do next time
 
-Before publishing any version, compare the artefact with the tree rather than trusting that they
-agree, and do it again after publishing:
+Open Exchange publishes the package, so the check belongs **after** a release: compare the artefact
+the registry serves with the tree that produced it, rather than trusting that they agree.
 
 ```bash
 curl -s https://pm.community.intersystems.com/packages/iris-flightdeck/latest   # version, size, hash
@@ -127,4 +157,6 @@ curl -sO https://pm.community.intersystems.com/download/iris-flightdeck/-/iris-f
 tar xzf iris-flightdeck-<v>.tgz && diff -rq . <working tree>
 ```
 
-The check that matters is the README and the bundle hash. Both are one command.
+The check that matters is the README and the bundle hash. Both are one command. Had this run once
+after the submission, 0.1.0's stale documentation would have been found the same day instead of two
+days later.
