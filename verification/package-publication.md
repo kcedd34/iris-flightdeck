@@ -48,9 +48,12 @@ Matching the packaged README against each commit placed the build at `e2f650d` (
 minutes before the publication. The two documentation commits that followed — `91f03cf` and
 `6bf2574` — never reached the registry.
 
-**One other thing the comparison showed**: the 0.1.0 tarball contains a copy of a `.tgz` at its own
-root, so the artefact carried a previous package inside itself. The rebuilt tarball is 550 300 bytes
-against 0.1.0's 1 802 662.
+**A claim made here earlier, and withdrawn.** This record said the 0.1.0 tarball "contains a copy of
+a `.tgz` at its own root, so the artefact carried a previous package inside itself". **That is false.**
+Both 0.1.0 and 1.0.1 were listed with `tar tzf | grep -iE '\.(tgz|tar|zip)$'` and neither contains an
+archive. What happened is that the download was extracted into the directory that held it, so `ls`
+showed the downloaded file beside the extracted tree and it was read as package content. The size
+difference has a different and legitimate explanation, below.
 
 ## Why this happened, and what would have caught it
 
@@ -78,7 +81,7 @@ finally read the same.
 |---|---|
 | Version | `1.0.1` (from `0.1.0`; the registry accepts only a higher version, and 1.0.0 is taken as a release) |
 | Built from | the `HEAD` tree, exported with `git archive` so nothing untracked could enter |
-| Size | 550 300 bytes (measured on the 1.0.0 build; the version bump does not change it materially) |
+| Size | 1 822 054 bytes as published (a locally built `zpm package` of the same tree is 550 300; see "Why the sizes differ") |
 | Bundle | `index-C0RnJ0s0.js`, `628e0cc6a55bd5a5` — identical to 0.1.0 and to the working tree |
 | Code | unchanged from 0.1.0 |
 | Documentation | current |
@@ -161,6 +164,31 @@ GET /flightdeck/      -> 200, serving index-C0RnJ0s0.js
 
 `demo=0`, which is right for this path: the demonstration objects only appear with `-DDemo=1`.
 
+### Why the sizes differ, and why 1 822 054 is right
+
+1.0.1 weighs 1 822 054 bytes, almost exactly what 0.1.0 weighed (1 802 662), while a `zpm package`
+built locally from the same tree is 550 300. That gap was the reason to look, and the explanation is
+that the two are packaged by different things with different scope:
+
+- **`zpm package` ships what `module.xml` declares** — the resources, the README, the LICENSE and
+  `frontend/dist`. Hence 550 300.
+- **Open Exchange ships the repository.** The package is `git archive` of the released commit:
+  615 entries, 6 674 152 bytes uncompressed, identical in both directions to `git archive eaa0555`.
+
+Where the weight is, uncompressed:
+
+| | |
+|---|---|
+| `docs/` | 1 581 975 — of which `docs/sysadmin-api-v2.json` alone is 1 004 473, the official API specification this project derives from |
+| `backend/` | 1 133 914 |
+| `specs/` | 915 212 |
+| `frontend/dist` | 814 304 |
+| `verification/` | 365 780 |
+
+So the size is documentation and specifications, not a stowaway. Nothing in the package is untracked:
+`node_modules`, `test-results`, `.git`, `__pycache__`, `frontend/.matrix` and `verification/demo-run.md`
+are all present in the working tree and all correctly absent from the artefact.
+
 ### What this run could not prove
 
 **`zpm "install iris-flightdeck"` was not exercised against the registry from here.** Outbound TCP
@@ -210,14 +238,26 @@ submission was approved, and the registry published the package from it.
 ## What to do next time
 
 Open Exchange publishes the package, so the check belongs **after** a release: compare the artefact
-the registry serves with the tree that produced it, rather than trusting that they agree.
+the registry serves with the tree that produced it, rather than trusting that they agree. That is now
+a command rather than a habit:
 
 ```bash
-curl -s https://pm.community.intersystems.com/packages/iris-flightdeck/latest   # version, size, hash
-curl -sO https://pm.community.intersystems.com/download/iris-flightdeck/-/iris-flightdeck-<v>.tgz
-tar xzf iris-flightdeck-<v>.tgz && diff -rq . <working tree>
+scripts/dev/check-published-package.sh <the commit the release was cut from>
 ```
 
-The check that matters is the README and the bundle hash. Both are one command. Had this run once
-after the submission, 0.1.0's stale documentation would have been found the same day instead of two
-days later.
+It checks the version against `module.xml`, the SHA-1 against the one the registry declares, the size
+against a declared expectation, that no archive is nested inside, and the tree against
+`git archive <ref>` **in both directions**. Against the released commit it answers:
+
+```
+check-published-package: ok (iris-flightdeck 1.0.1, 1822054 bytes, tree identical to eaa0555)
+```
+
+Each of those five checks exists because something got past its absence. The size one is there
+because a doubling was noticed by a human reading a number, two days late. The both-directions one is
+there because the first comparison written for this record filtered one side out and could only ever
+have seen files the package added, never ones it lacked. The nested-archive one is there because this
+record confidently described a nesting that was never in the package.
+
+Had it run once after the submission, 0.1.0's stale documentation would have been found the same day
+instead of two days later.

@@ -230,7 +230,10 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
   bate com o que o próprio registry declara, `diff -rq` contra `HEAD` não acusa **nenhum** arquivo
   diferente, o README dentro dele é o atual nos três pontos que estavam errados na 0.1.0, e o
   artefato instala numa instância que nunca teve FlightDeck reportando `iris-flightdeck 1.0.1` com o
-  portal respondendo 200. Ressalva registrada em
+  portal respondendo 200, e o tarball é idêntico nos dois sentidos a `git archive` do commit da
+  release. O tamanho (1,8 MB) foi investigado e tem explicação legítima: o Open Exchange empacota o
+  repositório inteiro, e `docs/sysadmin-api-v2.json` sozinho pesa 1 MB. Reconferível a qualquer
+  momento com `scripts/dev/check-published-package.sh`. Ressalva registrada em
   [`verification/package-publication.md`](../verification/package-publication.md): o `zpm "install"`
   buscando do registry não pôde ser exercitado daqui, porque a saída TCP 443 está bloqueada para os
   containers desta máquina; o que foi instalado é o artefato idêntico que o registry serve.
