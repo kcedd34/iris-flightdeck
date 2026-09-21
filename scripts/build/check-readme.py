@@ -25,10 +25,6 @@ LICENSE = ROOT / "LICENSE"
 POLICY = ROOT / "backend" / "cls" / "FlightDeck" / "Capability" / "Policy.cls"
 COVERAGE = ROOT / "docs" / "api-coverage.md"
 
-# The marker the README carries while the Ideas Portal URL is an author action. The gate warns on it
-# and still passes: a pending author action is not a build failure, but it must never be silent.
-IDEA_PLACEHOLDER = "<!-- idea-link-pending -->"
-
 # Element 8's groups. Each declined operation must fall in exactly one, and the README must name it.
 DECLINED_GROUPS = {
     "encryption": lambda op: "/encryption" in op,
@@ -240,18 +236,6 @@ def check_declined(readme, declined, problems):
     return at
 
 
-def check_idea(readme, warnings, problems):
-    """Element 9: present in final wording, with the URL as a declared author action."""
-    at = readme.find(r"Ideas Portal")
-    if at is None:
-        problems.append("element 9 (idea link) — the InterSystems Ideas Portal is not named")
-        return None
-    if IDEA_PLACEHOLDER in readme.text:
-        warnings.append("element 9 (idea link) — the URL is still pending; this is an author action, due before submission")
-    elif not re.search(r"\[[^\]]+\]\(https?://[^)]*ideas\.intersystems\.com[^)]*\)", readme.text):
-        problems.append("element 9 (idea link) — no link to ideas.intersystems.com, and the pending marker is absent")
-    return at
-
 
 def check_license(readme, problems):
     at = readme.heading("License")
@@ -284,8 +268,7 @@ def main():
         6: check_compatibility(readme, len(declined), total, problems),
         7: check_executor(readme, problems),
         8: check_declined(readme, declined, problems),
-        9: check_idea(readme, warnings, problems),
-        10: check_license(readme, problems),
+        9: check_license(readme, problems),
     }
 
     # Order is the requirement a well-meaning edit is most likely to break, so a violation names both
@@ -293,7 +276,7 @@ def main():
     names = {
         1: "what it is", 2: "instrument cluster", 3: "installation", 4: "the six domains",
         5: "differentiators", 6: "compatibility", 7: "REST executor", 8: "declined operations",
-        9: "idea link", 10: "licence",
+        9: "licence",
     }
     ordered = [(n, at) for n, at in sorted(positions.items()) if at is not None]
     for (before, at_before), (after, at_after) in zip(ordered, ordered[1:]):
@@ -310,8 +293,7 @@ def main():
             print(f"check-readme: {problem}", file=sys.stderr)
         print(f"check-readme: {len(problems)} problem(s)", file=sys.stderr)
         sys.exit(1)
-    pending = "; idea link pending — author action" if warnings else ""
-    print(f"check-readme: ok (10 elements, in order{pending})")
+    print("check-readme: ok (9 elements, in order)")
 
 
 if __name__ == "__main__":

@@ -57,16 +57,23 @@ O enunciado ainda convida: "Feel free to add any other screens or actions you fr
 - [ ] Máximo de três submissões por desenvolvedor. Esta é uma; sobram duas
 - [ ] Aprovada pela moderação do Open Exchange antes de aparecer na página do contest
 
-### 2.3 Requisito que só existe no Open Exchange
+### 2.3 "A link to the idea": não é requisito deste contest
 
-⚠️ A página do Open Exchange exige que o README inclua **"a link to the idea"**. O anúncio na Developer Community não menciona isso.
+Esta seção afirmava que a página do Open Exchange exigia do README **"a link to the idea"**, e tratava
+isso como requisito publicado a cumprir. **Reclassificado em 21/09 como não aplicável**, por três
+observações:
 
-Isso aponta para o Ideas Portal (`ideas.intersystems.com`). Duas ações:
+1. A frase aparece **idêntica** nas páginas de contests do Open Exchange sem relação nenhuma com o
+   Ideas Portal — Full Stack, Developer Tools, contests de outras linguagens. É texto do modelo da
+   página, herdado dos contests "Bringing Ideas to Reality", e não uma exigência deste.
+2. O **anúncio oficial do contest #48** na Developer Community lista os requisitos do README e não a
+   menciona: inglês, passos de instalação, e vídeo ou descrição de funcionamento.
+3. O que este contest tem de fato é o **bônus de 4 pontos por implementar uma ideia com status
+   Community Opportunity** — avaliado na Seção 6 e registrado ali como não aplicável, porque nenhuma
+   ideia com esse status corresponde ao escopo do FlightDeck.
 
-1. Procurar no Ideas Portal uma ideia existente sobre portal de gestão alternativo ou sobre administração via API. Se existir, o README aponta para ela.
-2. Se não existir, publicar a ideia do FlightDeck no Ideas Portal e apontar para ela. Custa minutos e fecha um requisito publicado.
-
-Historicamente, implementar uma ideia do portal também costuma valer bônus de tecnologia.
+Consequência: a seção do link foi removida do README e o `check-readme` passou de dez para nove
+elementos. Não há requisito pendente aqui, e nenhum ponto perdido.
 
 ---
 
@@ -87,7 +94,7 @@ A página do Open Exchange diz textualmente que os bônus de tecnologia ainda se
 | Demonstração online acessível | Médio | Não. Avaliar quando os bônus saírem |
 | Artigo na Developer Community | Meio dia | Sim, na janela de votação |
 | Vídeo no YouTube | Meio dia | Sim, dia 13 |
-| Implementar ideia do Ideas Portal | Baixo | Ver Seção 2.3 |
+| Implementar ideia do Ideas Portal | — | Não aplicável. O bônus é de ideias com status Community Opportunity (Seção 6); o "link to the idea" do modelo da página não é requisito (Seção 2.3) |
 | Uso de LLM ou IA | Variável | Não previsto. Não forçar: acoplamento artificial prejudica Applicability |
 
 Sobre o último item, uma advertência. Se houver bônus para IA, a tentação será enfiar um assistente no portal. Um recurso que existe para pontuar e não para servir prejudica dois dos cinco critérios de julgamento. Se for feito, precisa ter função real: por exemplo, explicar em linguagem natural o efeito de uma mudança de permissão antes de aplicar, que é uma extensão legítima da análise de impacto.
@@ -189,17 +196,17 @@ Formal:
 
 - [x] **Licença MIT com arquivo no repositório** — `LICENSE` na raiz, citada na última seção do
   README. Conferido pelo gate `check-readme` (elemento 10).
-- [ ] **README em inglês, com passos de instalação e link para a ideia** — inglês e instalação
-  fechados e conferidos por `scripts/build/check-readme.py` (dez elementos, na ordem exigida).
-  **Ação do autor:** publicar a ideia no Ideas Portal e me passar a URL; a linha final já está
-  escrita no README esperando o link, marcada com `<!-- idea-link-pending -->`, e o gate avisa
-  enquanto o marcador existir. Prazo: antes da submissão.
+- [x] **README em inglês, com passos de instalação** — conferido por
+  `scripts/build/check-readme.py` (nove elementos, na ordem exigida). A seção do link da ideia foi
+  removida em 20/09 e o elemento 9 saiu do gate com ela: o "link to the idea" é texto do modelo da
+  página do Open Exchange e não é requisito deste contest (§2.3). Nada pendente.
 - [ ] **Vídeo publicado** — mesma ação do autor da linha do vídeo acima.
 - [ ] **Submetido e aprovado pela moderação** — **ação do autor**, no Open Exchange. A aprovação é
   anterior à aparição na página do contest, e é por isso que a meta interna é 26/09.
 - [ ] **Bônus de tecnologia conferidos e endereçados** — **ação do autor**, dependente do anúncio dos
-  bônus, que ainda não saiu (§3). O que já está no projeto e costuma contar: IPM, Docker,
-  InterSystems API oficial, e a implementação de uma ideia do Ideas Portal.
+  bônus, que ainda não saiu (§3). O que já está no projeto e costuma contar: IPM, Docker e
+  InterSystems API oficial. A implementação de uma ideia do Ideas Portal **não** está entre eles:
+  nenhuma ideia com status Community Opportunity corresponde ao escopo (§6, §2.3).
 
 ### Bônus de tecnologia
 
@@ -244,14 +251,14 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
   em minutos, que é melhor e mais honesto do que uma instância compartilhada e neutralizada.
 - [ ] ~~**Community Idea**~~ — **nenhuma ideia com status Community Opportunity corresponde ao escopo
   do FlightDeck.** Forçar correspondência com uma ideia adjacente para capturar o bônus prejudicaria
-  Applicability, que vale mais do que o bônus. O README aponta para a ideia do próprio FlightDeck no
-  Ideas Portal (requisito do Open Exchange, §2.3), que é coisa diferente deste bônus.
+  Applicability, que vale mais do que o bônus. O "link to the idea" que a página do Open Exchange
+  mostra é texto do modelo e não é requisito deste contest (§2.3), de modo que não há nada a cumprir
+  por esse lado tampouco.
 
 ### As ações do autor, reunidas
 
 | Ação | O que falta | Prazo |
 |---|---|---|
-| Link da ideia | Publicar no `ideas.intersystems.com` e passar a URL | Antes da submissão |
 | Vídeo | Gravar seguindo `docs/demo-script.md` e publicar | Antes da submissão |
 | Leitura fria humana | Um leitor que conhece IRIS e não conhece o FlightDeck, cronometrado | Antes da submissão |
 | ~~URL de clone no README~~ | **Fechado em 18/09.** O repositório foi publicado em `https://github.com/kcedd34/iris-flightdeck` (privado por enquanto) e o README traz o `git clone` real e copiável. Quando o repositório virar público, nada muda; se mudar de dono ou de nome, a linha do README acompanha | — |

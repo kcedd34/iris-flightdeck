@@ -18,9 +18,9 @@ scripts/build/check-readme.py
 scripts/build/check-generated.sh     # the gate also runs here, with the others
 ```
 
-Expected: `check-readme: ok (10 elements, in order; …)`. While the Ideas Portal URL is still an
-author action, the gate prints a warning naming it and still passes — a pending author action is not
-a build failure, but it must never be silent.
+Expected: `check-readme: ok (9 elements, in order)`. The Ideas Portal link was element 9 and was
+removed from the README on 2026-09-20, together with its check; the licence moved up to 9. If the
+idea is ever published, the section and its check go back together.
 
 **Prove the gate bites** before trusting it: move one required section below another, and confirm it
 fails naming both neighbours; change a compatibility count, and confirm the arithmetic check fails.

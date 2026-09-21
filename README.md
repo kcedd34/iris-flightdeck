@@ -508,11 +508,6 @@ Every assertion here is enforced somewhere, because a claim nobody can check is 
 Specifications, plans and research for all six features live in [`specs/`](specs/). The project
 constitution is in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
 
-## The idea behind it
-
-FlightDeck implements an idea published on the InterSystems Ideas Portal:
-<!-- idea-link-pending --> _link to be added by the author before submission_.
-
 ## License
 
 MIT. See [LICENSE](LICENSE).
