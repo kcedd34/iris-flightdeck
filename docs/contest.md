@@ -224,15 +224,16 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
   obter. O código dessa 0.1.0 é o atual; o README dentro dela estava duas commits atrasado.
   `module.xml` já está em **1.0.1** no repositório. Registro completo, com o diff do artefato baixado
   do registry, em [`verification/package-publication.md`](../verification/package-publication.md).
-- [ ] **Release 1.0.1 no Open Exchange** — **ação do autor, depois da aprovação da submissão.**
-  O caminho é: `module.xml` no GitHub com a versão nova (feito) e então, na página da aplicação,
-  **Release app** em vez de *Send edits* — é a release que dispara o pacote no registry. O número é
-  `1.0.1` porque a página já exibe uma release `1.0.0` enquanto o registry serve `0.1.0`; `1.0.1`
-  está livre dos dois lados e alinha os dois números pela primeira vez.
-  **Por que esperar a aprovação:** a submissão está em moderação agora, e no Open Exchange uma edição
-  só vale depois de revisada. Criar a release antes empilharia uma segunda alteração pendente sobre
-  uma que ainda está sendo lida, e a release ainda dispara notas para os inscritos — coisa que não se
-  manda duas vezes enquanto a listagem é provisória.
+- [x] **Release 1.0.1 no Open Exchange** — criada pelo autor em 21/09, depois da aprovação da
+  submissão, e o registry publicou o pacote a partir dela às 14:48. Release e pacote finalmente
+  exibem o mesmo número. **Verificado**, não presumido: o tarball foi baixado do registry, o SHA-1
+  bate com o que o próprio registry declara, `diff -rq` contra `HEAD` não acusa **nenhum** arquivo
+  diferente, o README dentro dele é o atual nos três pontos que estavam errados na 0.1.0, e o
+  artefato instala numa instância que nunca teve FlightDeck reportando `iris-flightdeck 1.0.1` com o
+  portal respondendo 200. Ressalva registrada em
+  [`verification/package-publication.md`](../verification/package-publication.md): o `zpm "install"`
+  buscando do registry não pôde ser exercitado daqui, porque a saída TCP 443 está bloqueada para os
+  containers desta máquina; o que foi instalado é o artefato idêntico que o registry serve.
   **Ação do autor:** publicar exige conta de publicador em `pm.community.intersystems.com`, que não
   está neste ambiente. Ver "As ações do autor" abaixo.
 - [ ] **Vídeo no YouTube** — roteiro e driver prontos (`docs/demo-script.md`,

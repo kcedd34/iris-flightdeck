@@ -1,4 +1,4 @@
-# The published package: 0.1.0, and why 1.0.1 replaces it
+# The published package: 0.1.0, and the 1.0.1 that replaced it
 
 **2026-09-21.** `iris-flightdeck` was published to the community registry with documentation two
 commits out of date. The code in it was current; the README in it was not. This records what was
@@ -65,9 +65,9 @@ the tree that produced it.** It is the same failure as the double-encoded assets
 fetched from the server that serves them, and as the matrix that ran twice against IRIS for Health
 while reporting three products.
 
-## What replaces it
+## What replaced it
 
-`1.0.1`, built from `HEAD`.
+`1.0.1`, built from `HEAD`. Published on 2026-09-21 and verified below.
 
 The number is `1.0.1` and not `1.0.0` because the Open Exchange listing **already shows a release
 1.0.0**, dated 19 September, while the registry still serves the package `0.1.0`. The page advertises
@@ -83,8 +83,8 @@ finally read the same.
 | Code | unchanged from 0.1.0 |
 | Documentation | current |
 
-The embedded README was checked on the three points that were wrong, from a package built locally
-before any release is created:
+The embedded README was checked on the three points that were wrong, first on a package built
+locally and again on the artefact the registry actually serves:
 
 ```
 Ideas Portal mentions: 0
@@ -118,7 +118,67 @@ With it ticked, Open Exchange reads `module.xml` from the repository and pushes 
 The version comes from `<Version>` at that moment — which was `0.1.0` — and **not** from the release
 number on the listing, which is why the page shows a 1.0.0 release beside a 0.1.0 package.
 
-## The real path, and why it waits
+## 1.0.1, published and verified
+
+Released on Open Exchange on 2026-09-21; the registry published it at 14:48. Verified afterwards
+rather than assumed.
+
+| | |
+|---|---|
+| Registry `latest` | `1.0.1` |
+| Published | 2026-09-21 14:48 |
+| Size | 1 822 054 bytes |
+| SHA-1 (registry metadata) | `25da0f7b01dcc5236c8fd2515387cfadbe675520` |
+| SHA-1 (downloaded twice) | `25da0f7b01dcc5236c8fd2515387cfadbe675520` |
+
+**The artefact matches the tree.** The tarball was downloaded from the registry and compared against
+`HEAD` with `diff -rq`: **no file differs**. The bundle inside is `index-C0RnJ0s0.js`, hashing to
+`628e0cc6a55bd5a5`, the same as the working tree.
+
+**The README inside it is the current one**, checked on the three points that were wrong in 0.1.0:
+
+```
+Ideas Portal mentions: 0
+zpm "install iris-flightdeck"        README.md:128
+FD_Demo_L1 → FD_Demo_L2 → FD_Demo_L3 README.md:338
+FD_Demo_Token                        README.md:341
+```
+
+**It installs on an instance that has never had FlightDeck.** A plain
+`intersystemsdc/iris-community:2026.2-zpm` container was started, confirmed to have no FlightDeck
+class, and the registry's own artefact was installed into it:
+
+```
+FlightDeck: SysAdmin API v2 present
+FlightDeck: role FlightDeck_Runtime created (%DB_USER:R)
+FlightDeck: web application /api/flightdeck present
+FlightDeck: web application /flightdeck present
+FlightDeck: install complete (demo=0)
+
+zpm "list"            -> iris-flightdeck 1.0.1
+GET /flightdeck/      -> 200, serving index-C0RnJ0s0.js
+```
+
+`demo=0`, which is right for this path: the demonstration objects only appear with `-DDemo=1`.
+
+### What this run could not prove
+
+**`zpm "install iris-flightdeck"` was not exercised against the registry from here.** Outbound TCP
+443 is blocked from every Docker container on this machine while the host has it, so IPM reports the
+registry as `Available? No` and answers `'iris-flightdeck' not found in any repository`. The block is
+this environment's, not the package's.
+
+What was installed instead is **the byte-identical artefact the registry serves**, downloaded over
+the host's network and verified twice against the registry's own SHA-1. So everything downstream of
+the fetch is proven; the fetch itself is IPM's transport and is what anyone with network access
+exercises. Worth re-running from a machine whose containers have outbound access before relying on
+it.
+
+One incidental note for whoever repeats this: the stock `intersystemsdc/iris-community` entrypoint
+shuts IRIS down on start, which is why this project's own `Dockerfile` runs `/iris-main --check-caps
+false` directly (feature 001 research R2). A bare `docker run` of the stock image will not stay up.
+
+## The path that got it there, and why it waited
 
 1. `module.xml` carries the new version and is pushed to GitHub. **Done**: `1.0.1` is on the default
    branch.
@@ -132,9 +192,9 @@ number on the listing, which is why the page shows a 1.0.0 release beside a 0.1.
    zpm "install iris-flightdeck"
    ```
 
-   which must report `1.0.1`.
+   which must report `1.0.1`. **Done** — see above, with the caveat about the fetch.
 
-**Step 2 waits until the submission is approved.** The submission is in moderation now, and on Open
+**Step 2 waited until the submission was approved.** The submission is in moderation now, and on Open
 Exchange an edit is not live until it is reviewed: "As soon as you send your edits for approval and
 they are approved, you will no longer see these signs"
 ([Update an application](https://docs.openexchange.intersystems.com/apps/update/)). Creating a
@@ -144,7 +204,8 @@ publishes release notes to subscribers, which is not something to send twice whi
 still provisional. That last part is reasoning rather than a quotation: the documentation states that
 edits require approval, not what happens when they overlap a pending submission.
 
-**Nothing is published by this repository.** Releasing is the author's action, after approval.
+**Nothing is published by this repository.** The release was the author's action, taken after the
+submission was approved, and the registry published the package from it.
 
 ## What to do next time
 
