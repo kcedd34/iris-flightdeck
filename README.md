@@ -1,7 +1,7 @@
 # FlightDeck for InterSystems IRIS
 
 - **Try it:** [the live demo](#try-it-without-installing-anything) at http://109.123.244.170/ — `demo` / `AZVB8skQvGzRuS5tFDc6Xki9`, or `demo_reduced` / `etdhb0l76Dls13B76UzWcqRo` for a non-administrator. A real IRIS instance, not a simulator, rebuilt every hour.
-- **Install it:** [one command](#install), `docker compose up -d` after cloning — or `zpm "install iris-flightdeck"`, version 1.0.1.
+- **Install it:** [one command](#install), `docker compose up -d` after cloning — or `zpm "install iris-flightdeck"`, version 1.0.1, [on Open Exchange](https://openexchange.intersystems.com/package/iris-flightdeck).
 - **What it covers:** [all 273 official SysAdmin API operations, by domain](docs/api-coverage.md).
 - **What has actually run:** [functional coverage](verification/functional-coverage.md) — 138 verified by an independent read-back, 91 exempt by name, 39 still open, with the gate red on purpose.
 - **What the platform answered:** [platform findings](verification/README.md), with the raw responses.
@@ -136,8 +136,8 @@ bind mounts, and a restricted egress rule. It is what runs the public demo.
 
 ### Install with IPM on an existing instance
 
-The current version is **1.0.1**, published on Open Exchange and in the public IPM registry
-([`iris-flightdeck`](https://pm.community.intersystems.com/packages/iris-flightdeck)).
+The current version is **1.0.1**, published on [Open Exchange](https://openexchange.intersystems.com/package/iris-flightdeck) and in the public IPM
+registry ([`iris-flightdeck`](https://pm.community.intersystems.com/packages/iris-flightdeck)).
 
 This path needs IPM (ZPM) already installed on the instance — the `-zpm` Community images carry it.
 On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want
@@ -281,6 +281,9 @@ and every change you confirm is applied to it.
    **Terminate** is disabled with the instance's own answer beside it.
    `scripts/dev/check-mutation-enforcement.sh` sends the safe-mode and own-application refusals
    straight to the API, with no interface involved.
+
+   ![The last-administrator refusal: disabling the only remaining administrator is refused, naming what was counted and what could not be, with Apply disabled](docs/img/self-protection.png)
+
 8. **Security and secrets.** Set a secret in `FD_Demo_Vault`: it is never shown again, anywhere. The
    encryption writes are disabled, each naming its reason and the native path that performs it.
 9. **Tasks.** `FD Demo failing task` fails on purpose. From a failed run, *open the logs of this
@@ -289,6 +292,9 @@ and every change you confirm is applied to it.
     no level reads `unknown`, not a guess. Open an event for the original record behind it, then turn
     on live follow. On this axis you can also change the journal settings, switch the journal file and
     define audit events, through the same rehearsal.
+
+    ![The unified log stream: audit records and system messages in one list, each source saying how much it read, with one event open on its original record](docs/img/log-stream.png)
+
 11. **The session trail.** Open it from the palette by name: what this tab applied and what was
     refused, each with its reason. Export it as JSON; secret fields appear as changed or unchanged,
     never as values.

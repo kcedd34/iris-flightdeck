@@ -14,9 +14,11 @@ human can judge.
 
 Usage: check-readme.py
 """
+import html
 import json
 import re
 import sys
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,6 +28,11 @@ POLICY = ROOT / "backend" / "cls" / "FlightDeck" / "Capability" / "Policy.cls"
 COVERAGE = ROOT / "docs" / "api-coverage.md"
 FUNCTIONAL = ROOT / "verification" / "functional-coverage.md"
 MODULE = ROOT / "module.xml"
+
+# The public demo prints its accounts in this meta tag, from the VM's own .env. The README repeats
+# them, so the README is a copy of something that lives on another machine, and copies drift.
+DEMO_PAGE = "http://109.123.244.170/flightdeck/"
+DEMO_META = re.compile(r'<meta\s+name="fd-demo-notice"\s+content="([^"]*)"')
 
 # Where each fast-path line must lead. The fast path is for a reader with a few minutes, so a line
 # that stops leading where it says is worse than no line.
@@ -351,6 +358,46 @@ def check_declined(readme, declined, problems):
 
 
 
+def check_demo_credentials(readme, problems, warnings):
+    """The demo accounts in the README must be the ones the demo serves.
+
+    A mismatch fails: the README would hand an evaluator a password that is refused. The demo being
+    unreachable only warns, because a machine that is down is not a defect of this repository, and a
+    build must not go red on someone else's network.
+    """
+    written = {}
+    for user, password in re.findall(r"`(demo(?:_reduced)?)`\s*(?:/|\|)\s*`([^`]+)`", readme.text):
+        written.setdefault(user, set()).add(password)
+    if not written:
+        problems.append("demo credentials — the README states no `demo` / `password` pair")
+        return
+    try:
+        with urllib.request.urlopen(DEMO_PAGE, timeout=10) as response:
+            page = response.read().decode("utf-8", "replace")
+    except Exception as error:  # noqa: BLE001 — any failure to reach it is the same case
+        warnings.append(f"demo credentials — not compared: {DEMO_PAGE} did not answer ({error.__class__.__name__}: {error})")
+        return
+    match = DEMO_META.search(page)
+    if not match:
+        warnings.append(f"demo credentials — not compared: {DEMO_PAGE} answered without the fd-demo-notice meta tag")
+        return
+    fields = html.unescape(match.group(1)).split("\t")
+    served = {}
+    if len(fields) >= 2:
+        served[fields[0]] = fields[1]
+    if len(fields) >= 5:
+        served[fields[3]] = fields[4]
+    for user, passwords in sorted(written.items()):
+        if user not in served:
+            problems.append(f"demo credentials — the README publishes `{user}`, which the demo does not serve")
+            continue
+        for password in sorted(passwords):
+            if password != served[user]:
+                problems.append(f"demo credentials — the README gives `{user}` a password the demo does not serve")
+    for user in sorted(set(served) - set(written)):
+        problems.append(f"demo credentials — the demo serves `{user}`, which the README does not state")
+
+
 def check_license(readme, problems):
     at = readme.heading("License")
     if at is None:
@@ -387,6 +434,9 @@ def main():
         11: check_declined(readme, declined, problems),
         12: check_license(readme, problems),
     }
+
+    # Not an ordered element: a fact about another machine, checked against that machine.
+    check_demo_credentials(readme, problems, warnings)
 
     # Order is the requirement a well-meaning edit is most likely to break, so a violation names both
     # neighbours rather than only the element that moved.

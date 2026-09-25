@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { disarm, setTheme, signIn } from "./setup/helpers";
-import { adminRequest } from "./setup/users";
+import { administrators } from "./setup/administrators";
+import { ADMIN, adminRequest } from "./setup/users";
 
 // Feature 006, User Story 1: the documentation images, produced from the running portal.
 //
@@ -93,4 +94,65 @@ test("capture: a dry-run with its impact analysis", async ({ page }) => {
   await page.screenshot({ path: `${OUT}/dry-run.png` });
   await dryRun.getByRole("button", { name: "Cancel" }).click();
   await expect(dryRun).toHaveCount(0);
+});
+
+// The two added for the README's tour, at the resolution the tour is read at. The first three stay at
+// the project's 1440x900 until they are recaptured.
+test.describe("at 1920x1080", () => {
+  test.use({ viewport: { width: 1920, height: 1080 } });
+
+  test("capture: the unified log stream, with an event open", async ({ page }) => {
+    await signIn(page);
+    await setTheme(page, "dark");
+    await page.goto("logs/stream");
+    await expect(page.getByTestId("logs-sources")).toBeVisible();
+    const list = page.getByTestId("log-list").getByRole("listitem");
+    await expect(list.first()).toBeVisible();
+    // Several sources must have reported, or the picture is one log with a new name. The stream is
+    // settled when the row count stops moving between two reads.
+    await expect
+      .poll(async () => {
+        const before = await list.count();
+        await page.waitForTimeout(1_500);
+        return before > 0 && before === (await list.count());
+      }, { timeout: 30_000, intervals: [0] })
+      .toBe(true);
+    await list.first().click();
+    // The original record behind the normalised line is the argument this image makes.
+    await expect(page.getByTestId("log-event")).toBeVisible();
+    await page.screenshot({ path: `${OUT}/log-stream.png` });
+  });
+
+  test("capture: the last-administrator refusal", async ({ page }) => {
+    // The refusal fires only when it is true, so the capture makes it true: every other counted
+    // administrator is disabled through the official API for the length of this test and re-enabled
+    // in the finally, exactly as the demo's shot 7 does. Nothing is staged in the portal.
+    const keep = ADMIN.user;
+    const suspended: string[] = [];
+    try {
+      for (const name of (await administrators()) ?? []) {
+        if (name === keep) continue;
+        await adminRequest("PUT", "/security/user", { name }, { Enabled: false });
+        suspended.push(name);
+      }
+      await signIn(page);
+      await setTheme(page, "dark");
+      await page.goto(`permissions/users?inspect=${encodeURIComponent(`permissions/user:${keep}`)}`);
+      await expect(page.getByTestId("entity-inspector").getByRole("heading", { name: keep })).toBeVisible();
+      await disarm(page);
+      await page.getByTestId("action-PUT-v2-security-user-edit").click();
+      const form = page.getByTestId("object-form");
+      await form.locator("#f-Enabled").uncheck();
+      await form.getByTestId("form-submit").click();
+      const dryRun = page.getByTestId("dry-run");
+      await expect(dryRun.getByTestId("dry-run-message")).toContainText("no administrator");
+      await expect(dryRun.getByTestId("dry-run-apply")).toBeDisabled();
+      await page.waitForLoadState("networkidle");
+      await page.screenshot({ path: `${OUT}/self-protection.png` });
+      await dryRun.getByRole("button", { name: "Cancel" }).click();
+      await expect(dryRun).toHaveCount(0);
+    } finally {
+      for (const name of suspended) await adminRequest("PUT", "/security/user", { name }, { Enabled: true });
+    }
+  });
 });
