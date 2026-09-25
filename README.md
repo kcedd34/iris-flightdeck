@@ -1,5 +1,19 @@
 # FlightDeck for InterSystems IRIS
 
+- **Try it:** [the live demo](#try-it-without-installing-anything) at http://109.123.244.170/ — `demo` / `AZVB8skQvGzRuS5tFDc6Xki9`, or `demo_reduced` / `etdhb0l76Dls13B76UzWcqRo` for a non-administrator. A real IRIS instance, not a simulator, rebuilt every hour.
+- **Install it:** [one command](#install), `docker compose up -d` after cloning — or `zpm "install iris-flightdeck"`, version 1.0.1.
+- **What it covers:** [all 273 official SysAdmin API operations, by domain](docs/api-coverage.md).
+- **What has actually run:** [functional coverage](verification/functional-coverage.md) — 138 verified by an independent read-back, 91 exempt by name, 39 still open, with the gate red on purpose.
+- **What the platform answered:** [platform findings](verification/README.md), with the raw responses.
+
+It changes the instance, not only displays it, on all six axes the contest names — logs and security
+included. Every change is rehearsed first, as a field-by-field difference and the users it
+would affect, and applied only after you confirm it. The protections that keep the portal from
+damaging the instance or itself are enforced by the server, so a request sent directly, bypassing
+the interface, is refused the same way.
+
+![The instrument cluster: CPU, memory, shared memory, disk, processes and devices, each with its live reading and a trailing time series drawn on canvas](docs/img/instruments.png)
+
 FlightDeck is a keyboard-first management portal for InterSystems IRIS that ships as a container you
 can run in one command: you drive it from a command palette, every browser tab starts read-only, and
 every change is shown to you first — the exact fields that would change and the users who would lose
@@ -7,7 +21,9 @@ access — and only applied once you confirm. It is built entirely on IRIS's off
 (the REST management API under `/api/admin`), so what you can see and do is exactly what your own
 IRIS account is allowed to see and do, and your password is never stored by any part of it.
 
-![The instrument cluster: CPU, memory, shared memory, disk, processes and devices, each with its live reading and a trailing time series drawn on canvas](docs/img/instruments.png)
+There is no video. The contest asks for a video or a description of how the portal works, and this
+README is the description — [a tour](#a-tour-in-place-of-a-video) you can follow on the live demo,
+because trying it against a real instance shows more than a recording of one.
 
 ## Install
 
@@ -120,6 +136,9 @@ bind mounts, and a restricted egress rule. It is what runs the public demo.
 
 ### Install with IPM on an existing instance
 
+The current version is **1.0.1**, published on Open Exchange and in the public IPM registry
+([`iris-flightdeck`](https://pm.community.intersystems.com/packages/iris-flightdeck)).
+
 This path needs IPM (ZPM) already installed on the instance — the `-zpm` Community images carry it.
 On IRIS 2026.2 or later (2026.1 installs in limited mode), in the namespace where you want
 FlightDeck:
@@ -163,12 +182,12 @@ There is a public demo at **http://109.123.244.170/**.
 **It runs against a real InterSystems IRIS Community instance, not a simulator**: every operation you
 perform there is executed against the platform, which is why the instance is rebuilt every hour.
 
-Two accounts are published, and both are printed on the demo's own sign-in form:
+Two accounts are published, here and on the demo's own sign-in form:
 
 | User | Password | What it shows |
 |---|---|---|
-| `demo` | *printed on the demo's sign-in form* | Full administrator: every domain and every operation this IRIS offers. |
-| `demo_reduced` | *printed on the demo's sign-in form* | Reduced privileges — the stock `%Operator` role and nothing else. 57 of the 273 operations are offered; the rest are disabled naming the privilege they need, and Permissions and Web applications cannot be opened at all. It is the capability map with something to show, which the first account cannot do because an administrator holding `%All` never sees a disabled control. |
+| `demo` | `AZVB8skQvGzRuS5tFDc6Xki9` | Full administrator: every domain and every operation this IRIS offers. |
+| `demo_reduced` | `etdhb0l76Dls13B76UzWcqRo` | Reduced privileges — the stock `%Operator` role and nothing else. 57 of the 273 operations are offered; the rest are disabled naming the privilege they need, and Permissions and Web applications cannot be opened at all. It is the capability map with something to show, which the first account cannot do because an administrator holding `%All` never sees a disabled control. |
 
 **These are not the credentials above.** The local Docker install signs in with `_SYSTEM` / `SYS`,
 the InterSystems Community image's own default. The demo instance has a different administrative
@@ -233,6 +252,49 @@ above takes a couple of minutes.
   journal through it, and implements the messages log, the alerts log and the interoperability event
   log natively, normalising all five into one line that keeps every original record. This is the part
   of the portal that could not be assembled from the API alone.
+
+## A tour, in place of a video
+
+Each step works on the [live demo](#try-it-without-installing-anything) signed in as `demo`, and on
+a local install signed in as `_SYSTEM`. Nothing in it is simulated: every screen reads the instance,
+and every change you confirm is applied to it.
+
+1. **The instrument cluster.** Open it from the palette. CPU and memory are read from the host, shared
+   memory and disk from the SysAdmin API, once a second; the trailing series fills as you watch and
+   lives only in the tab.
+2. **The palette.** <kbd>Ctrl</kbd>+<kbd>K</kbd>, `FD_Demo`: roles, resources, a web application,
+   tasks and a wallet collection, grouped by domain. Every destination below is reachable from here.
+3. **A rehearsed deletion.** Open `FD_Demo_Operator`, turn off safe mode for this tab, press
+   **Delete**. The rehearsal shows the fields that would change, the users who would lose a privilege
+   and which one, and asks you to type the role's name. Cancel, and nothing has been sent. Confirm,
+   and the server recomputes the rehearsal before applying it, refusing if the role changed since you
+   read it.
+4. **Safe mode.** Open a second tab: it starts read-only. The server refuses a change from it before
+   anything reaches IRIS.
+5. **Web applications and REST.** `/csp/fd-demo` carries the *No authentication* marker. In the REST
+   explorer, run `GET /api/flightdeck/v1/session/capabilities`: it is dispatched in-process, as you,
+   and the panel shows status and time.
+6. **Permissions.** Open a privilege held through `FD_Demo_L1` → `FD_Demo_L2` → `FD_Demo_L3` and read
+   the chain that grants it. The account list marks disabled and expired accounts.
+7. **Self-protection.** Try to disable `/api/flightdeck`: the server refuses and says why. It refuses
+   the same way a change that would leave no enabled account with administrative access. A daemon's
+   **Terminate** is disabled with the instance's own answer beside it.
+   `scripts/dev/check-mutation-enforcement.sh` sends the safe-mode and own-application refusals
+   straight to the API, with no interface involved.
+8. **Security and secrets.** Set a secret in `FD_Demo_Vault`: it is never shown again, anywhere. The
+   encryption writes are disabled, each naming its reason and the native path that performs it.
+9. **Tasks.** `FD Demo failing task` fails on purpose. From a failed run, *open the logs of this
+   period* opens the stream filtered on that task and that window, and says so.
+10. **Logs.** Five sources under one schema, each saying how much it read. A line whose source states
+    no level reads `unknown`, not a guess. Open an event for the original record behind it, then turn
+    on live follow. On this axis you can also change the journal settings, switch the journal file and
+    define audit events, through the same rehearsal.
+11. **The session trail.** Open it from the palette by name: what this tab applied and what was
+    refused, each with its reason. Export it as JSON; secret fields appear as changed or unchanged,
+    never as values.
+12. **The reduced account.** Sign in as `demo_reduced`, which holds only `%Operator`: 57 of the 273
+    operations are offered, and every other control is visible, disabled, naming the privilege it
+    needs.
 
 ## Compatibility
 

@@ -1,6 +1,6 @@
 # Contract: what the README must contain, and in what order
 
-This is the ten required elements turned into statements a gate can check. `scripts/build/check-readme.py`
+This is the required elements turned into statements a gate can check. `scripts/build/check-readme.py`
 implements it and runs inside `scripts/build/check-generated.sh`, beside the other gates.
 
 The gate exists because the README is the one artifact in this repository that carries checkable
@@ -15,38 +15,50 @@ and the contract says so rather than pretending otherwise.
 
 So: the gate is the floor, the cold read is the ceiling, and neither substitutes for the other.
 
-## The ten elements, in order
+## The twelve elements, in order
 
 Each element is identified by an **anchor** — a heading or a marker the gate finds. The gate asserts
 that every anchor is present, and that they appear in this relative order.
 
+This list was ten elements at feature 006. The idea link (then element 9) was dropped when it turned
+out not to be a requirement of this contest, leaving nine. Three were added on 2026-09-25 for a reader
+with a few minutes and no context: the fast path, the three-sentence paragraph under it, and the tour
+that stands in for a video. The instrument cluster moved above "what it is", so it stays above the
+fold under the new opening.
+
 | # | Element | Anchor | Checked |
 |---|---|---|---|
-| 1 | What it is, two sentences, leading with the interaction model | The first paragraph after the `# ` title | Present; at most **two** sentences; appears before any list; contains no bulleted feature |
-| 2 | The instrument cluster, above the fold | An image reference to `docs/img/instruments.*` | Present; appears **before** the installation heading; within the first 1200 characters of the file |
-| 3 | Installation, one command first, package second, port conflict documented | `## Install` … with the container path first | The container block appears before the package block; a port-conflict subsection exists **inside** the installation section, not in troubleshooting |
-| 4 | The six contest domains, one line each | `## The six domains` | Present; exactly **six** list items; each names a domain and what the portal does there |
-| 5 | What makes it different | `## What makes it different` | Present; contains all five claims: command palette, entity graph, dry-run, safe mode, log stream |
-| 6 | Compatibility | `## Compatibility` | Present; names SysAdmin API **v2** as required; names both supported versions with their release channel; the counts satisfy `allowed + unavailable + declined = total` for each, and each count is attributed to a named version |
-| 7 | REST executor confinement | A statement that it is confined to the instance and **not an outbound proxy** | Present; the exact phrase "not an outbound proxy" appears |
-| 8 | Declined operations, as decisions | `## What FlightDeck declines to do` | Present; every operation in `FlightDeck.Capability.Policy` is accounted for by its group; the journal statement is present and **separate** from the declined list |
-| 9 | The idea link | A line naming the InterSystems Ideas Portal | Present. The URL itself is an author action: the gate accepts the final wording with the link **or** with the declared placeholder marker, and prints a warning while the placeholder is there, so it is never forgotten silently |
-| 10 | MIT licence | `## License` and the `LICENSE` file | Heading present; the word MIT present; `LICENSE` exists in the repository root |
+| 1 | Fast path | The list right after the `# ` title | At most **five** lines, each with a link; links to the live demo, the install, `docs/api-coverage.md`, `verification/functional-coverage.md` and `verification/README.md`; states the operation total the coverage document assigns, the verified / exempt / open counts `verification/functional-coverage.md` records, and the version `module.xml` declares |
+| 2 | What it does that a management portal usually does not | The paragraph after the fast path | Exactly **three** sentences; mentions logs, security and the server |
+| 3 | The instrument cluster, above the fold | An image reference to `docs/img/instruments.*` | The third block after the title, with only elements 1 and 2 above it; before the installation heading |
+| 4 | What it is, two sentences, leading with the interaction model; then the no-video statement | The paragraph after the cluster | At most **two** sentences; above the installation heading, a statement that there is no video, linking to the tour |
+| 5 | Installation, one command first, package second, port conflict documented | `## Install` … with the container path first | The container block appears before `zpm "install iris-flightdeck"`; the current version from `module.xml` is stated in bold; a port-conflict subsection exists **inside** the installation section, not in troubleshooting |
+| 6 | The six contest domains, one line each | `## The six domains` | Present; exactly **six** list items |
+| 7 | What makes it different | `## What makes it different` | Present; contains all five claims: command palette, entity graph, dry-run, safe mode, log stream |
+| 8 | A tour, in place of a video | `## A tour, in place of a video` | Present; a numbered walk-through of at least six steps |
+| 9 | Compatibility | `## Compatibility` | Present; names SysAdmin API **v2** as required; names both supported versions; the counts satisfy `allowed + unavailable + declined = total` for each, and each count is attributed to a named version |
+| 10 | REST executor confinement | A statement that it is confined to the instance and **not an outbound proxy** | Present; the exact phrase "not an outbound proxy" appears |
+| 11 | Declined operations, as decisions | `## What FlightDeck declines to do` | Present; every operation in `FlightDeck.Capability.Policy` is accounted for by its group; the journal statement is present and **separate** from the declined list |
+| 12 | MIT licence | `## License` and the `LICENSE` file | Heading present; the word MIT present; `LICENSE` exists in the repository root |
 
-## Element 1 in detail
+The fold used to be checked as "within the first 1200 characters". The fast path's link targets add
+characters that render as nothing, so the rule is now structural: nothing but elements 1 and 2 may
+stand between the title and the cluster.
+
+## Element 4 in detail
 
 The hardest to check and the most important. The gate enforces what it can:
 
-- it is the first paragraph after the title;
+- it is the first paragraph after the instrument cluster;
 - it is **at most two sentences**, counted on sentence-ending punctuation outside of code and links;
-- no list, image or heading comes between the title and it.
+- only the fast path, the three-sentence paragraph and the cluster come between the title and it.
 
 It cannot enforce "leads with the interaction model". That is asserted by the cold read: a reader who
 has finished the first paragraph must be able to say how the portal is operated. The contract records
 the intent so a later edit that turns it into a feature summary is a visible regression rather than a
 style preference.
 
-## Element 6 in detail
+## Element 9 in detail
 
 The compatibility numbers are the README's most perishable content, and they are the ones a judge can
 check fastest. The gate asserts:
@@ -60,7 +72,7 @@ It does **not** assert the per-version `allowed` and `unavailable` against a liv
 require both versions running on every build (research R1). The arithmetic and the attribution catch
 the realistic failure, which is a number carried forward after the map changed.
 
-## Element 8 in detail
+## Element 11 in detail
 
 The gate reads `FlightDeck.Capability.Policy` structurally — the same way `check-coverage.py` reads
 descriptors — and asserts that every declined operation belongs to a group the README names, and that
@@ -77,9 +89,9 @@ would lose the only statement in the README that explains where native providers
 The gate names the element, what it expected and what it found, in the style of the existing gates:
 
 ```text
-check-readme: element 4 (the six domains) — expected 6 list items under "## The six domains", found 5
-check-readme: element 6 (compatibility) — IRIS CE 2026.1: 200 + 62 + 11 = 273, declared total 274
-check-readme: ok (10 elements, in order; idea link pending — author action)
+check-readme: element 6 (the six domains) — expected 6 list items under "## The six domains", found 5
+check-readme: element 9 (compatibility) — IRIS CE 2026.1: 200 + 62 + 11 = 273, declared total 274
+check-readme: ok (12 elements, in order)
 ```
 
 An element that is present but out of order is reported as an order failure naming both neighbours,
