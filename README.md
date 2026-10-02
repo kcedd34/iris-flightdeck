@@ -21,9 +21,10 @@ access — and only applied once you confirm. It is built entirely on IRIS's off
 (the REST management API under `/api/admin`), so what you can see and do is exactly what your own
 IRIS account is allowed to see and do, and your password is never stored by any part of it.
 
-There is no video. The contest asks for a video or a description of how the portal works, and this
-README is the description — [a tour](#a-tour-in-place-of-a-video) you can follow on the live demo,
-because trying it against a real instance shows more than a recording of one.
+**Watch it:** [the demo video](https://youtu.be/kutpesgX4wY) walks through the portal against a real
+IRIS instance. To try the same steps yourself, follow [the tour](#a-tour) on the live demo.
+
+[![FlightDeck demo video on YouTube](https://img.youtube.com/vi/kutpesgX4wY/hqdefault.jpg)](https://youtu.be/kutpesgX4wY)
 
 ## Install
 
@@ -253,9 +254,9 @@ above takes a couple of minutes.
   log natively, normalising all five into one line that keeps every original record. This is the part
   of the portal that could not be assembled from the API alone.
 
-## A tour, in place of a video
+## A tour
 
-Each step works on the [live demo](#try-it-without-installing-anything) signed in as `demo`, and on
+The [demo video](https://youtu.be/kutpesgX4wY) shows these steps. Each one works on the [live demo](#try-it-without-installing-anything) signed in as `demo`, and on
 a local install signed in as `_SYSTEM`. Nothing in it is simulated: every screen reads the instance,
 and every change you confirm is applied to it.
 

@@ -23,19 +23,20 @@ that every anchor is present, and that they appear in this relative order.
 This list was ten elements at feature 006. The idea link (then element 9) was dropped when it turned
 out not to be a requirement of this contest, leaving nine. Three were added on 2026-09-25 for a reader
 with a few minutes and no context: the fast path, the three-sentence paragraph under it, and the tour
-that stands in for a video. The instrument cluster moved above "what it is", so it stays above the
-fold under the new opening.
+that stood in for a video. The instrument cluster moved above "what it is", so it stays above the
+fold under the new opening. On 2026-10-02 a demo video was published: the no-video statement became a
+line linking to the video and the tour, and the tour's heading became `## A tour`.
 
 | # | Element | Anchor | Checked |
 |---|---|---|---|
 | 1 | Fast path | The list right after the `# ` title | At most **five** lines, each with a link; links to the live demo, the install, `docs/api-coverage.md`, `verification/functional-coverage.md` and `verification/README.md`; states the operation total the coverage document assigns, the verified / exempt / open counts `verification/functional-coverage.md` records, and the version `module.xml` declares |
 | 2 | What it does that a management portal usually does not | The paragraph after the fast path | Exactly **three** sentences; mentions logs, security and the server |
 | 3 | The instrument cluster, above the fold | An image reference to `docs/img/instruments.*` | The third block after the title, with only elements 1 and 2 above it; before the installation heading |
-| 4 | What it is, two sentences, leading with the interaction model; then the no-video statement | The paragraph after the cluster | At most **two** sentences; above the installation heading, a statement that there is no video, linking to the tour |
+| 4 | What it is, two sentences, leading with the interaction model; then the video line | The paragraph after the cluster | At most **two** sentences; above the installation heading, a line linking to the demo video (`https://youtu.be/kutpesgX4wY`) and to the tour |
 | 5 | Installation, one command first, package second, port conflict documented | `## Install` … with the container path first | The container block appears before `zpm "install iris-flightdeck"`; the current version from `module.xml` is stated in bold; a port-conflict subsection exists **inside** the installation section, not in troubleshooting |
 | 6 | The six contest domains, one line each | `## The six domains` | Present; exactly **six** list items |
 | 7 | What makes it different | `## What makes it different` | Present; contains all five claims: command palette, entity graph, dry-run, safe mode, log stream |
-| 8 | A tour, in place of a video | `## A tour, in place of a video` | Present; a numbered walk-through of at least six steps |
+| 8 | A tour | `## A tour` | Present; a numbered walk-through of at least six steps |
 | 9 | Compatibility | `## Compatibility` | Present; names SysAdmin API **v2** as required; names both supported versions; the counts satisfy `allowed + unavailable + declined = total` for each, and each count is attributed to a named version |
 | 10 | REST executor confinement | A statement that it is confined to the instance and **not an outbound proxy** | Present; the exact phrase "not an outbound proxy" appears |
 | 11 | Declined operations, as decisions | `## What FlightDeck declines to do` | Present; every operation in `FlightDeck.Capability.Policy` is accounted for by its group; the journal statement is present and **separate** from the declined list |

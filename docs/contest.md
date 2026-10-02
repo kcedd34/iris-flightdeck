@@ -53,7 +53,7 @@ O enunciado ainda convida: "Feel free to add any other screens or actions you fr
 - [ ] Roda em IRIS Community Edition **ou** IRIS for Health Community Edition
 - [ ] Código aberto, publicado no GitHub ou GitLab
 - [ ] README em inglês, com passos de instalação
-- [x] Vídeo demo **ou** descrição detalhada de funcionamento — met by the description, not by a video (§2.4)
+- [x] Vídeo demo **ou** descrição detalhada de funcionamento — both: the [demo video](https://youtu.be/kutpesgX4wY) and the README's tour (§2.4)
 - [ ] Máximo de três submissões por desenvolvedor. Esta é uma; sobram duas
 - [ ] Aprovada pela moderação do Open Exchange antes de aparecer na página do contest
 
@@ -75,7 +75,14 @@ observações:
 Consequência: a seção do link foi removida do README e o `check-readme` passou de dez para nove
 elementos. Não há requisito pendente aqui, e nenhum ponto perdido.
 
-### 2.4 No video: a decision, recorded on 2026-09-25
+### 2.4 The video: decided against on 2026-09-25, published on 2026-10-02
+
+**Superseded on 2026-10-02.** The author published a demo video,
+[FlightDeck: a keyboard-first management portal for InterSystems IRIS](https://youtu.be/kutpesgX4wY).
+The README links to it above the installation section, next to the tour, which stays as the
+description that can be followed on the live demo. `check-readme` element 4 now requires the link to
+the video and to the tour; element 8's heading is `## A tour`. The YouTube bonus is back in play. The
+original decision follows, kept as it was recorded.
 
 **There will be no video.** The requirement is *a demo video **or** a detailed description of how it
 works*, and the README meets it with the description: the section "A tour, in place of a video" is a
@@ -108,7 +115,7 @@ A página do Open Exchange diz textualmente que os bônus de tecnologia ainda se
 | Docker Compose funcional | Baixo | Sim, UC11 |
 | Demonstração online acessível | Médio | Não. Avaliar quando os bônus saírem |
 | Artigo na Developer Community | Meio dia | Sim, na janela de votação |
-| Vídeo no YouTube | Meio dia | Not pursued: the README's tour meets the requirement (§2.4) |
+| Vídeo no YouTube | Meio dia | Done on 2026-10-02: https://youtu.be/kutpesgX4wY, linked from the README (§2.4) |
 | Implementar ideia do Ideas Portal | — | Não aplicável. O bônus é de ideias com status Community Opportunity (Seção 6); o "link to the idea" do modelo da página não é requisito (Seção 2.3) |
 | Uso de LLM ou IA | Variável | Não previsto. Não forçar: acoplamento artificial prejudica Applicability |
 
@@ -202,9 +209,9 @@ Julgamento:
   da tag.
 - [x] **Todas as telas com dados no primeiro acesso** — registrado em cada corrida de
   `verification/install-runs.md`, com a última tela conferida nomeada.
-- [x] **How it works, opening on the instrument cluster and the dry-run, not on a menu** — no video
-  (§2.4). The README's fast path, the cluster above the fold and "A tour, in place of a video" carry
-  it, checked by `check-readme`.
+- [x] **How it works, opening on the instrument cluster and the dry-run, not on a menu** — the
+  [demo video](https://youtu.be/kutpesgX4wY) (§2.4), and in the README the fast path, the cluster
+  above the fold and "A tour", checked by `check-readme`.
 
 Formal:
 
@@ -257,6 +264,8 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
   Justificativa técnica no README ("Where FlightDeck uses Embedded Python, and why"); equivalência
   antes/depois e degradação registradas em `verification/README.md`. Matriz completa verde nas três
   versões depois da reescrita.
+- [x] **YouTube video** — published by the author on 2026-10-02 at
+  https://youtu.be/kutpesgX4wY and linked from the README above the installation section (§2.4).
 - [ ] **Artigo na Developer Community** — rascunho do primeiro em `docs/article-1.md`.
   **Ação do autor:** revisar e publicar.
 - [ ] **Segundo artigo na Developer Community** — não rascunhado. Material sobra: o adaptador de
@@ -269,8 +278,6 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
 
 **Não aplicáveis, e por quê.** Reivindicar qualquer um destes exigiria inventar acoplamento:
 
-- [ ] ~~**YouTube video**~~ — **not pursued** (§2.4). The contest asks for a video or a description,
-  and the description is the README's tour, followed on the live demo.
 - [ ] ~~**First Time Contribution**~~ — não é a primeira contribuição do autor.
 - [ ] ~~**Vector Search**~~ — o portal não armazena nem indexa nada. Não há corpus para vetorizar;
   o stream de logs é explicitamente um leitor, não uma plataforma de logs (README).
@@ -287,7 +294,7 @@ própria: forçar correspondência para pontuar prejudica Applicability, que é 
 
 | Ação | O que falta | Prazo |
 |---|---|---|
-| ~~Vídeo~~ | **Closed on 2026-09-25: not made** (§2.4). The README's tour is the description the requirement accepts | — |
+| ~~Vídeo~~ | **Closed on 2026-10-02: published** at https://youtu.be/kutpesgX4wY and linked from the README (§2.4) | — |
 | Leitura fria humana | Um leitor que conhece IRIS e não conhece o FlightDeck, cronometrado | Antes da submissão |
 | ~~URL de clone no README~~ | **Fechado em 18/09.** O repositório foi publicado em `https://github.com/kcedd34/iris-flightdeck` (privado por enquanto) e o README traz o `git clone` real e copiável. Quando o repositório virar público, nada muda; se mudar de dono ou de nome, a linha do README acompanha | — |
 | Publicar o pacote no registry | Conta de publicador em `pm.community.intersystems.com`. Com ela: `zpm "repo -n registry -r -url https://pm.community.intersystems.com/ -user <usuário> -pass <senha>"` e depois `zpm "iris-flightdeck publish"`. **O nome publicado está decidido e não muda**: o módulo chama-se `iris-flightdeck`, a submissão no Open Exchange está publicada com esse nome, e o comando do avaliador é, em toda parte, `zpm "install iris-flightdeck"`. O nome do produto continua FlightDeck; `iris-flightdeck` é o identificador do pacote e do repositório | Antes da submissão |

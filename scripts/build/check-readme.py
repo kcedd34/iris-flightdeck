@@ -34,6 +34,10 @@ MODULE = ROOT / "module.xml"
 DEMO_PAGE = "http://109.123.244.170/flightdeck/"
 DEMO_META = re.compile(r'<meta\s+name="fd-demo-notice"\s+content="([^"]*)"')
 
+# The demo video. The contest asks for a video or a description; the README links to the one and
+# carries the other, the tour.
+VIDEO = "(https://youtu.be/kutpesgX4wY)"
+
 # Where each fast-path line must lead. The fast path is for a reader with a few minutes, so a line
 # that stops leading where it says is worse than no line.
 FAST_PATH_TARGETS = {
@@ -199,7 +203,7 @@ def check_image(readme, install_at, problems):
 
 
 def check_opening(readme, problems):
-    """Element 4: what it is, at most two sentences, right under the cluster; then the no-video line."""
+    """Element 4: what it is, at most two sentences, right under the cluster; then the video line."""
     head = top(readme)
     if len(head) < 4 or head[3][1].startswith(("-", "*", "!", "#", ">", "|")):
         problems.append("element 4 (what it is) — no paragraph follows the instrument cluster")
@@ -208,20 +212,20 @@ def check_opening(readme, problems):
     count = len(sentences(body))
     if count > 2:
         problems.append(f"element 4 (what it is) — expected at most 2 sentences, found {count}")
-    # The contest asks for a video or a description. The choice is stated, and points at the description.
+    # The contest asks for a video or a description. Both exist; the line above the install links to each.
     rest = " ".join(b for _, b in head[4:])
-    if "no video" not in rest.lower() or "(#a-tour-in-place-of-a-video)" not in rest:
-        problems.append("element 4 (what it is) — the statement that there is no video, linking to the tour, is missing above the installation section")
+    if VIDEO not in rest or "(#a-tour)" not in rest:
+        problems.append("element 4 (what it is) — the line linking to the demo video and to the tour is missing above the installation section")
     return at
 
 
 def check_tour(readme, problems):
-    """Element 8: the description of how it works, which stands in for the video."""
-    at = readme.heading("A tour, in place of a video")
+    """Element 8: the description of how it works, which the video follows."""
+    at = readme.heading("A tour")
     if at is None:
-        problems.append('element 8 (tour) — no "## A tour, in place of a video" heading found')
+        problems.append('element 8 (tour) — no "## A tour" heading found')
         return None
-    steps = re.findall(r"^\d+\.\s+\S", readme.section("A tour, in place of a video"), re.M)
+    steps = re.findall(r"^\d+\.\s+\S", readme.section("A tour"), re.M)
     if len(steps) < 6:
         problems.append(f"element 8 (tour) — expected a numbered walk-through, found {len(steps)} steps")
     return at
