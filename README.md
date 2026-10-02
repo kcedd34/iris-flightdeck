@@ -4,7 +4,7 @@
 - **Install it:** [one command](#install), `docker compose up -d` after cloning — or `zpm "install iris-flightdeck"`, version 1.0.1, [on Open Exchange](https://openexchange.intersystems.com/package/iris-flightdeck).
 - **What it covers:** [all 273 official SysAdmin API operations, by domain](docs/api-coverage.md).
 - **What has actually run:** [functional coverage](verification/functional-coverage.md) — 138 verified by an independent read-back, 91 exempt by name, 39 still open, with the gate red on purpose.
-- **What the platform answered:** [platform findings](verification/README.md), with the raw responses.
+- **Watch it:** [the demo video](https://youtu.be/kutpesgX4wY), the portal driven against a real IRIS instance.
 
 It changes the instance, not only displays it, on all six axes the contest names — logs and security
 included. Every change is rehearsed first, as a field-by-field difference and the users it
@@ -21,8 +21,8 @@ access — and only applied once you confirm. It is built entirely on IRIS's off
 (the REST management API under `/api/admin`), so what you can see and do is exactly what your own
 IRIS account is allowed to see and do, and your password is never stored by any part of it.
 
-**Watch it:** [the demo video](https://youtu.be/kutpesgX4wY) walks through the portal against a real
-IRIS instance. To try the same steps yourself, follow [the tour](#a-tour) on the live demo.
+The [demo video](https://youtu.be/kutpesgX4wY) walks through the portal against a real IRIS
+instance. To try the same steps yourself, follow [the tour](#a-tour) on the live demo.
 
 [![FlightDeck demo video on YouTube](https://img.youtube.com/vi/kutpesgX4wY/hqdefault.jpg)](https://youtu.be/kutpesgX4wY)
 
@@ -528,8 +528,9 @@ It needs Python 3, **starts and removes its own throwaway containers** on ports 
 not touch the install you are running or the data in it.
 
 Reports are written to `verification/<product>-<version>.json`. Exit code `0` when nothing is
-inconclusive, `1` otherwise, `2` for a usage error. The committed reports and findings are in
-[`verification/`](verification/).
+inconclusive, `1` otherwise, `2` for a usage error. The committed reports are in
+[`verification/`](verification/), and what the platform answered is summarised, with the raw
+responses, in [the platform findings](verification/README.md).
 
 ## Checking what this README claims
 

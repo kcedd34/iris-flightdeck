@@ -25,11 +25,13 @@ out not to be a requirement of this contest, leaving nine. Three were added on 2
 with a few minutes and no context: the fast path, the three-sentence paragraph under it, and the tour
 that stood in for a video. The instrument cluster moved above "what it is", so it stays above the
 fold under the new opening. On 2026-10-02 a demo video was published: the no-video statement became a
-line linking to the video and the tour, and the tour's heading became `## A tour`.
+line linking to the video and the tour, and the tour's heading became `## A tour`. The fast path's
+platform-findings line gave its place to the video, keeping the five-line limit; the findings stay
+linked from `## Day-1 platform verification`, which the gate checks.
 
 | # | Element | Anchor | Checked |
 |---|---|---|---|
-| 1 | Fast path | The list right after the `# ` title | At most **five** lines, each with a link; links to the live demo, the install, `docs/api-coverage.md`, `verification/functional-coverage.md` and `verification/README.md`; states the operation total the coverage document assigns, the verified / exempt / open counts `verification/functional-coverage.md` records, and the version `module.xml` declares |
+| 1 | Fast path | The list right after the `# ` title | At most **five** lines, each with a link; links to the live demo, the install, `docs/api-coverage.md`, `verification/functional-coverage.md` and the demo video; states the operation total the coverage document assigns, the verified / exempt / open counts `verification/functional-coverage.md` records, and the version `module.xml` declares |
 | 2 | What it does that a management portal usually does not | The paragraph after the fast path | Exactly **three** sentences; mentions logs, security and the server |
 | 3 | The instrument cluster, above the fold | An image reference to `docs/img/instruments.*` | The third block after the title, with only elements 1 and 2 above it; before the installation heading |
 | 4 | What it is, two sentences, leading with the interaction model; then the video line | The paragraph after the cluster | At most **two** sentences; above the installation heading, a line linking to the demo video (`https://youtu.be/kutpesgX4wY`) and to the tour |

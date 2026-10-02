@@ -45,8 +45,13 @@ FAST_PATH_TARGETS = {
     "the install": r"\(#install\)",
     "the coverage by domain": r"\(docs/api-coverage\.md\)",
     "the functional coverage": r"\(verification/functional-coverage\.md\)",
-    "the platform findings": r"\(verification/README\.md[^)]*\)",
+    "the demo video": re.escape(VIDEO),
 }
+
+# The platform findings left the fast path for the video on 2026-10-02. They stay in the body, in the
+# section that produces them, and this is what keeps them there.
+FINDINGS_SECTION = "Day-1 platform verification"
+FINDINGS_LINK = r"\(verification/README\.md[^)]*\)"
 
 # Element 11's groups. Each declined operation must fall in exactly one, and the README must name it.
 DECLINED_GROUPS = {
@@ -413,6 +418,14 @@ def check_license(readme, problems):
     return at
 
 
+def check_findings(readme, problems):
+    """Not an ordered element: the platform findings stay linked from the section that produces them."""
+    if readme.heading(FINDINGS_SECTION) is None:
+        problems.append(f'platform findings — no "## {FINDINGS_SECTION}" heading found')
+    elif not re.search(FINDINGS_LINK, readme.section(FINDINGS_SECTION)):
+        problems.append(f'platform findings — "## {FINDINGS_SECTION}" does not link to verification/README.md')
+
+
 def main():
     if not README.exists():
         print("check-readme: README.md is missing", file=sys.stderr)
@@ -439,6 +452,7 @@ def main():
         12: check_license(readme, problems),
     }
 
+    check_findings(readme, problems)
     # Not an ordered element: a fact about another machine, checked against that machine.
     check_demo_credentials(readme, problems, warnings)
 
